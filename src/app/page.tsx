@@ -168,6 +168,26 @@ export default function HomePage() {
     setMessage("Actividad creada.");
   }
 
+  async function toggleActivityCompleted(activity: Activity) {
+    const completed = !activity.completed;
+
+    const { error } = await supabase
+      .from("activities")
+      .update({ completed })
+      .eq("id", activity.id);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setData((current) => ({
+      ...current,
+      activities: current.activities.map((item) => (item.id === activity.id ? { ...item, completed } : item)),
+    }));
+    setMessage(completed ? "Actividad completada." : "Actividad reabierta.");
+  }
+
   const segments = useMemo(() => {
     return Array.from(new Set(data.companies.map((company) => company.segment).filter(Boolean) as string[])).sort();
   }, [data.companies]);
@@ -403,7 +423,9 @@ export default function HomePage() {
                 <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Historial</h3>
                 <div className="mt-3 space-y-3">
                   {selectedActivities.length ? (
-                    selectedActivities.map((activity) => <ActivityCard key={activity.id} activity={activity} />)
+                    selectedActivities.map((activity) => (
+                      <ActivityCard key={activity.id} activity={activity} onToggle={toggleActivityCompleted} />
+                    ))
                   ) : (
                     <p className="text-sm text-[var(--muted)]">Todavía no hay actividades.</p>
                   )}
@@ -513,6 +535,7 @@ function ActivitiesTable({ activities, companies }: { activities: Activity[]; co
             <th className="p-3">Empresa</th>
             <th className="p-3">Tipo</th>
             <th className="p-3">Vence</th>
+            <th className="p-3">Estado</th>
             <th className="p-3">Notas</th>
           </tr>
         </thead>
@@ -522,6 +545,7 @@ function ActivitiesTable({ activities, companies }: { activities: Activity[]; co
               <td className="p-3 font-bold">{activity.company_id ? companyById.get(activity.company_id) : "—"}</td>
               <td className="p-3 capitalize">{activity.activity_type}</td>
               <td className="p-3">{activity.due_date || "—"}</td>
+              <td className="p-3">{activity.completed ? "Completada" : "Pendiente"}</td>
               <td className="p-3">{activity.notes || "—"}</td>
             </tr>
           ))}
@@ -565,14 +589,22 @@ function ContactCard({ contact }: { contact: Contact }) {
   );
 }
 
-function ActivityCard({ activity }: { activity: Activity }) {
+function ActivityCard({ activity, onToggle }: { activity: Activity; onToggle?: (activity: Activity) => void }) {
   return (
     <article className="rounded-xl border border-[var(--border)] p-3 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="badge">{activity.activity_type}</span>
+        <div className="flex flex-wrap gap-2">
+          <span className="badge">{activity.activity_type}</span>
+          <span className="badge">{activity.completed ? "completada" : "pendiente"}</span>
+        </div>
         <span className="text-xs text-[var(--muted)]">{activity.due_date ? `Vence: ${activity.due_date}` : "Sin fecha"}</span>
       </div>
       <p className="mt-3 leading-6">{activity.notes}</p>
+      {onToggle ? (
+        <button className="btn btn-secondary mt-3 w-full" type="button" onClick={() => onToggle(activity)}>
+          {activity.completed ? "Reabrir actividad" : "Marcar como completada"}
+        </button>
+      ) : null}
     </article>
   );
 }
