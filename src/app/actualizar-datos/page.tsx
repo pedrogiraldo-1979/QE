@@ -22,12 +22,14 @@ type FormState = {
   contacto_comercial_nuevo: string;
   cargo_contacto_nuevo: string;
   celular_comercial_nuevo: string;
+  telefono_fijo_comercial_nuevo: string;
   correo_comercial_nuevo: string;
-  contacto_pagos_nuevo: string;
-  cargo_pagos_nuevo: string;
-  telefono_tesoreria_nuevo: string;
-  correo_tesoreria_nuevo: string;
-  correo_facturacion_nuevo: string;
+  segundo_contacto_nombre: string;
+  segundo_contacto_cargo: string;
+  segundo_contacto_area: string;
+  segundo_contacto_celular: string;
+  segundo_contacto_telefono_fijo: string;
+  segundo_contacto_correo: string;
   direccion_nueva: string;
   observaciones_cliente: string;
 };
@@ -38,12 +40,14 @@ const emptyForm: FormState = {
   contacto_comercial_nuevo: "",
   cargo_contacto_nuevo: "",
   celular_comercial_nuevo: "",
+  telefono_fijo_comercial_nuevo: "",
   correo_comercial_nuevo: "",
-  contacto_pagos_nuevo: "",
-  cargo_pagos_nuevo: "",
-  telefono_tesoreria_nuevo: "",
-  correo_tesoreria_nuevo: "",
-  correo_facturacion_nuevo: "",
+  segundo_contacto_nombre: "",
+  segundo_contacto_cargo: "",
+  segundo_contacto_area: "",
+  segundo_contacto_celular: "",
+  segundo_contacto_telefono_fijo: "",
+  segundo_contacto_correo: "",
   direccion_nueva: "",
   observaciones_cliente: "",
 };
@@ -92,7 +96,7 @@ function ActualizarDatosContent() {
         razon_social_nueva: current.razon_social || "",
         nit_nuevo: current.nit || "",
         contacto_comercial_nuevo: current.contacto_actual || "",
-        celular_comercial_nuevo: current.telefono_actual || "",
+        telefono_fijo_comercial_nuevo: current.telefono_actual || "",
         correo_comercial_nuevo: current.correo_actual || "",
         direccion_nueva: current.direccion_actual || "",
       });
@@ -213,19 +217,21 @@ function ActualizarDatosContent() {
                   <TextField className="md:col-span-2" label="Dirección" value={form.direccion_nueva} onChange={(value) => updateField("direccion_nueva", value)} />
                 </FormSection>
 
-                <FormSection title="Información comercial" description="Persona o área encargada de pedidos y compras.">
-                  <TextField label="Contacto comercial" value={form.contacto_comercial_nuevo} onChange={(value) => updateField("contacto_comercial_nuevo", value)} />
-                  <TextField label="Cargo contacto" value={form.cargo_contacto_nuevo} onChange={(value) => updateField("cargo_contacto_nuevo", value)} />
-                  <TextField label="Celular / teléfono comercial" value={form.celular_comercial_nuevo} onChange={(value) => updateField("celular_comercial_nuevo", value)} />
-                  <TextField label="Correo comercial" type="email" value={form.correo_comercial_nuevo} onChange={(value) => updateField("correo_comercial_nuevo", value)} />
+                <FormSection title="Contacto comercial principal" description="Persona o área principal encargada de pedidos, compras o coordinación comercial.">
+                  <TextField label="Nombre contacto principal" value={form.contacto_comercial_nuevo} onChange={(value) => updateField("contacto_comercial_nuevo", value)} />
+                  <TextField label="Cargo / área" value={form.cargo_contacto_nuevo} onChange={(value) => updateField("cargo_contacto_nuevo", value)} />
+                  <TextField label="Celular comercial" value={form.celular_comercial_nuevo} onChange={(value) => updateField("celular_comercial_nuevo", value)} />
+                  <TextField label="Teléfono fijo comercial" value={form.telefono_fijo_comercial_nuevo} onChange={(value) => updateField("telefono_fijo_comercial_nuevo", value)} />
+                  <TextField className="md:col-span-2" label="Correo comercial" type="email" value={form.correo_comercial_nuevo} onChange={(value) => updateField("correo_comercial_nuevo", value)} />
                 </FormSection>
 
-                <FormSection title="Información financiera" description="Datos para pagos, tesorería y facturación electrónica.">
-                  <TextField label="Contacto de pagos" value={form.contacto_pagos_nuevo} onChange={(value) => updateField("contacto_pagos_nuevo", value)} />
-                  <TextField label="Cargo contacto pagos" value={form.cargo_pagos_nuevo} onChange={(value) => updateField("cargo_pagos_nuevo", value)} />
-                  <TextField label="Teléfono tesorería" value={form.telefono_tesoreria_nuevo} onChange={(value) => updateField("telefono_tesoreria_nuevo", value)} />
-                  <TextField label="Correo tesorería" type="email" value={form.correo_tesoreria_nuevo} onChange={(value) => updateField("correo_tesoreria_nuevo", value)} />
-                  <TextField className="md:col-span-2" label="Correo facturación electrónica" type="email" value={form.correo_facturacion_nuevo} onChange={(value) => updateField("correo_facturacion_nuevo", value)} />
+                <FormSection title="Segundo contacto comercial" description="Otro contacto útil para compras, cocina, almacén, operaciones o pedidos.">
+                  <TextField label="Nombre segundo contacto" value={form.segundo_contacto_nombre} onChange={(value) => updateField("segundo_contacto_nombre", value)} />
+                  <TextField label="Cargo segundo contacto" value={form.segundo_contacto_cargo} onChange={(value) => updateField("segundo_contacto_cargo", value)} />
+                  <TextField label="Área / rol" value={form.segundo_contacto_area} onChange={(value) => updateField("segundo_contacto_area", value)} />
+                  <TextField label="Celular segundo contacto" value={form.segundo_contacto_celular} onChange={(value) => updateField("segundo_contacto_celular", value)} />
+                  <TextField label="Teléfono fijo segundo contacto" value={form.segundo_contacto_telefono_fijo} onChange={(value) => updateField("segundo_contacto_telefono_fijo", value)} />
+                  <TextField label="Correo segundo contacto" type="email" value={form.segundo_contacto_correo} onChange={(value) => updateField("segundo_contacto_correo", value)} />
                 </FormSection>
               </>
             )}
