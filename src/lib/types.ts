@@ -137,7 +137,7 @@ export const ACTIVITY_TYPES: ActivityType[] = [
   "meeting",
 ];
 
-export const PROSPECT_STATUSES = [
+export const PROSPECT_STATUSES: string[] = [
   "nuevo",
   "por_revisar",
   "ok_prospecto",
@@ -146,6 +146,6 @@ export const PROSPECT_STATUSES = [
   "contacto_pendiente",
   "convertido_cliente",
   "descartado",
-] as const;
+];
 
-export const PROSPECT_PRIORITIES = ["A", "B", "C", "alta", "media", "baja"] as const;
+export const PROSPECT_PRIORITIES: string[] = ["A", "B", "C", "alta", "media", "baja"];
