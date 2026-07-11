@@ -9,6 +9,10 @@ export function getSupabaseClient(): SupabaseClient {
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
+    if (typeof window === "undefined") {
+      return createClient("https://placeholder.supabase.co", "placeholder");
+    }
+
     throw new Error(
       "Missing Supabase env vars. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
     );
