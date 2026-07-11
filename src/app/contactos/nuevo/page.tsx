@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import {
   Building2,
   Home,
@@ -424,7 +424,7 @@ function ContactSummary({ contact }: { contact: Contact }) {
   );
 }
 
-function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
+function DetailItem({ icon, label, value }: { icon: ReactNode; label: string; value?: string | null }) {
   return (
     <dl className="detail-item">
       {icon}
