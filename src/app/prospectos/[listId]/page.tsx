@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   ClipboardCheck,
   FileQuestion,
-  Filter,
   Home,
   LayoutDashboard,
   LogOut,
@@ -48,6 +47,8 @@ type ContactForm = {
   linkedin_url: string;
   notes: string;
 };
+
+type WorkbenchTabKey = "todos" | "por_revisar" | "ok_prospecto" | "sin_contacto" | "cliente_actual_excluir";
 
 const cleanStatuses = [
   "nuevo",
@@ -123,7 +124,7 @@ export default function ProspectListDetailPage() {
   const [contacts, setContacts] = useState<ProspectContact[]>([]);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("todos");
+  const [statusFilter, setStatusFilter] = useState<WorkbenchTabKey>("todos");
   const [priorityFilter, setPriorityFilter] = useState("todos");
   const [cityFilter, setCityFilter] = useState("todos");
   const [newProspect, setNewProspect] = useState<ProspectForm>(emptyProspectForm);
@@ -283,6 +284,7 @@ export default function ProspectListDetailPage() {
     const inserted = data as Prospect;
     setProspects((current) => [...current, inserted].sort((a, b) => getProspectName(a).localeCompare(getProspectName(b))));
     setSelectedProspectId(inserted.id);
+    setStatusFilter("todos");
     setNewProspect(emptyProspectForm);
     setShowNewProspect(false);
     setMessage("Prospecto creado para revisión.");
@@ -385,7 +387,7 @@ export default function ProspectListDetailPage() {
         ]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(normalizedSearch));
-      const matchesStatus = statusFilter === "todos" || normalizeProspectStatus(prospect.status) === statusFilter;
+      const matchesStatus = matchesWorkbenchTab(prospect, prospectContacts, statusFilter);
       const matchesPriority = priorityFilter === "todos" || prospect.priority === priorityFilter;
       const matchesCity = cityFilter === "todos" || prospect.city === cityFilter;
 
@@ -397,6 +399,16 @@ export default function ProspectListDetailPage() {
   const withValidEmail = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).some((contact) => isValidEmail(contact.email))).length;
   const okProspects = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "ok_prospecto").length;
   const excluded = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "cliente_actual_excluir").length;
+  const porRevisar = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "por_revisar").length;
+  const sinContacto = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).length === 0).length;
+
+  const workbenchTabs: { key: WorkbenchTabKey; label: string; helper: string; count: number }[] = [
+    { key: "todos", label: "Todos", helper: "lista completa", count: prospects.length },
+    { key: "por_revisar", label: "Por revisar", helper: "pendientes", count: porRevisar },
+    { key: "ok_prospecto", label: "OK prospecto", helper: "aptos", count: okProspects },
+    { key: "sin_contacto", label: "Sin contacto", helper: "faltan datos", count: sinContacto },
+    { key: "cliente_actual_excluir", label: "Excluidos", helper: "no trabajar", count: excluded },
+  ];
 
   if (!sessionReady) {
     return <CenteredMessage title="Cargando prospección" description="Validando sesión..." />;
@@ -522,21 +534,32 @@ export default function ProspectListDetailPage() {
             <div className="panel-toolbar">
               <div>
                 <p className="panel-kicker">Empresas prospecto</p>
-                <h2>Revisión de calidad</h2>
+                <h2>Workbench de revisión</h2>
               </div>
               <span className="result-count">{filteredProspects.length}</span>
             </div>
-            <div className="filters-row">
+
+            <div className="prospect-tabs" role="tablist" aria-label="Estados de trabajo">
+              {workbenchTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={statusFilter === tab.key}
+                  className={`prospect-tab ${statusFilter === tab.key ? "active" : ""}`}
+                  onClick={() => setStatusFilter(tab.key)}
+                >
+                  <span>{tab.label}</span>
+                  <strong>{tab.count}</strong>
+                  <small>{tab.helper}</small>
+                </button>
+              ))}
+            </div>
+
+            <div className="filters-row filters-row-workbench">
               <label className="search-box">
                 <Search size={17} />
                 <input placeholder="Buscar por nombre, NIT, teléfono o contacto" value={search} onChange={(event) => setSearch(event.target.value)} />
-              </label>
-              <label className="select-shell">
-                <Filter size={16} />
-                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                  <option value="todos">Estados</option>
-                  {cleanStatuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}
-                </select>
               </label>
               <label className="select-shell">
                 <Tag size={16} />
@@ -552,6 +575,11 @@ export default function ProspectListDetailPage() {
                   {cities.map((city) => <option key={city} value={city}>{city}</option>)}
                 </select>
               </label>
+              {(search || priorityFilter !== "todos" || cityFilter !== "todos" || statusFilter !== "todos") ? (
+                <button className="btn btn-secondary compact" type="button" onClick={() => { setSearch(""); setPriorityFilter("todos"); setCityFilter("todos"); setStatusFilter("todos"); }}>
+                  Limpiar
+                </button>
+              ) : null}
             </div>
             <div className="table-wrap">
               <table>
@@ -796,6 +824,12 @@ function CenteredMessage({ title, description }: { title: string; description: s
 
 function getProspectName(prospect: Prospect) {
   return prospect.company_name || prospect.name || "Prospecto sin nombre";
+}
+
+function matchesWorkbenchTab(prospect: Prospect, contacts: ProspectContact[], tab: WorkbenchTabKey) {
+  if (tab === "todos") return true;
+  if (tab === "sin_contacto") return contacts.length === 0;
+  return normalizeProspectStatus(prospect.status) === tab;
 }
 
 function normalizeProspectStatus(status?: string | null): ProspectStatus {
