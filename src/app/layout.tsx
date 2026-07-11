@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import AddContactFromDetail from "@/components/AddContactFromDetail";
+import ProspectingRouteBridge from "@/components/ProspectingRouteBridge";
 import "./globals.css";
 import "./prospecting-polish.css";
 import "./prospecting-review-panel.css";
@@ -15,6 +16,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <AddContactFromDetail />
+        <ProspectingRouteBridge />
         <a
           className="global-add-button"
           href="/agregar"
