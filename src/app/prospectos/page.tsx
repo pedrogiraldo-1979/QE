@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  Plus,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -240,6 +241,10 @@ export default function ProspectListsPage() {
             <h1>Listas de prospección</h1>
           </div>
           <div className="topbar-actions">
+            <Link className="btn btn-primary" href="/prospectos/nuevo">
+              <Plus size={17} />
+              Nuevo prospecto
+            </Link>
             <button className="btn btn-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
               <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
@@ -307,9 +312,14 @@ export default function ProspectListsPage() {
                         </td>
                         <td>{formatDate(list.created_at)}</td>
                         <td>
-                          <Link className="btn btn-primary compact" href={`/prospectos/${list.id}`}>
-                            Revisar lista
-                          </Link>
+                          <div className="row-actions">
+                            <Link className="btn btn-primary compact" href={`/prospectos/${list.id}`}>
+                              Revisar lista
+                            </Link>
+                            <Link className="btn btn-secondary compact" href={`/prospectos/nuevo?listId=${list.id}`}>
+                              + Prospecto
+                            </Link>
+                          </div>
                         </td>
                       </tr>
                     );
