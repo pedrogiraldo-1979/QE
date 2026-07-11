@@ -13,6 +13,7 @@ import {
 } from "@/lib/types";
 
 type ViewMode = "companies" | "contacts" | "activities";
+type CompanyDetailTab = "resumen" | "contactos" | "actividades";
 
 interface DashboardData {
   companies: Company[];
@@ -37,6 +38,7 @@ export default function HomePage() {
   const [data, setData] = useState<DashboardData>(initialData);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("companies");
+  const [companyDetailTab, setCompanyDetailTab] = useState<CompanyDetailTab>("resumen");
   const [search, setSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
@@ -297,7 +299,7 @@ export default function HomePage() {
         </section>
       ) : null}
 
-      <section className="mx-auto mt-6 grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(420px,0.85fr)]">
+      <section className="mx-auto mt-6 grid max-w-7xl gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(460px,0.85fr)]">
         <div className="card overflow-hidden">
           <div className="border-b border-[var(--border)] p-4">
             <div className="flex flex-wrap gap-2">
@@ -349,93 +351,132 @@ export default function HomePage() {
           {selectedCompany ? (
             <div>
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0">
                   <div className="flex flex-wrap gap-2">
                     <span className="badge">{selectedCompany.segment || "sin segmento"}</span>
                     <span className="badge">{selectedCompany.status || "nuevo"}</span>
                   </div>
-                  <h2 className="mt-3 text-2xl font-black">{selectedCompany.name}</h2>
+                  <h2 className="mt-3 break-words text-2xl font-black">{selectedCompany.name}</h2>
                   <p className="mt-1 text-sm text-[var(--muted)]">{selectedCompany.legal_name || "Sin razón social"}</p>
                 </div>
-                <select
-                  className="select max-w-44"
-                  value={selectedCompany.status || "nuevo"}
-                  onChange={(event) => void updateCompanyStatus(selectedCompany, event.target.value as CompanyStatus)}
-                >
-                  {COMPANY_STATUSES.map((status) => (
-                    <option key={status} value={status}>
-                      {status}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <dl className="mt-5 grid gap-3 text-sm md:grid-cols-2">
-                <DetailItem label="NIT" value={selectedCompany.nit} />
-                <DetailItem label="Ciudad" value={selectedCompany.city} />
-                <DetailItem label="Teléfono" value={selectedCompany.phone} />
-                <DetailItem label="Dirección" value={selectedCompany.address} />
-                <DetailItem label="Website" value={selectedCompany.website} isLink />
-              </dl>
-
-              {selectedCompany.notes ? (
-                <div className="mt-5 rounded-xl bg-[#f4f7f2] p-4 text-sm leading-6 text-[var(--muted)]">
-                  <strong className="text-[var(--foreground)]">Notas: </strong>
-                  {selectedCompany.notes}
-                </div>
-              ) : null}
-
-              <section className="mt-6">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Contactos</h3>
-                  <a className="btn btn-secondary" href={`/contactos/nuevo?companyId=${encodeURIComponent(selectedCompany.id)}`}>
+                <div className="flex min-w-44 flex-col gap-2">
+                  <a className="btn btn-primary" href={`/contactos/nuevo?companyId=${encodeURIComponent(selectedCompany.id)}`}>
                     Agregar contacto
                   </a>
-                </div>
-                <div className="mt-3 space-y-3">
-                  {selectedContacts.length ? (
-                    selectedContacts.map((contact) => <ContactCard key={contact.id} contact={contact} />)
-                  ) : (
-                    <p className="text-sm text-[var(--muted)]">No hay contactos para esta empresa.</p>
-                  )}
-                </div>
-              </section>
-
-              <section className="mt-6">
-                <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Nueva actividad</h3>
-                <form className="mt-3 space-y-3" onSubmit={addActivity}>
-                  <select className="select" value={newActivityType} onChange={(event) => setNewActivityType(event.target.value as ActivityType)}>
-                    {ACTIVITY_TYPES.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
+                  <select
+                    className="select"
+                    value={selectedCompany.status || "nuevo"}
+                    onChange={(event) => void updateCompanyStatus(selectedCompany, event.target.value as CompanyStatus)}
+                  >
+                    {COMPANY_STATUSES.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
                       </option>
                     ))}
                   </select>
-                  <textarea
-                    className="textarea min-h-24"
-                    placeholder="Ej. Llamar a compras para validar volumen mensual de café."
-                    value={newActivityNotes}
-                    onChange={(event) => setNewActivityNotes(event.target.value)}
-                  />
-                  <input className="input" type="date" value={newActivityDueDate} onChange={(event) => setNewActivityDueDate(event.target.value)} />
-                  <button className="btn btn-primary w-full" type="submit">
-                    Guardar actividad
-                  </button>
-                </form>
-              </section>
-
-              <section className="mt-6">
-                <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Historial</h3>
-                <div className="mt-3 space-y-3">
-                  {selectedActivities.length ? (
-                    selectedActivities.map((activity) => (
-                      <ActivityCard key={activity.id} activity={activity} onToggle={toggleActivityCompleted} />
-                    ))
-                  ) : (
-                    <p className="text-sm text-[var(--muted)]">Todavía no hay actividades.</p>
-                  )}
                 </div>
-              </section>
+              </div>
+
+              <dl className="mt-4 grid gap-2 text-sm md:grid-cols-2">
+                <CompactDetail label="NIT" value={selectedCompany.nit} />
+                <CompactDetail label="Ciudad" value={selectedCompany.city} />
+                <CompactDetail label="Teléfono" value={selectedCompany.phone} />
+                <CompactDetail label="Contactos" value={String(selectedContacts.length)} />
+              </dl>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <button className={`btn ${companyDetailTab === "resumen" ? "btn-primary" : "btn-secondary"}`} type="button" onClick={() => setCompanyDetailTab("resumen")}>
+                  Resumen
+                </button>
+                <button className={`btn ${companyDetailTab === "contactos" ? "btn-primary" : "btn-secondary"}`} type="button" onClick={() => setCompanyDetailTab("contactos")}>
+                  Contactos
+                </button>
+                <button className={`btn ${companyDetailTab === "actividades" ? "btn-primary" : "btn-secondary"}`} type="button" onClick={() => setCompanyDetailTab("actividades")}>
+                  Actividades
+                </button>
+              </div>
+
+              {companyDetailTab === "resumen" ? (
+                <section className="mt-5 space-y-3">
+                  <div className="grid gap-3 text-sm md:grid-cols-2">
+                    <DetailItem label="Dirección" value={selectedCompany.address} />
+                    <DetailItem label="Website" value={selectedCompany.website} isLink />
+                  </div>
+                  {selectedCompany.notes ? (
+                    <div className="rounded-xl bg-[#f4f7f2] p-4 text-sm leading-6 text-[var(--muted)]">
+                      <strong className="text-[var(--foreground)]">Notas: </strong>
+                      {selectedCompany.notes}
+                    </div>
+                  ) : null}
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Contactos principales</h3>
+                    <div className="mt-3 space-y-3">
+                      {selectedContacts.length ? (
+                        selectedContacts.slice(0, 2).map((contact) => <ContactCard key={contact.id} contact={contact} />)
+                      ) : (
+                        <p className="text-sm text-[var(--muted)]">No hay contactos para esta empresa.</p>
+                      )}
+                    </div>
+                  </section>
+                </section>
+              ) : null}
+
+              {companyDetailTab === "contactos" ? (
+                <section className="mt-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Contactos</h3>
+                    <a className="btn btn-primary" href={`/contactos/nuevo?companyId=${encodeURIComponent(selectedCompany.id)}`}>
+                      Agregar contacto
+                    </a>
+                  </div>
+                  <div className="mt-3 max-h-[520px] space-y-3 overflow-auto pr-1">
+                    {selectedContacts.length ? (
+                      selectedContacts.map((contact) => <ContactCard key={contact.id} contact={contact} />)
+                    ) : (
+                      <p className="text-sm text-[var(--muted)]">No hay contactos para esta empresa.</p>
+                    )}
+                  </div>
+                </section>
+              ) : null}
+
+              {companyDetailTab === "actividades" ? (
+                <section className="mt-5 space-y-5">
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Nueva actividad</h3>
+                    <form className="mt-3 space-y-3" onSubmit={addActivity}>
+                      <select className="select" value={newActivityType} onChange={(event) => setNewActivityType(event.target.value as ActivityType)}>
+                        {ACTIVITY_TYPES.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
+                      </select>
+                      <textarea
+                        className="textarea min-h-24"
+                        placeholder="Ej. Llamar a compras para validar volumen mensual de café."
+                        value={newActivityNotes}
+                        onChange={(event) => setNewActivityNotes(event.target.value)}
+                      />
+                      <input className="input" type="date" value={newActivityDueDate} onChange={(event) => setNewActivityDueDate(event.target.value)} />
+                      <button className="btn btn-primary w-full" type="submit">
+                        Guardar actividad
+                      </button>
+                    </form>
+                  </section>
+                  <section>
+                    <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Historial</h3>
+                    <div className="mt-3 max-h-[420px] space-y-3 overflow-auto pr-1">
+                      {selectedActivities.length ? (
+                        selectedActivities.map((activity) => (
+                          <ActivityCard key={activity.id} activity={activity} onToggle={toggleActivityCompleted} />
+                        ))
+                      ) : (
+                        <p className="text-sm text-[var(--muted)]">Todavía no hay actividades.</p>
+                      )}
+                    </div>
+                  </section>
+                </section>
+              ) : null}
             </div>
           ) : (
             <CenteredMessage title="Sin empresa seleccionada" description="Selecciona una empresa para ver el detalle." />
@@ -557,6 +598,15 @@ function ActivitiesTable({ activities, companies }: { activities: Activity[]; co
         </tbody>
       </table>
       {!activities.length ? <p className="p-6 text-sm text-[var(--muted)]">No hay actividades todavía.</p> : null}
+    </div>
+  );
+}
+
+function CompactDetail({ label, value }: { label: string; value?: string | null }) {
+  return (
+    <div className="rounded-xl bg-[#f4f7f2] p-3">
+      <dt className="text-[0.68rem] font-black uppercase tracking-[0.14em] text-[var(--muted)]">{label}</dt>
+      <dd className="mt-1 break-words text-sm font-black">{value || "—"}</dd>
     </div>
   );
 }
