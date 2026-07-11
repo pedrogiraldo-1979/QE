@@ -9,22 +9,8 @@ export type CompanyStatus =
 
 export type ActivityType = "note" | "call" | "email" | "whatsapp" | "follow_up" | "meeting";
 
-export type ProspectStatus =
-  | "nuevo"
-  | "por_revisar"
-  | "ok_prospecto"
-  | "cliente_actual_excluir"
-  | "sin_contacto"
-  | "contacto_pendiente"
-  | "convertido_cliente"
-  | "descartado"
-  | "por_validar"
-  | "contactado"
-  | "calificado"
-  | "cotizado"
-  | "convertido";
-
-export type ProspectPriority = "A" | "B" | "C" | "alta" | "media" | "baja" | string;
+export type ProspectStatus = string;
+export type ProspectPriority = string;
 
 export interface Company {
   id: string;
