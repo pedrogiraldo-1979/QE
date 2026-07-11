@@ -13,6 +13,28 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <AddContactFromDetail />
+        <a
+          href="/agregar"
+          aria-label="Agregar cliente o contacto"
+          style={{
+            position: "fixed",
+            right: "18px",
+            bottom: "18px",
+            zIndex: 30,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "42px",
+            borderRadius: "8px",
+            background: "var(--primary)",
+            color: "#fff",
+            boxShadow: "0 18px 44px rgba(25, 35, 29, 0.18)",
+            fontWeight: 900,
+            padding: "0 14px",
+          }}
+        >
+          + Agregar
+        </a>
       </body>
     </html>
   );
