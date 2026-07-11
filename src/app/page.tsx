@@ -386,7 +386,12 @@ export default function HomePage() {
               ) : null}
 
               <section className="mt-6">
-                <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Contactos</h3>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-black uppercase tracking-[0.16em] text-[var(--muted)]">Contactos</h3>
+                  <a className="btn btn-secondary" href={`/contactos/nuevo?companyId=${encodeURIComponent(selectedCompany.id)}`}>
+                    Agregar contacto
+                  </a>
+                </div>
                 <div className="mt-3 space-y-3">
                   {selectedContacts.length ? (
                     selectedContacts.map((contact) => <ContactCard key={contact.id} contact={contact} />)
