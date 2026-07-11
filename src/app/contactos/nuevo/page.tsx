@@ -79,9 +79,12 @@ export default function NewContactPage() {
     }
 
     const loadedCompanies = (companiesResult.data || []) as Company[];
+    const requestedCompanyId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("companyId") || "" : "";
+    const queryCompanyId = loadedCompanies.some((company) => company.id === requestedCompanyId) ? requestedCompanyId : "";
+
     setCompanies(loadedCompanies);
     setContacts((contactsResult.data || []) as Contact[]);
-    setForm((current) => ({ ...current, companyId: current.companyId || loadedCompanies[0]?.id || "" }));
+    setForm((current) => ({ ...current, companyId: current.companyId || queryCompanyId || loadedCompanies[0]?.id || "" }));
     setLoading(false);
   }
 
@@ -207,9 +210,14 @@ export default function NewContactPage() {
           <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">Agregar contacto</h1>
           <p className="mt-2 text-sm text-[var(--muted)]">Crea contactos nuevos en CRM sin tocar las hojas de limpieza.</p>
         </div>
-        <button className="btn btn-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
-          {loading ? "Actualizando..." : "Refrescar"}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <a className="btn btn-secondary" href="/">
+            Volver al CRM
+          </a>
+          <button className="btn btn-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
+            {loading ? "Actualizando..." : "Refrescar"}
+          </button>
+        </div>
       </header>
 
       {message ? <section className="mx-auto mt-4 max-w-5xl rounded-xl border border-[var(--border)] bg-white p-3 text-sm text-[var(--muted)]">{message}</section> : null}
