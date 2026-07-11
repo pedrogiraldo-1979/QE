@@ -1,6 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  Building2,
+  Home,
+  Mail,
+  Phone,
+  RefreshCw,
+  ShieldCheck,
+  Tag,
+  UserRound,
+  UsersRound,
+} from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { Company, Contact } from "@/lib/types";
 
@@ -31,7 +42,7 @@ export default function NewContactPage() {
   const supabase = getSupabaseClient();
   const [sessionReady, setSessionReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [loginEmail, setLoginEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -73,18 +84,17 @@ export default function NewContactPage() {
     ]);
 
     if (companiesResult.error || contactsResult.error) {
-      setMessage(companiesResult.error?.message || contactsResult.error?.message || "No pudimos cargar los datos.");
+      setMessage(companiesResult.error?.message || contactsResult.error?.message || "Error cargando datos.");
       setLoading(false);
       return;
     }
 
     const loadedCompanies = (companiesResult.data || []) as Company[];
-    const loadedContacts = (contactsResult.data || []) as Contact[];
     const requestedCompanyId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("companyId") || "" : "";
     const queryCompanyId = loadedCompanies.some((company) => company.id === requestedCompanyId) ? requestedCompanyId : "";
 
     setCompanies(loadedCompanies);
-    setContacts(loadedContacts);
+    setContacts((contactsResult.data || []) as Contact[]);
     setForm((current) => ({ ...current, companyId: current.companyId || queryCompanyId || loadedCompanies[0]?.id || "" }));
     setLoading(false);
   }
@@ -94,7 +104,7 @@ export default function NewContactPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       setAuthError(error.message);
@@ -187,12 +197,12 @@ export default function NewContactPage() {
               <h1>Agregar contacto</h1>
             </div>
           </div>
-          <p className="login-copy">Inicia sesión para crear contactos en Supabase.</p>
+          <p className="login-copy">Inicia sesión para crear contactos comerciales en Supabase.</p>
 
           <form className="form-stack" onSubmit={handleSignIn}>
             <label className="field-label">
               Email
-              <input className="input" type="email" value={loginEmail} onChange={(event) => setLoginEmail(event.target.value)} required />
+              <input className="input" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
             </label>
             <label className="field-label">
               Password
@@ -200,6 +210,7 @@ export default function NewContactPage() {
             </label>
             {authError ? <p className="alert alert-danger">{authError}</p> : null}
             <button className="btn btn-primary full-width" type="submit" disabled={loading}>
+              <ShieldCheck size={18} />
               {loading ? "Entrando..." : "Entrar"}
             </button>
           </form>
@@ -210,18 +221,40 @@ export default function NewContactPage() {
 
   return (
     <main className="crm-shell">
+      <aside className="sidebar">
+        <a className="sidebar-brand" href="/">
+          <span className="brand-mark">QE</span>
+          <div>
+            <p>Quindío Exquisito</p>
+            <strong>CRM B2B</strong>
+          </div>
+        </a>
+
+        <nav className="sidebar-nav" aria-label="Vistas del CRM">
+          <a className="nav-button" href="/">
+            <Home size={18} />
+            <span>Inicio</span>
+          </a>
+          <a className="nav-button active" href="/contactos/nuevo">
+            <UsersRound size={18} />
+            <span>Agregar contacto</span>
+          </a>
+        </nav>
+      </aside>
+
       <section className="workspace">
         <header className="topbar">
           <div>
             <p className="eyebrow">Quindío Exquisito CRM</p>
             <h1>Agregar contacto</h1>
-            <p>Crea contactos nuevos sin tocar Google Sheets ni procesos de limpieza.</p>
           </div>
           <div className="topbar-actions">
             <a className="btn btn-secondary" href="/">
+              <Home size={17} />
               Volver al CRM
             </a>
             <button className="btn btn-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
+              <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
             </button>
           </div>
@@ -230,97 +263,109 @@ export default function NewContactPage() {
         {message ? <section className="alert alert-info">{message}</section> : null}
 
         <section className="crm-grid">
-          <form className="list-panel form-stack" onSubmit={handleSave}>
+          <section className="list-panel">
             <div className="panel-toolbar">
               <div>
-                <p className="panel-kicker">Nuevo registro</p>
-                <h2>Datos del contacto</h2>
+                <p className="panel-kicker">Nuevo contacto</p>
+                <h2>Datos comerciales</h2>
               </div>
+              <span className="result-count">{selectedCompanyContacts.length}</span>
             </div>
 
-            <label className="field-label">
-              Empresa
-              <select className="input" value={form.companyId} onChange={(event) => updateField("companyId", event.target.value)} required>
-                <option value="">Seleccionar empresa</option>
-                {companies.map((company) => (
-                  <option key={company.id} value={company.id}>
-                    {company.name}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <form className="activity-form" onSubmit={handleSave}>
+              <div className="form-grid">
+                <label className="field-label" style={{ gridColumn: "1 / -1" }}>
+                  Cliente
+                  <select className="select" value={form.companyId} onChange={(event) => updateField("companyId", event.target.value)} required>
+                    <option value="">Seleccionar cliente</option>
+                    {companies.map((company) => (
+                      <option key={company.id} value={company.id}>
+                        {company.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-            <label className="field-label">
-              Nombre completo
-              <input className="input" value={form.fullName} onChange={(event) => updateField("fullName", event.target.value)} required />
-            </label>
+                <label className="field-label" style={{ gridColumn: "1 / -1" }}>
+                  Nombre completo
+                  <input className="input" value={form.fullName} onChange={(event) => updateField("fullName", event.target.value)} required />
+                </label>
 
-            <div className="filters-row filters-row-simple">
-              <label className="field-label">
-                Tipo de contacto
-                <select className="input" value={form.contactType} onChange={(event) => updateField("contactType", event.target.value as ContactType)}>
-                  {CONTACT_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="field-label">
-                Cargo / rol operativo
-                <input className="input" value={form.position} onChange={(event) => updateField("position", event.target.value)} placeholder="Ej. Jefe de compras" />
-              </label>
-            </div>
+                <label className="field-label">
+                  Tipo de contacto
+                  <select className="select" value={form.contactType} onChange={(event) => updateField("contactType", event.target.value as ContactType)}>
+                    {CONTACT_TYPES.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-            <div className="filters-row filters-row-simple">
-              <label className="field-label">
-                Email
-                <input className="input" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
-              </label>
-              <label className="field-label">
-                Teléfono / WhatsApp
-                <input className="input" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} />
-              </label>
-            </div>
+                <label className="field-label">
+                  Cargo / rol operativo
+                  <input className="input" value={form.position} onChange={(event) => updateField("position", event.target.value)} placeholder="Ej. Jefe de compras" />
+                </label>
 
-            <label className="field-label">
-              Notas
-              <textarea className="textarea" value={form.notes} onChange={(event) => updateField("notes", event.target.value)} />
-            </label>
+                <label className="field-label">
+                  Email
+                  <input className="input" type="email" value={form.email} onChange={(event) => updateField("email", event.target.value)} />
+                </label>
 
-            {duplicateWarnings.length ? (
-              <div className="alert alert-info">
-                <strong>Posible duplicado. Revisar antes de guardar:</strong>
-                <ul>
-                  {duplicateWarnings.map((warning) => (
-                    <li key={warning}>{warning}</li>
-                  ))}
-                </ul>
-                <span>No se bloquea el guardado porque una persona puede atender varias sedes o cuentas.</span>
+                <label className="field-label">
+                  Teléfono / WhatsApp
+                  <input className="input" value={form.phone} onChange={(event) => updateField("phone", event.target.value)} />
+                </label>
+
+                <label className="field-label" style={{ gridColumn: "1 / -1" }}>
+                  Notas
+                  <textarea className="textarea" value={form.notes} onChange={(event) => updateField("notes", event.target.value)} />
+                </label>
               </div>
-            ) : null}
 
-            <div className="row-actions">
-              <button className="btn btn-primary" type="submit" disabled={saving}>
-                {saving ? "Guardando..." : "Guardar contacto"}
-              </button>
-              <button className="btn btn-secondary" type="button" onClick={() => setForm({ ...emptyForm, companyId: form.companyId })} disabled={saving}>
-                Limpiar
-              </button>
-            </div>
-          </form>
+              {duplicateWarnings.length ? (
+                <div className="review-error">
+                  <strong>Posible duplicado. Revisar antes de guardar:</strong>
+                  <div className="issue-row">
+                    {duplicateWarnings.map((warning) => (
+                      <span className="issue-badge" key={warning}>{warning}</span>
+                    ))}
+                  </div>
+                  <span>No se bloquea el guardado porque una persona puede atender varias sedes o cuentas.</span>
+                </div>
+              ) : null}
+
+              <div className="panel-actions">
+                <button className="btn btn-secondary" type="button" onClick={() => setForm({ ...emptyForm, companyId: form.companyId })} disabled={saving}>
+                  Limpiar
+                </button>
+                <button className="btn btn-primary" type="submit" disabled={saving}>
+                  <UserRound size={17} />
+                  {saving ? "Guardando" : "Guardar contacto"}
+                </button>
+              </div>
+            </form>
+          </section>
 
           <aside className="detail-panel">
             <div className="detail-header">
               <div>
                 <div className="tag-row">
                   <span className="badge tone-emerald">Cliente actual</span>
-                  <span className="badge">{selectedCompany?.segment || "sin segmento"}</span>
+                  {selectedCompany?.segment ? <span className="badge">{selectedCompany.segment}</span> : <span className="badge tone-amber">Segmento pendiente</span>}
                 </div>
-                <h2>{selectedCompany?.name || "Selecciona una empresa"}</h2>
-                <p>{selectedCompany?.legal_name || "Contactos actuales"}</p>
+                <h2>{selectedCompany?.name || "Selecciona un cliente"}</h2>
+                <p>{selectedCompany?.legal_name || "Razón social pendiente"}</p>
               </div>
             </div>
+
+            <section className="detail-grid">
+              <DetailItem icon={<Tag size={18} />} label="NIT" value={selectedCompany?.nit} />
+              <DetailItem icon={<Building2 size={18} />} label="Ciudad" value={selectedCompany?.city} />
+              <DetailItem icon={<Phone size={18} />} label="Teléfono" value={selectedCompany?.phone} />
+              <DetailItem icon={<UsersRound size={18} />} label="Contactos" value={String(selectedCompanyContacts.length)} />
+            </section>
+
             <section className="detail-section">
               <div className="section-title-row">
                 <h3>Contactos actuales</h3>
@@ -330,7 +375,7 @@ export default function NewContactPage() {
                 {selectedCompanyContacts.length ? (
                   selectedCompanyContacts.map((contact) => <ContactSummary key={contact.id} contact={contact} />)
                 ) : (
-                  <CenteredMessage title="Sin contactos" description="No hay contactos asociados a esta empresa." />
+                  <EmptyState title="Sin contactos" description="Este cliente todavía no tiene contactos asociados." />
                 )}
               </div>
             </section>
@@ -343,16 +388,55 @@ export default function NewContactPage() {
 
 function ContactSummary({ contact }: { contact: Contact }) {
   return (
-    <article className="contact-card">
-      <strong>{contact.full_name || "Sin nombre"}</strong>
-      <span>{contact.role || "Rol pendiente"}</span>
-      <span>{contact.email || "Sin email"}</span>
-      <span>{contact.phone || "Sin teléfono"}</span>
+    <article className={`contact-card ${getContactIssues(contact).length ? "needs-data" : ""}`}>
+      <span className="avatar">
+        <UserRound size={18} />
+      </span>
+      <div>
+        <h4>{contact.full_name || "Sin nombre"}</h4>
+        <p>{formatContactRole(contact.role)}</p>
+        <div className="contact-links">
+          {contact.email ? (
+            <a href={`mailto:${contact.email}`}>
+              <Mail size={14} />
+              {contact.email}
+            </a>
+          ) : (
+            <span>
+              <Mail size={14} />
+              Sin email
+            </span>
+          )}
+          {contact.phone ? (
+            <span>
+              <Phone size={14} />
+              {contact.phone}
+            </span>
+          ) : null}
+        </div>
+        {getContactIssues(contact).length ? (
+          <div className="issue-row">
+            {getContactIssues(contact).map((issue) => <span className="issue-badge" key={issue}>{issue}</span>)}
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
 
-function CenteredMessage({ title, description }: { title: string; description: string }) {
+function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
+  return (
+    <dl className="detail-item">
+      {icon}
+      <div>
+        <dt>{label}</dt>
+        <dd>{value || "—"}</dd>
+      </div>
+    </dl>
+  );
+}
+
+function EmptyState({ title, description }: { title: string; description: string }) {
   return (
     <div className="empty-state">
       <strong>{title}</strong>
@@ -361,32 +445,51 @@ function CenteredMessage({ title, description }: { title: string; description: s
   );
 }
 
+function CenteredMessage({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="centered-message">
+      <div>
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </div>
+    </div>
+  );
+}
+
 function buildDuplicateWarnings(contacts: Contact[], form: FormState, selectedCompany: Company | null) {
-  const warnings: string[] = [];
   const email = normalizeEmail(form.email);
   const phone = normalizePhone(form.phone);
   const name = normalizeName(form.fullName);
 
-  if (email) {
-    const matches = contacts.filter((contact) => splitContactEmails(contact.email).includes(email));
-    if (matches.length) warnings.push(`Email ya existe en ${formatContactReference(matches[0])}`);
-  }
+  if (!email && !phone && !name) return [];
 
-  if (phone) {
-    const matches = contacts.filter((contact) => {
-      const existingPhone = normalizePhone(contact.phone);
-      if (!existingPhone) return false;
-      return existingPhone === phone || existingPhone.slice(-7) === phone.slice(-7);
-    });
-    if (matches.length) warnings.push(`Teléfono similar en ${formatContactReference(matches[0])}`);
-  }
+  const warnings = new Set<string>();
 
-  if (name && selectedCompany) {
-    const matches = contacts.filter((contact) => contact.company_id === selectedCompany.id && normalizeName(contact.full_name) === name);
-    if (matches.length) warnings.push(`Nombre repetido en la misma empresa: ${formatContactReference(matches[0])}`);
-  }
+  contacts.forEach((contact) => {
+    const reference = formatContactReference(contact);
 
-  return warnings;
+    if (email && splitContactEmails(contact.email).some((item) => normalizeEmail(item) === email)) {
+      warnings.add(`Email ya existe en ${reference}`);
+    }
+
+    const contactPhone = normalizePhone(contact.phone);
+    if (phone && contactPhone && (contactPhone === phone || contactPhone.slice(-7) === phone.slice(-7))) {
+      warnings.add(`Teléfono similar en ${reference}`);
+    }
+
+    if (selectedCompany && contact.company_id === selectedCompany.id && name && normalizeName(contact.full_name) === name) {
+      warnings.add(`Nombre repetido dentro de ${selectedCompany.name}`);
+    }
+  });
+
+  return Array.from(warnings);
+}
+
+function getContactIssues(contact: Contact) {
+  const issues: string[] = [];
+  if (!contact.email?.trim()) issues.push("Email pendiente");
+  if (!contact.role?.trim()) issues.push("Rol pendiente");
+  return issues;
 }
 
 function formatContactReference(contact: Contact) {
@@ -394,29 +497,33 @@ function formatContactReference(contact: Contact) {
 }
 
 function splitContactEmails(value?: string | null) {
-  return String(value || "")
+  return (value || "")
     .split(/[;,]/)
-    .map((item) => normalizeEmail(item))
+    .map((item) => item.trim())
     .filter(Boolean);
 }
 
 function normalizeEmail(value?: string | null) {
-  return String(value || "").trim().toLowerCase();
+  return cleanText(value).toLowerCase();
 }
 
 function normalizePhone(value?: string | null) {
-  return String(value || "").replace(/\D/g, "");
+  return cleanText(value).replace(/\D/g, "");
 }
 
 function normalizeName(value?: string | null) {
-  return String(value || "")
+  return cleanText(value)
+    .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase()
     .replace(/\s+/g, " ");
 }
 
 function cleanText(value?: string | null) {
-  return String(value || "").trim().replace(/\s+/g, " ");
+  return (value || "").trim();
+}
+
+function formatContactRole(role?: string | null) {
+  if (!role) return "Rol pendiente";
+  return role.replace(/_/g, " ");
 }
