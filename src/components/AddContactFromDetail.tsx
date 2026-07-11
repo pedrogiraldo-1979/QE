@@ -19,13 +19,19 @@ function normalizeName(value: string) {
 
 export default function AddContactFromDetail() {
   const companiesRef = useRef<CompanyOption[]>([]);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
     const supabase = getSupabaseClient();
 
     async function loadCompanies() {
+      if (loadingRef.current) return;
+      loadingRef.current = true;
+
       const { data, error } = await supabase.from("companies").select("id,name");
+
+      loadingRef.current = false;
       if (!mounted || error) return;
       companiesRef.current = (data || []) as CompanyOption[];
       updateButton();
@@ -44,14 +50,15 @@ export default function AddContactFromDetail() {
         return;
       }
 
-      const company = companiesRef.current.find((item) => normalizeName(item.name || "") === normalizeName(title));
-
-      if (!company) {
-        existing?.remove();
-        return;
+      if (!companiesRef.current.length) {
+        void loadCompanies();
       }
 
-      const href = `/contactos/nuevo?companyId=${encodeURIComponent(company.id)}`;
+      const company = companiesRef.current.find((item) => normalizeName(item.name || "") === normalizeName(title));
+      const href = company
+        ? `/contactos/nuevo?companyId=${encodeURIComponent(company.id)}`
+        : `/contactos/nuevo?companyName=${encodeURIComponent(title.trim())}`;
+
       let link = existing;
 
       if (!link) {
@@ -60,6 +67,7 @@ export default function AddContactFromDetail() {
         link.className = "btn btn-primary";
         link.textContent = "+ Agregar contacto";
         link.setAttribute("aria-label", "Agregar contacto a esta empresa");
+        link.style.marginTop = "10px";
         header.appendChild(link);
       }
 
@@ -71,7 +79,11 @@ export default function AddContactFromDetail() {
     const observer = new MutationObserver(updateButton);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 
-    const interval = window.setInterval(updateButton, 800);
+    const interval = window.setInterval(() => {
+      updateButton();
+      if (!companiesRef.current.length) void loadCompanies();
+    }, 800);
+
     updateButton();
 
     return () => {
