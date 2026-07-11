@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import AddContactFromDetail from "@/components/AddContactFromDetail";
 import "./globals.css";
 import "./prospecting-polish.css";
+import "./prospecting-workbench.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
