@@ -10,6 +10,7 @@ export type CompanyStatus =
 export type ActivityType = "note" | "call" | "email" | "whatsapp" | "follow_up" | "meeting";
 
 export type ProspectStatus = string;
+
 export type ProspectPriority = string;
 
 export interface Company {
@@ -136,7 +137,7 @@ export const ACTIVITY_TYPES: ActivityType[] = [
   "meeting",
 ];
 
-export const PROSPECT_STATUSES: ProspectStatus[] = [
+export const PROSPECT_STATUSES = [
   "nuevo",
   "por_revisar",
   "ok_prospecto",
@@ -145,6 +146,6 @@ export const PROSPECT_STATUSES: ProspectStatus[] = [
   "contacto_pendiente",
   "convertido_cliente",
   "descartado",
-];
+] as const;
 
 export const PROSPECT_PRIORITIES = ["A", "B", "C", "alta", "media", "baja"] as const;
