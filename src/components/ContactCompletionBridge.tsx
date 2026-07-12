@@ -286,7 +286,13 @@ function decorateContactRows(contacts: EditableContact[]) {
   const rows = Array.from(document.querySelectorAll(".workspace .list-panel table tbody tr"));
 
   for (const row of rows) {
-    if (row.querySelector(".contact-quick-edit-action")) continue;
+    const cells = Array.from(row.querySelectorAll("td"));
+    const dataCell = cells[3];
+    const okBadge = dataCell?.querySelector(".ok-badge");
+    if (okBadge && normalizeText(okBadge.textContent || "") === "datos utiles") {
+      okBadge.textContent = "Datos mínimos OK";
+    }
+
     const contact = findContactFromRow(row, contacts);
     if (!contact) continue;
 
@@ -297,15 +303,28 @@ function decorateContactRows(contacts: EditableContact[]) {
     if (!actions) {
       actions = document.createElement("div");
       actions.className = "row-actions";
+      lastCell.textContent = "";
       lastCell.appendChild(actions);
     }
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.dataset.contactQuickEdit = "true";
-    button.className = "btn btn-primary compact contact-quick-edit-action";
-    button.innerHTML = `<span class="contact-quick-edit-icon">✎</span> Editar rápido`;
-    actions.appendChild(button);
+    const hasIssues = Boolean(dataCell?.querySelector(".issue-badge"));
+    const buttons = Array.from(actions.querySelectorAll("button"));
+    let actionButton = (actions.querySelector(".contact-quick-edit-action") as HTMLButtonElement | null) || buttons[0] || null;
+
+    if (!actionButton) {
+      actionButton = document.createElement("button");
+      actionButton.type = "button";
+      actions.appendChild(actionButton);
+    }
+
+    for (const button of Array.from(actions.querySelectorAll("button"))) {
+      if (button !== actionButton) button.remove();
+    }
+
+    actionButton.type = "button";
+    actionButton.dataset.contactQuickEdit = "true";
+    actionButton.className = `btn ${hasIssues ? "btn-primary" : "btn-secondary"} compact contact-quick-edit-action`;
+    actionButton.textContent = hasIssues ? "Completar datos" : "Editar contacto";
   }
 }
 
