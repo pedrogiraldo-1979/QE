@@ -1,0 +1,61 @@
+/* Visual-only simplification for prospect list detail.
+   Keeps the status filters but removes duplicate KPI-style cards below the main metrics. */
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  border-top: 1px solid var(--border) !important;
+  background: #fff !important;
+  padding: 8px 18px 2px !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab {
+  display: inline-flex !important;
+  width: auto !important;
+  min-height: 28px !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  padding: 0.26rem 0.72rem !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab.active {
+  background: var(--primary-soft) !important;
+  box-shadow: inset 0 0 0 1px rgba(31, 107, 58, 0.12) !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab span {
+  font-size: 0.7rem !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab strong,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab small {
+  display: none !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .filters-row-workbench {
+  border-top: 0 !important;
+  padding-top: 8px !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap {
+  max-height: calc(100vh - 300px) !important;
+}
+
+@media (max-width: 860px) {
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
+    padding: 8px 14px 2px !important;
+  }
+}
