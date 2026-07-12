@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   ClipboardCheck,
   Mail,
-  Plus,
   Target,
   UsersRound,
 } from "lucide-react";
@@ -231,10 +230,6 @@ export default function HomeCommercialWorkbench() {
           <Link className="btn btn-primary" href="/prospectos">
             <Target size={17} />
             Revisar prospección
-          </Link>
-          <Link className="btn btn-secondary" href="/agregar">
-            <Plus size={17} />
-            Agregar
           </Link>
           <button className="btn btn-secondary" type="button" onClick={() => void loadWorkbenchData()} disabled={loading}>
             {loading ? "Actualizando" : "Actualizar"}
