@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ActivitiesOperationalWorkbench from "@/components/ActivitiesOperationalWorkbench";
 import AddActivityEntryBridge from "@/components/AddActivityEntryBridge";
 import AddContactFromDetail from "@/components/AddContactFromDetail";
+import ContactCompletionBridge from "@/components/ContactCompletionBridge";
 import GlobalTopbarAddAction from "@/components/GlobalTopbarAddAction";
 import HomeCommercialWorkbench from "@/components/HomeCommercialWorkbench";
 import LegacyViewLayoutPolish from "@/components/LegacyViewLayoutPolish";
@@ -15,6 +16,7 @@ import "./home-commercial-workbench.css";
 import "./legacy-view-layout-polish.css";
 import "./activities-operational-workbench.css";
 import "./activities-workbench-polish.css";
+import "./contact-completion-bridge.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
@@ -32,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ActivitiesOperationalWorkbench />
         <LegacyViewLayoutPolish />
         <AddActivityEntryBridge />
+        <ContactCompletionBridge />
         <GlobalTopbarAddAction />
       </body>
     </html>
