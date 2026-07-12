@@ -133,25 +133,23 @@ export default function AddActivityEntryBridge() {
     setSaving(true);
     setMessage(null);
 
-    const table = selectedTarget.source === "prospecto" ? "prospect_activities" : "activities";
-    const payload =
-      selectedTarget.source === "prospecto"
-        ? {
-            prospect_id: selectedTarget.id,
-            activity_type: activityType,
-            notes: cleanNotes,
-            due_date: dueDate || null,
-            completed: false,
-          }
-        : {
-            company_id: selectedTarget.id,
-            activity_type: activityType,
-            notes: cleanNotes,
-            due_date: dueDate || null,
-            completed: false,
-          };
+    const sharedActivityFields = {
+      activity_type: activityType,
+      notes: cleanNotes,
+      due_date: dueDate || null,
+      completed: false,
+    };
 
-    const { error } = await supabase.from(table).insert(payload);
+    const { error } =
+      selectedTarget.source === "prospecto"
+        ? await supabase.from("prospect_activities").insert({
+            prospect_id: selectedTarget.id,
+            ...sharedActivityFields,
+          })
+        : await supabase.from("activities").insert({
+            company_id: selectedTarget.id,
+            ...sharedActivityFields,
+          });
 
     if (error) {
       setMessage(error.message);
