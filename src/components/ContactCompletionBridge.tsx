@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Edit3, Mail, Phone, RotateCcw, Save, UserRound, X } from "lucide-react";
+import { Mail, Phone, RotateCcw, Save, UserRound, X } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 
 type EditableContact = {
@@ -51,13 +51,8 @@ export default function ContactCompletionBridge() {
   useEffect(() => {
     const updateActiveState = () => {
       const pageWorkspace = document.querySelector(".workspace");
-      const activeNavText = document.querySelector(".sidebar-nav .nav-button.active span")?.textContent?.trim() || "";
-      const pageTitle = document.querySelector(".workspace .topbar h1")?.textContent?.trim() || "";
-      const shouldShow =
-        window.location.pathname === "/" &&
-        Boolean(pageWorkspace) &&
-        (normalizeText(activeNavText).includes("contactos") || normalizeText(pageTitle).includes("directorio comercial"));
-
+      const activeNavText = document.querySelector(".sidebar-nav .nav-button.active span")?.textContent?.trim();
+      const shouldShow = window.location.pathname === "/" && activeNavText === "Contactos" && Boolean(pageWorkspace);
       setWorkspace(pageWorkspace);
       setActivePage(shouldShow);
     };
@@ -86,9 +81,9 @@ export default function ContactCompletionBridge() {
       const button = target?.closest("button");
       if (!button) return;
 
-      const isBridgeButton = button.classList.contains("contact-quick-edit-action");
+      const isBridgeButton = button.classList.contains("contact-quick-edit-action") || button.dataset.contactQuickEdit === "true";
       const label = normalizeText(button.textContent || "");
-      if (!isBridgeButton && !label.includes("completar datos") && !label.includes("editar contacto")) return;
+      if (!isBridgeButton && !label.includes("completar datos") && !label.includes("editar contacto") && !label.includes("editar rapido")) return;
 
       const row = button.closest("tr");
       if (!row) return;
@@ -100,6 +95,7 @@ export default function ContactCompletionBridge() {
       const contact = findContactFromRow(row, contactsRef.current);
       if (!contact) {
         setMessage("No pude identificar ese contacto. Prueba refrescar y volver a abrir Contactos.");
+        scrollToContactPanel();
         return;
       }
 
@@ -148,6 +144,7 @@ export default function ContactCompletionBridge() {
       notes: contact.notes || "",
     });
     setMessage(null);
+    scrollToContactPanel();
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -201,6 +198,7 @@ export default function ContactCompletionBridge() {
     setMessage("Contacto actualizado. Refrescando directorio...");
     setSaving(false);
     refreshCurrentView();
+    scrollToContactPanel();
   }
 
   if (!activePage || !workspace) return null;
@@ -304,6 +302,7 @@ function decorateContactRows(contacts: EditableContact[]) {
 
     const button = document.createElement("button");
     button.type = "button";
+    button.dataset.contactQuickEdit = "true";
     button.className = "btn btn-primary compact contact-quick-edit-action";
     button.innerHTML = `<span class="contact-quick-edit-icon">✎</span> Editar rápido`;
     actions.appendChild(button);
@@ -314,7 +313,7 @@ function findContactFromRow(row: Element, contacts: EditableContact[]) {
   const cells = Array.from(row.querySelectorAll("td"));
   const name = normalizeText(cells[0]?.querySelector("strong")?.textContent || "");
   const phone = normalizePhone(cells[0]?.querySelector("span")?.textContent || "");
-  const company = normalizeText(cells[1]?.textContent || "");
+  const company = normalizeText(cells[1]?.querySelector("button")?.textContent || cells[1]?.textContent || "");
 
   return (
     contacts.find((contact) => {
@@ -333,8 +332,22 @@ function findContactFromRow(row: Element, contacts: EditableContact[]) {
       const contactCompany = normalizeText(contact.company_name || "");
       return Boolean(name) && contactName === name && Boolean(company) && contactCompany.includes(company);
     }) ||
+    contacts.find((contact) => Boolean(name) && normalizeText(contact.full_name || "") === name) ||
     null
   );
+}
+
+function scrollToContactPanel() {
+  window.setTimeout(() => {
+    const panel = document.querySelector(".contact-completion-panel") || document.querySelector(".contact-completion-inline-message");
+    if (panel) {
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    const workspace = document.querySelector(".workspace");
+    workspace?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, 80);
 }
 
 function refreshCurrentView() {
