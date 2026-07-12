@@ -28,6 +28,7 @@ export default function AddActivityEntryBridge() {
   const [formOpen, setFormOpen] = useState(false);
   const [companies, setCompanies] = useState<CompanyOption[]>([]);
   const [companyId, setCompanyId] = useState("");
+  const [companySearch, setCompanySearch] = useState("");
   const [activityType, setActivityType] = useState("follow_up");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -69,9 +70,7 @@ export default function AddActivityEntryBridge() {
       setLoading(false);
       return;
     }
-    const rows = (data || []) as CompanyOption[];
-    setCompanies(rows);
-    setCompanyId((current) => current || rows[0]?.id || "");
+    setCompanies((data || []) as CompanyOption[]);
     setLoading(false);
   }
 
@@ -81,7 +80,7 @@ export default function AddActivityEntryBridge() {
     const cleanNotes = notes.trim().replace(/\s+/g, " ");
 
     if (!selectedCompany) {
-      setMessage("Selecciona un cliente actual.");
+      setMessage("Selecciona un cliente actual desde los resultados de búsqueda.");
       return;
     }
 
@@ -108,6 +107,8 @@ export default function AddActivityEntryBridge() {
     }
 
     setMessage("Actividad creada para cliente actual.");
+    setCompanyId("");
+    setCompanySearch("");
     setActivityType("follow_up");
     setDueDate("");
     setNotes("");
@@ -115,6 +116,42 @@ export default function AddActivityEntryBridge() {
   }
 
   const selectedCompany = useMemo(() => companies.find((company) => company.id === companyId) || null, [companies, companyId]);
+
+  const suggestedCompanies = useMemo(() => {
+    const query = normalizeSearch(companySearch);
+    const terms = query.split(" ").filter(Boolean);
+
+    if (!terms.length) return companies.slice(0, 8);
+
+    return companies
+      .map((company) => {
+        const name = normalizeSearch(company.name || "");
+        const segment = normalizeSearch(company.segment || "");
+        const searchable = `${name} ${segment}`.trim();
+        let score = 0;
+
+        for (const term of terms) {
+          if (!searchable.includes(term)) return null;
+          if (name === query) score += 16;
+          if (name.startsWith(term)) score += 8;
+          if (name.includes(` ${term}`)) score += 5;
+          if (name.includes(term)) score += 3;
+          if (segment.includes(term)) score += 1;
+        }
+
+        return { company, score };
+      })
+      .filter((item): item is { company: CompanyOption; score: number } => Boolean(item))
+      .sort((a, b) => b.score - a.score || String(a.company.name || "").localeCompare(String(b.company.name || ""), "es"))
+      .slice(0, 8)
+      .map((item) => item.company);
+  }, [companies, companySearch]);
+
+  function selectCompany(company: CompanyOption) {
+    setCompanyId(company.id);
+    setCompanySearch(company.name || "");
+    setMessage(null);
+  }
 
   if (!activePage || !actionGrid || !workspace) return null;
 
@@ -152,16 +189,35 @@ export default function AddActivityEntryBridge() {
               <form className="activity-form add-activity-form" onSubmit={handleSubmit}>
                 <div className="form-grid">
                   <label className="field-label" style={{ gridColumn: "1 / -1" }}>
-                    Cliente
-                    <select className="input" value={companyId} onChange={(event) => setCompanyId(event.target.value)} disabled={loading || saving} required>
-                      <option value="">Selecciona cliente</option>
-                      {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
-                          {company.name || "Cliente sin nombre"}
-                        </option>
-                      ))}
-                    </select>
+                    Buscar cliente
+                    <input
+                      className="input smart-client-input"
+                      value={companySearch}
+                      onChange={(event) => {
+                        setCompanySearch(event.target.value);
+                        setCompanyId("");
+                      }}
+                      placeholder="Escribe una palabra del cliente: andino, hilton, club, grand..."
+                      disabled={loading || saving}
+                      autoComplete="off"
+                    />
                   </label>
+
+                  <div className="smart-company-results" style={{ gridColumn: "1 / -1" }}>
+                    {suggestedCompanies.map((company) => (
+                      <button
+                        className={`smart-company-option ${company.id === companyId ? "selected" : ""}`}
+                        key={company.id}
+                        type="button"
+                        onClick={() => selectCompany(company)}
+                        disabled={saving}
+                      >
+                        <strong>{company.name || "Cliente sin nombre"}</strong>
+                        <span>{company.segment || "Cliente actual"}</span>
+                      </button>
+                    ))}
+                    {companySearch && !suggestedCompanies.length ? <div className="smart-company-empty">No encontramos coincidencias. Prueba con otra palabra del nombre.</div> : null}
+                  </div>
 
                   <label className="field-label">
                     Tipo
@@ -194,7 +250,7 @@ export default function AddActivityEntryBridge() {
                   <CalendarClock size={18} />
                   <div>
                     <strong>{selectedCompany?.name || "Cliente pendiente"}</strong>
-                    <span>{selectedCompany?.segment || "Cliente actual"}</span>
+                    <span>{selectedCompany ? selectedCompany.segment || "Cliente actual" : "Busca y selecciona una coincidencia"}</span>
                   </div>
                   <span>{dueDate || "Sin fecha"}</span>
                 </aside>
@@ -215,4 +271,13 @@ export default function AddActivityEntryBridge() {
         : null}
     </>
   );
+}
+
+function normalizeSearch(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9ñ]+/g, " ")
+    .trim();
 }
