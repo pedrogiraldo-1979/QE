@@ -161,22 +161,65 @@
   width: 9% !important;
 }
 
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:first-child strong,
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:first-child span {
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:first-child strong {
   display: -webkit-box !important;
   -webkit-box-orient: vertical !important;
+  -webkit-line-clamp: 2 !important;
   overflow: hidden !important;
 }
 
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:first-child strong {
-  -webkit-line-clamp: 2 !important;
-}
-
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:first-child span {
-  -webkit-line-clamp: 1 !important;
+  display: none !important;
 }
 
-/* Prospect detail table: hide city and phone; both remain searchable and visible in detail panel. */
+/* Prospect detail table: compact operational view.
+   Visible order: Prospecto, Acciones, Estado, Contactos. */
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table {
+  table-layout: auto !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) thead,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) tbody,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) tr {
+  display: block !important;
+  width: 100% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) tr {
+  display: grid !important;
+  grid-template-columns: minmax(230px, 1.35fr) minmax(225px, 1fr) 112px 126px !important;
+  align-items: center !important;
+  column-gap: 8px !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td {
+  display: block !important;
+  width: auto !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(1),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(1) {
+  grid-column: 1 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(7),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(7) {
+  grid-column: 2 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(2),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(2) {
+  grid-column: 3 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(6),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(6) {
+  grid-column: 4 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(3),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(3),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(4),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(4),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(5),
@@ -184,29 +227,12 @@
   display: none !important;
 }
 
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(1),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(1) {
-  width: 36% !important;
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) td:first-child span {
+  display: none !important;
 }
 
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(2),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(2) {
-  width: 14% !important;
-}
-
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(3),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(3) {
-  width: 8% !important;
-}
-
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(6),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(6) {
-  width: 14% !important;
-}
-
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(7),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(7) {
-  width: 28% !important;
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) .row-actions {
+  justify-content: flex-start !important;
 }
 
 @media (max-width: 860px) {
@@ -220,5 +246,11 @@
 
   .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table .row-actions .btn-secondary {
     display: inline-flex !important;
+  }
+
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) tr {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    row-gap: 8px !important;
   }
 }
