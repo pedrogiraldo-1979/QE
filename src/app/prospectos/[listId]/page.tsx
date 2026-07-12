@@ -26,6 +26,7 @@ import {
   UserRound,
   UsersRound,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { Company, Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
@@ -374,6 +375,39 @@ export default function ProspectListDetailPage() {
     const updated = data as Prospect;
     setProspects((current) => current.map((item) => (item.id === prospect.id ? updated : item)));
     setMessage(`Estado actualizado: ${statusLabels[status] || status}.`);
+  }
+
+  async function deleteSelectedProspect() {
+    if (!selectedProspect) return;
+
+    const prospectName = getProspectName(selectedProspect);
+    const confirmed = window.confirm(
+      `¿Eliminar el prospecto ${prospectName}? Esta acción borra solo la empresa prospecto y sus contactos prospecto. No toca clientes CRM ni contactos CRM reales.`
+    );
+
+    if (!confirmed) return;
+
+    const prospectId = selectedProspect.id;
+    const { error: contactsError } = await supabase.from("prospect_contacts").delete().eq("prospect_id", prospectId);
+
+    if (contactsError) {
+      setMessage(contactsError.message);
+      return;
+    }
+
+    const { error } = await supabase.from("prospects").delete().eq("id", prospectId);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    const remainingProspects = prospects.filter((prospect) => prospect.id !== prospectId);
+    setProspects(remainingProspects);
+    setContacts((current) => current.filter((contact) => contact.prospect_id !== prospectId));
+    setSelectedProspectId(remainingProspects[0]?.id || null);
+    setEditingContactId(null);
+    setMessage(`Prospecto eliminado: ${prospectName}.`);
   }
 
   async function addContact(event: FormEvent<HTMLFormElement>) {
@@ -752,6 +786,17 @@ export default function ProspectListDetailPage() {
                   </label>
                 </div>
 
+                <section className="detail-section">
+                  <div className="section-title-row">
+                    <h3>Acciones del prospecto</h3>
+                  </div>
+                  <button className="btn btn-secondary full-width" type="button" onClick={() => void deleteSelectedProspect()}>
+                    <Trash2 size={17} />
+                    Eliminar prospecto
+                  </button>
+                  <p className="helper-text">Borra solo esta empresa prospecto y sus contactos prospecto. No toca clientes CRM.</p>
+                </section>
+
                 <QualityPanel matches={selectedDuplicateMatches} readiness={selectedReadiness} />
 
                 <section className="detail-section">
@@ -994,7 +1039,7 @@ function StatusBadge({ status }: { status?: string | null }) {
   return <span className={`badge ${statusTone[normalized] || "tone-slate"}`}>{statusLabels[normalized] || status || "Nuevo"}</span>;
 }
 
-function MetricCard({ icon: Icon, label, value, helper }: { icon: typeof Target; label: string; value: number; helper: string }) {
+function MetricCard({ icon: Icon, label, value, helper }: { icon: LucideIcon; label: string; value: number; helper: string }) {
   return (
     <article className="metric-card">
       <div className="metric-icon"><Icon size={18} /></div>
