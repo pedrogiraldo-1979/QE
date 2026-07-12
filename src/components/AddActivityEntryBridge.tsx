@@ -20,6 +20,20 @@ type CompanyOption = {
   segment: string | null;
 };
 
+type ProspectOption = {
+  id: string;
+  company_name: string | null;
+  segment: string | null;
+};
+
+type ActivityTarget = {
+  key: string;
+  id: string;
+  name: string;
+  segment: string | null;
+  source: "cliente" | "prospecto";
+};
+
 export default function AddActivityEntryBridge() {
   const supabase = getSupabaseClient();
   const [activePage, setActivePage] = useState(false);
@@ -27,8 +41,9 @@ export default function AddActivityEntryBridge() {
   const [workspace, setWorkspace] = useState<Element | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [companies, setCompanies] = useState<CompanyOption[]>([]);
-  const [companyId, setCompanyId] = useState("");
-  const [companySearch, setCompanySearch] = useState("");
+  const [prospects, setProspects] = useState<ProspectOption[]>([]);
+  const [targetKey, setTargetKey] = useState("");
+  const [targetSearch, setTargetSearch] = useState("");
   const [activityType, setActivityType] = useState("follow_up");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -59,28 +74,54 @@ export default function AddActivityEntryBridge() {
 
   useEffect(() => {
     if (!activePage) return;
-    void loadCompanies();
+    void loadTargets();
   }, [activePage]);
 
-  async function loadCompanies() {
+  async function loadTargets() {
     setLoading(true);
-    const { data, error } = await supabase.from("companies").select("id,name,segment").order("name", { ascending: true });
-    if (error) {
-      setMessage(error.message);
+    const [companiesResult, prospectsResult] = await Promise.all([
+      supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
+      supabase.from("prospects").select("id,company_name,segment").order("company_name", { ascending: true }).limit(600),
+    ]);
+
+    if (companiesResult.error || prospectsResult.error) {
+      setMessage(companiesResult.error?.message || prospectsResult.error?.message || "No pudimos cargar clientes y prospectos.");
       setLoading(false);
       return;
     }
-    setCompanies((data || []) as CompanyOption[]);
+
+    setCompanies((companiesResult.data || []) as CompanyOption[]);
+    setProspects((prospectsResult.data || []) as ProspectOption[]);
     setLoading(false);
   }
 
+  const targets = useMemo<ActivityTarget[]>(() => {
+    const customerTargets = companies.map((company) => ({
+      key: `cliente:${company.id}`,
+      id: company.id,
+      name: company.name || "Cliente sin nombre",
+      segment: company.segment,
+      source: "cliente" as const,
+    }));
+
+    const prospectTargets = prospects.map((prospect) => ({
+      key: `prospecto:${prospect.id}`,
+      id: prospect.id,
+      name: prospect.company_name || "Prospecto sin nombre",
+      segment: prospect.segment,
+      source: "prospecto" as const,
+    }));
+
+    return [...customerTargets, ...prospectTargets];
+  }, [companies, prospects]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const selectedCompany = companies.find((company) => company.id === companyId);
+    const selectedTarget = targets.find((target) => target.key === targetKey);
     const cleanNotes = notes.trim().replace(/\s+/g, " ");
 
-    if (!selectedCompany) {
-      setMessage("Selecciona un cliente actual desde los resultados de búsqueda.");
+    if (!selectedTarget) {
+      setMessage("Selecciona un cliente o prospecto desde los resultados de búsqueda.");
       return;
     }
 
@@ -92,13 +133,25 @@ export default function AddActivityEntryBridge() {
     setSaving(true);
     setMessage(null);
 
-    const { error } = await supabase.from("activities").insert({
-      company_id: selectedCompany.id,
-      activity_type: activityType,
-      notes: cleanNotes,
-      due_date: dueDate || null,
-      completed: false,
-    });
+    const table = selectedTarget.source === "prospecto" ? "prospect_activities" : "activities";
+    const payload =
+      selectedTarget.source === "prospecto"
+        ? {
+            prospect_id: selectedTarget.id,
+            activity_type: activityType,
+            notes: cleanNotes,
+            due_date: dueDate || null,
+            completed: false,
+          }
+        : {
+            company_id: selectedTarget.id,
+            activity_type: activityType,
+            notes: cleanNotes,
+            due_date: dueDate || null,
+            completed: false,
+          };
+
+    const { error } = await supabase.from(table).insert(payload);
 
     if (error) {
       setMessage(error.message);
@@ -106,29 +159,30 @@ export default function AddActivityEntryBridge() {
       return;
     }
 
-    setMessage("Actividad creada para cliente actual.");
-    setCompanyId("");
-    setCompanySearch("");
+    setMessage(selectedTarget.source === "prospecto" ? "Actividad creada para prospecto." : "Actividad creada para cliente actual.");
+    setTargetKey("");
+    setTargetSearch("");
     setActivityType("follow_up");
     setDueDate("");
     setNotes("");
     setSaving(false);
   }
 
-  const selectedCompany = useMemo(() => companies.find((company) => company.id === companyId) || null, [companies, companyId]);
+  const selectedTarget = useMemo(() => targets.find((target) => target.key === targetKey) || null, [targets, targetKey]);
 
-  const suggestedCompanies = useMemo(() => {
-    const query = normalizeSearch(companySearch);
+  const suggestedTargets = useMemo(() => {
+    const query = normalizeSearch(targetSearch);
     const terms = query.split(" ").filter(Boolean);
 
-    if (!terms.length) return companies.slice(0, 8);
+    if (!terms.length) return targets.slice(0, 8);
 
-    return companies
-      .map((company) => {
-        const name = normalizeSearch(company.name || "");
-        const segment = normalizeSearch(company.segment || "");
-        const searchable = `${name} ${segment}`.trim();
-        let score = 0;
+    return targets
+      .map((target) => {
+        const name = normalizeSearch(target.name || "");
+        const segment = normalizeSearch(target.segment || "");
+        const source = normalizeSearch(target.source);
+        const searchable = `${name} ${segment} ${source}`.trim();
+        let score = target.source === "cliente" ? 1 : 0;
 
         for (const term of terms) {
           if (!searchable.includes(term)) return null;
@@ -137,19 +191,20 @@ export default function AddActivityEntryBridge() {
           if (name.includes(` ${term}`)) score += 5;
           if (name.includes(term)) score += 3;
           if (segment.includes(term)) score += 1;
+          if (source.includes(term)) score += 1;
         }
 
-        return { company, score };
+        return { target, score };
       })
-      .filter((item): item is { company: CompanyOption; score: number } => Boolean(item))
-      .sort((a, b) => b.score - a.score || String(a.company.name || "").localeCompare(String(b.company.name || ""), "es"))
+      .filter((item): item is { target: ActivityTarget; score: number } => Boolean(item))
+      .sort((a, b) => b.score - a.score || a.target.name.localeCompare(b.target.name, "es"))
       .slice(0, 8)
-      .map((item) => item.company);
-  }, [companies, companySearch]);
+      .map((item) => item.target);
+  }, [targets, targetSearch]);
 
-  function selectCompany(company: CompanyOption) {
-    setCompanyId(company.id);
-    setCompanySearch(company.name || "");
+  function selectTarget(target: ActivityTarget) {
+    setTargetKey(target.key);
+    setTargetSearch(target.name || "");
     setMessage(null);
   }
 
@@ -165,7 +220,7 @@ export default function AddActivityEntryBridge() {
           <span>
             <strong>+</strong>
             <span className="action-label">Actividad / seguimiento</span>
-            <span className="action-helper">Crear llamada, WhatsApp, email o tarea para cliente actual.</span>
+            <span className="action-helper">Crear llamada, WhatsApp, email o tarea para cliente o prospecto.</span>
           </span>
         </button>,
         actionGrid
@@ -177,7 +232,7 @@ export default function AddActivityEntryBridge() {
               <div className="panel-toolbar">
                 <div>
                   <p className="panel-kicker">Nueva actividad</p>
-                  <h2>Seguimiento para cliente actual</h2>
+                  <h2>Seguimiento para cliente o prospecto</h2>
                 </div>
                 <button className="btn btn-secondary compact" type="button" onClick={() => setFormOpen(false)}>
                   Cerrar
@@ -189,34 +244,34 @@ export default function AddActivityEntryBridge() {
               <form className="activity-form add-activity-form" onSubmit={handleSubmit}>
                 <div className="form-grid">
                   <label className="field-label" style={{ gridColumn: "1 / -1" }}>
-                    Buscar cliente
+                    Buscar cliente o prospecto
                     <input
                       className="input smart-client-input"
-                      value={companySearch}
+                      value={targetSearch}
                       onChange={(event) => {
-                        setCompanySearch(event.target.value);
-                        setCompanyId("");
+                        setTargetSearch(event.target.value);
+                        setTargetKey("");
                       }}
-                      placeholder="Escribe una palabra del cliente: andino, hilton, club, grand..."
+                      placeholder="Escribe una palabra: andino, hilton, club, grand, colegio..."
                       disabled={loading || saving}
                       autoComplete="off"
                     />
                   </label>
 
                   <div className="smart-company-results" style={{ gridColumn: "1 / -1" }}>
-                    {suggestedCompanies.map((company) => (
+                    {suggestedTargets.map((target) => (
                       <button
-                        className={`smart-company-option ${company.id === companyId ? "selected" : ""}`}
-                        key={company.id}
+                        className={`smart-company-option ${target.key === targetKey ? "selected" : ""}`}
+                        key={target.key}
                         type="button"
-                        onClick={() => selectCompany(company)}
+                        onClick={() => selectTarget(target)}
                         disabled={saving}
                       >
-                        <strong>{company.name || "Cliente sin nombre"}</strong>
-                        <span>{company.segment || "Cliente actual"}</span>
+                        <strong>{target.name}</strong>
+                        <span>{target.source === "prospecto" ? "Prospecto" : "Cliente actual"} · {target.segment || "Sin segmento"}</span>
                       </button>
                     ))}
-                    {companySearch && !suggestedCompanies.length ? <div className="smart-company-empty">No encontramos coincidencias. Prueba con otra palabra del nombre.</div> : null}
+                    {targetSearch && !suggestedTargets.length ? <div className="smart-company-empty">No encontramos coincidencias. Prueba con otra palabra del nombre.</div> : null}
                   </div>
 
                   <label className="field-label">
@@ -249,8 +304,8 @@ export default function AddActivityEntryBridge() {
                 <aside className="add-activity-preview">
                   <CalendarClock size={18} />
                   <div>
-                    <strong>{selectedCompany?.name || "Cliente pendiente"}</strong>
-                    <span>{selectedCompany ? selectedCompany.segment || "Cliente actual" : "Busca y selecciona una coincidencia"}</span>
+                    <strong>{selectedTarget?.name || "Cliente/prospecto pendiente"}</strong>
+                    <span>{selectedTarget ? `${selectedTarget.source === "prospecto" ? "Prospecto" : "Cliente actual"} · ${selectedTarget.segment || "Sin segmento"}` : "Busca y selecciona una coincidencia"}</span>
                   </div>
                   <span>{dueDate || "Sin fecha"}</span>
                 </aside>
