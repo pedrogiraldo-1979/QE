@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   Activity as ActivityIcon,
+  AlertTriangle,
   Building2,
   CheckCircle2,
   ClipboardCheck,
@@ -13,6 +14,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  Pencil,
   Phone,
   Plus,
   RefreshCw,
@@ -20,11 +22,22 @@ import {
   ShieldCheck,
   Tag,
   Target,
+  Trash2,
   UserRound,
   UsersRound,
+  X,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
-import type { Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
+import type { Company, Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
+import {
+  findPossibleCompanyMatches,
+  getConversionReadiness,
+  getProspectDisplayName,
+  isValidEmail,
+  validateProspectContact,
+  type CompanyDuplicateMatch,
+  type ConversionReadinessItem,
+} from "@/lib/prospectOperations";
 
 type ProspectForm = {
   company_name: string;
@@ -48,7 +61,7 @@ type ContactForm = {
   notes: string;
 };
 
-type WorkbenchTabKey = "todos" | "por_revisar" | "ok_prospecto" | "sin_contacto" | "cliente_actual_excluir";
+type ReviewTabKey = "todos" | "por_revisar" | "ok_prospecto" | "sin_contacto" | "cliente_actual_excluir";
 
 const cleanStatuses = [
   "nuevo",
@@ -83,6 +96,13 @@ const statusTone: Record<string, string> = {
   contacto_pendiente: "tone-blue",
   convertido_cliente: "tone-emerald",
   descartado: "tone-muted",
+};
+
+const signalLabels: Record<string, string> = {
+  nit: "NIT",
+  phone: "teléfono",
+  name: "nombre",
+  address: "dirección",
 };
 
 const emptyProspectForm: ProspectForm = {
@@ -120,16 +140,19 @@ export default function ProspectListDetailPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [list, setList] = useState<ProspectList | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [contacts, setContacts] = useState<ProspectContact[]>([]);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<WorkbenchTabKey>("todos");
+  const [statusFilter, setStatusFilter] = useState<ReviewTabKey>("todos");
   const [priorityFilter, setPriorityFilter] = useState("todos");
   const [cityFilter, setCityFilter] = useState("todos");
   const [newProspect, setNewProspect] = useState<ProspectForm>(emptyProspectForm);
   const [editProspect, setEditProspect] = useState<ProspectForm>(emptyProspectForm);
   const [newContact, setNewContact] = useState<ContactForm>(emptyContactForm);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const [editContact, setEditContact] = useState<ContactForm>(emptyContactForm);
   const [showNewProspect, setShowNewProspect] = useState(false);
 
   useEffect(() => {
@@ -171,9 +194,20 @@ export default function ProspectListDetailPage() {
 
   const selectedContacts = selectedProspect ? contactsByProspectId.get(selectedProspect.id) || [] : [];
 
+  const selectedDuplicateMatches = useMemo(() => {
+    if (!selectedProspect) return [];
+    return findPossibleCompanyMatches(selectedProspect, companies);
+  }, [companies, selectedProspect]);
+
+  const selectedReadiness = useMemo(() => {
+    if (!selectedProspect) return [];
+    return getConversionReadiness(selectedProspect, selectedContacts, selectedDuplicateMatches);
+  }, [selectedContacts, selectedDuplicateMatches, selectedProspect]);
+
   useEffect(() => {
     if (!selectedProspect) {
       setEditProspect(emptyProspectForm);
+      setEditingContactId(null);
       return;
     }
 
@@ -189,6 +223,7 @@ export default function ProspectListDetailPage() {
       priority: selectedProspect.priority || "B",
       notes: selectedProspect.notes || "",
     });
+    setEditingContactId(null);
   }, [selectedProspect]);
 
   async function loadData() {
@@ -196,13 +231,14 @@ export default function ProspectListDetailPage() {
     setLoading(true);
     setMessage(null);
 
-    const [listResult, prospectsResult] = await Promise.all([
+    const [listResult, prospectsResult, companiesResult] = await Promise.all([
       supabase.from("prospect_lists").select("*").eq("id", listId).single(),
       supabase.from("prospects").select("*").eq("list_id", listId).order("company_name", { ascending: true }),
+      supabase.from("companies").select("*").order("name", { ascending: true }),
     ]);
 
-    if (listResult.error || prospectsResult.error) {
-      setMessage(listResult.error?.message || prospectsResult.error?.message || "No pudimos cargar la lista.");
+    if (listResult.error || prospectsResult.error || companiesResult.error) {
+      setMessage(listResult.error?.message || prospectsResult.error?.message || companiesResult.error?.message || "No pudimos cargar la lista.");
       setLoading(false);
       return;
     }
@@ -222,6 +258,7 @@ export default function ProspectListDetailPage() {
     }
 
     setList(listResult.data as ProspectList);
+    setCompanies((companiesResult.data || []) as Company[]);
     setProspects(loadedProspects);
     setContacts(loadedContacts);
     setSelectedProspectId((current) => (current && loadedProspects.some((prospect) => prospect.id === current) ? current : loadedProspects[0]?.id || null));
@@ -249,6 +286,7 @@ export default function ProspectListDetailPage() {
     setIsAuthenticated(false);
     setProspects([]);
     setContacts([]);
+    setCompanies([]);
     setList(null);
   }
 
@@ -366,6 +404,65 @@ export default function ProspectListDetailPage() {
     setMessage("Contacto prospecto agregado.");
   }
 
+  function startEditingContact(contact: ProspectContact) {
+    setEditingContactId(contact.id);
+    setEditContact({
+      full_name: contact.full_name || "",
+      role: contact.role || "",
+      email: contact.email || "",
+      phone: contact.phone || "",
+      linkedin_url: contact.linkedin_url || "",
+      notes: contact.notes || "",
+    });
+  }
+
+  async function updateContact(event: FormEvent<HTMLFormElement>, contact: ProspectContact) {
+    event.preventDefault();
+    if (!editContact.full_name.trim()) return;
+
+    const { data, error } = await supabase
+      .from("prospect_contacts")
+      .update({
+        full_name: editContact.full_name.trim(),
+        role: nullIfBlank(editContact.role),
+        email: normalizeEmail(editContact.email),
+        phone: nullIfBlank(editContact.phone),
+        linkedin_url: nullIfBlank(editContact.linkedin_url),
+        notes: nullIfBlank(editContact.notes),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", contact.id)
+      .select("*")
+      .single();
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    const updated = data as ProspectContact;
+    setContacts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+    setEditingContactId(null);
+    setEditContact(emptyContactForm);
+    setMessage("Contacto prospecto actualizado.");
+  }
+
+  async function deleteContact(contact: ProspectContact) {
+    const confirmed = window.confirm(`¿Eliminar el contacto prospecto ${contact.full_name || "sin nombre"}? Esta acción solo borra el contacto prospecto, no clientes CRM.`);
+    if (!confirmed) return;
+
+    const { error } = await supabase.from("prospect_contacts").delete().eq("id", contact.id);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setContacts((current) => current.filter((item) => item.id !== contact.id));
+    if (editingContactId === contact.id) setEditingContactId(null);
+    setMessage("Contacto prospecto eliminado.");
+  }
+
   const normalizedSearch = search.trim().toLowerCase();
   const cities = useMemo(() => Array.from(new Set(prospects.map((prospect) => prospect.city).filter(Boolean) as string[])).sort(), [prospects]);
   const priorities = useMemo(() => Array.from(new Set(prospects.map((prospect) => prospect.priority).filter(Boolean) as string[])).sort(), [prospects]);
@@ -387,7 +484,7 @@ export default function ProspectListDetailPage() {
         ]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(normalizedSearch));
-      const matchesStatus = matchesWorkbenchTab(prospect, prospectContacts, statusFilter);
+      const matchesStatus = matchesReviewTab(prospect, prospectContacts, statusFilter);
       const matchesPriority = priorityFilter === "todos" || prospect.priority === priorityFilter;
       const matchesCity = cityFilter === "todos" || prospect.city === cityFilter;
 
@@ -402,7 +499,7 @@ export default function ProspectListDetailPage() {
   const porRevisar = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "por_revisar").length;
   const sinContacto = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).length === 0).length;
 
-  const workbenchTabs: { key: WorkbenchTabKey; label: string; helper: string; count: number }[] = [
+  const reviewTabs: { key: ReviewTabKey; label: string; helper: string; count: number }[] = [
     { key: "todos", label: "Todos", helper: "lista completa", count: prospects.length },
     { key: "por_revisar", label: "Por revisar", helper: "pendientes", count: porRevisar },
     { key: "ok_prospecto", label: "OK prospecto", helper: "aptos", count: okProspects },
@@ -534,13 +631,13 @@ export default function ProspectListDetailPage() {
             <div className="panel-toolbar">
               <div>
                 <p className="panel-kicker">Empresas prospecto</p>
-                <h2>Workbench de revisión</h2>
+                <h2>Panel de revisión</h2>
               </div>
               <span className="result-count">{filteredProspects.length}</span>
             </div>
 
             <div className="prospect-tabs" role="tablist" aria-label="Estados de trabajo">
-              {workbenchTabs.map((tab) => (
+              {reviewTabs.map((tab) => (
                 <button
                   key={tab.key}
                   type="button"
@@ -655,6 +752,8 @@ export default function ProspectListDetailPage() {
                   </label>
                 </div>
 
+                <QualityPanel matches={selectedDuplicateMatches} readiness={selectedReadiness} />
+
                 <section className="detail-section">
                   <div className="section-title-row">
                     <h3>Editar empresa prospecto</h3>
@@ -668,7 +767,19 @@ export default function ProspectListDetailPage() {
                     <span>{selectedContacts.length}</span>
                   </div>
                   <div className="stack">
-                    {selectedContacts.length ? selectedContacts.map((contact) => <ProspectContactCard key={contact.id} contact={contact} />) : <EmptyState title="Sin contactos" description="Agrega compras, rectoría, administración o persona operativa." />}
+                    {selectedContacts.length ? selectedContacts.map((contact) => (
+                      <EditableProspectContactCard
+                        key={contact.id}
+                        contact={contact}
+                        isEditing={editingContactId === contact.id}
+                        editContact={editContact}
+                        setEditContact={setEditContact}
+                        onStartEdit={() => startEditingContact(contact)}
+                        onCancelEdit={() => { setEditingContactId(null); setEditContact(emptyContactForm); }}
+                        onSave={(event) => void updateContact(event, contact)}
+                        onDelete={() => void deleteContact(contact)}
+                      />
+                    )) : <EmptyState title="Sin contactos" description="Agrega compras, rectoría, administración o persona operativa." />}
                   </div>
                 </section>
 
@@ -693,7 +804,7 @@ export default function ProspectListDetailPage() {
 
                 <section className="detail-section">
                   <div className="section-title-row">
-                    <h3>Acciones futuras</h3>
+                    <h3>Conversión futura</h3>
                   </div>
                   <button className="btn btn-secondary full-width" type="button" disabled>
                     Convertir a cliente CRM - pendiente
@@ -759,27 +870,122 @@ function Field({ label, value, onChange, required = false }: { label: string; va
   );
 }
 
-function ProspectContactCard({ contact }: { contact: ProspectContact }) {
-  const crmValid = Boolean(contact.full_name?.trim() && (contact.email?.trim() || contact.phone?.trim()));
-  const campaignValid = isValidEmail(contact.email);
+function EditableProspectContactCard({
+  contact,
+  isEditing,
+  editContact,
+  setEditContact,
+  onStartEdit,
+  onCancelEdit,
+  onSave,
+  onDelete,
+}: {
+  contact: ProspectContact;
+  isEditing: boolean;
+  editContact: ContactForm;
+  setEditContact: (updater: ContactForm | ((current: ContactForm) => ContactForm)) => void;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
+  onSave: (event: FormEvent<HTMLFormElement>) => void;
+  onDelete: () => void;
+}) {
+  const validation = validateProspectContact(contact);
+
+  if (isEditing) {
+    return (
+      <article className="contact-card needs-data">
+        <form className="form-stack" onSubmit={onSave}>
+          <div className="section-title-row">
+            <h4>Editar contacto</h4>
+            <button className="btn btn-secondary compact" type="button" onClick={onCancelEdit}><X size={14} />Cerrar</button>
+          </div>
+          <div className="form-grid">
+            <Field label="Nombre" value={editContact.full_name} onChange={(value) => setEditContact((current) => ({ ...current, full_name: value }))} required />
+            <Field label="Cargo" value={editContact.role} onChange={(value) => setEditContact((current) => ({ ...current, role: value }))} />
+            <Field label="Email" value={editContact.email} onChange={(value) => setEditContact((current) => ({ ...current, email: value }))} />
+            <Field label="Teléfono" value={editContact.phone} onChange={(value) => setEditContact((current) => ({ ...current, phone: value }))} />
+            <Field label="LinkedIn" value={editContact.linkedin_url} onChange={(value) => setEditContact((current) => ({ ...current, linkedin_url: value }))} />
+            <Field label="Notas" value={editContact.notes} onChange={(value) => setEditContact((current) => ({ ...current, notes: value }))} />
+          </div>
+          <div className="panel-actions">
+            <button className="btn btn-primary" type="submit">Guardar contacto</button>
+          </div>
+        </form>
+      </article>
+    );
+  }
 
   return (
-    <article className={`contact-card ${crmValid ? "" : "needs-data"}`}>
+    <article className={`contact-card ${validation.crmValid ? "" : "needs-data"}`}>
       <div className="avatar"><UserRound size={17} /></div>
       <div>
-        <h4>{contact.full_name || "Contacto sin nombre"}</h4>
-        <p>{contact.role || "Cargo pendiente"}</p>
+        <div className="section-title-row">
+          <div>
+            <h4>{contact.full_name || "Contacto sin nombre"}</h4>
+            <p>{contact.role || "Cargo pendiente"}</p>
+          </div>
+          <div className="row-actions">
+            <button className="btn btn-secondary compact" type="button" onClick={onStartEdit}><Pencil size={14} />Editar</button>
+            <button className="btn btn-secondary compact" type="button" onClick={onDelete}><Trash2 size={14} />Eliminar</button>
+          </div>
+        </div>
         <div className="contact-links">
           {contact.email ? <a href={`mailto:${contact.email}`}><Mail size={14} />{contact.email}</a> : <span>Sin email</span>}
           {contact.phone ? <a href={`tel:${contact.phone}`}><Phone size={14} />{contact.phone}</a> : <span>Sin teléfono</span>}
         </div>
         <div className="issue-row" style={{ marginTop: 9 }}>
-          <span className={crmValid ? "ok-badge" : "issue-badge"}>Validez CRM: {crmValid ? "útil" : "incompleta"}</span>
-          <span className={campaignValid ? "ok-badge" : "issue-badge"}>Campaña futura: {campaignValid ? "email válido" : "no exportar todavía"}</span>
+          <span className={validation.crmValid ? "ok-badge" : "issue-badge"}>Validez CRM: {validation.crmValid ? "útil" : "incompleta"}</span>
+          <span className={validation.campaignValid ? "ok-badge" : "issue-badge"}>Campaña futura: {validation.campaignValid ? "email válido" : "no exportar todavía"}</span>
         </div>
+        {validation.missing.length ? <p>Falta: {validation.missing.join(", ")}.</p> : null}
         {contact.notes ? <p>{contact.notes}</p> : null}
       </div>
     </article>
+  );
+}
+
+function QualityPanel({ matches, readiness }: { matches: CompanyDuplicateMatch[]; readiness: ConversionReadinessItem[] }) {
+  return (
+    <section className="detail-section">
+      <div className="section-title-row">
+        <h3>Control operativo</h3>
+      </div>
+      {matches.length ? (
+        <div className="alert alert-info">
+          <div className="issue-row">
+            <AlertTriangle size={17} />
+            <strong>Posible cliente actual</strong>
+          </div>
+          <p>Revisa antes de trabajar este prospecto. Coincidencias encontradas:</p>
+          <div className="stack">
+            {matches.map((match) => (
+              <div key={match.company.id || match.company.name || "match"} className="contact-card needs-data">
+                <div>
+                  <h4>{match.company.name || match.company.legal_name || "Cliente sin nombre"}</h4>
+                  <p>{[match.company.nit, match.company.phone, match.company.status].filter(Boolean).join(" · ") || "Datos parciales"}</p>
+                  <div className="issue-row">
+                    {match.signals.map((signal) => <span key={signal} className="issue-badge">Coincide {signalLabels[signal] || signal}</span>)}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="alert alert-info">Sin coincidencias evidentes contra clientes actuales.</div>
+      )}
+      <div className="stack" style={{ marginTop: 12 }}>
+        {readiness.map((item) => (
+          <div key={item.key} className="issue-row">
+            <span className={item.ok ? "ok-badge" : "issue-badge"}>{item.ok ? "OK" : "Pendiente"}</span>
+            <div>
+              <strong>{item.label}</strong>
+              <p>{item.detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -823,10 +1029,10 @@ function CenteredMessage({ title, description }: { title: string; description: s
 }
 
 function getProspectName(prospect: Prospect) {
-  return prospect.company_name || prospect.name || "Prospecto sin nombre";
+  return getProspectDisplayName(prospect);
 }
 
-function matchesWorkbenchTab(prospect: Prospect, contacts: ProspectContact[], tab: WorkbenchTabKey) {
+function matchesReviewTab(prospect: Prospect, contacts: ProspectContact[], tab: ReviewTabKey) {
   if (tab === "todos") return true;
   if (tab === "sin_contacto") return contacts.length === 0;
   return normalizeProspectStatus(prospect.status) === tab;
@@ -837,11 +1043,6 @@ function normalizeProspectStatus(status?: string | null): ProspectStatus {
   if (status === "convertido") return "convertido_cliente";
   if (status === "contactado" || status === "cotizado") return "contacto_pendiente";
   return (status || "nuevo") as ProspectStatus;
-}
-
-function isValidEmail(email?: string | null) {
-  if (!email?.trim()) return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
 function nullIfBlank(value: string) {
