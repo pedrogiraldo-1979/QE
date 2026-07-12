@@ -25,6 +25,10 @@ body.legacy-clients-view-active .workspace .list-panel table td {
   line-height: 1.3;
 }
 
+/* En Clientes actuales, segmento y ciudad ya están disponibles como filtros.
+   Ocultarlos en la tabla da más espacio al trabajo operativo. */
+body.legacy-clients-view-active .workspace .list-panel table th:nth-child(2),
+body.legacy-clients-view-active .workspace .list-panel table td:nth-child(2),
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(3),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(3) {
   display: none;
@@ -32,33 +36,28 @@ body.legacy-clients-view-active .workspace .list-panel table td:nth-child(3) {
 
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(1),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(1) {
-  width: 27%;
-}
-
-body.legacy-clients-view-active .workspace .list-panel table th:nth-child(2),
-body.legacy-clients-view-active .workspace .list-panel table td:nth-child(2) {
-  width: 10%;
+  width: 34%;
 }
 
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(4),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(4) {
-  width: 11%;
+  width: 13%;
   word-break: break-word;
 }
 
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(5),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(5) {
-  width: 13%;
+  width: 15%;
 }
 
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(6),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(6) {
-  width: 12%;
+  width: 14%;
 }
 
 body.legacy-clients-view-active .workspace .list-panel table th:nth-child(7),
 body.legacy-clients-view-active .workspace .list-panel table td:nth-child(7) {
-  width: 18%;
+  width: 24%;
 }
 
 body.legacy-clients-view-active .workspace .list-panel table td strong {
@@ -103,11 +102,16 @@ body.legacy-clients-view-active .workspace .list-panel .row-actions .btn.compact
 
   body.legacy-clients-view-active .workspace .list-panel table th:nth-child(1),
   body.legacy-clients-view-active .workspace .list-panel table td:nth-child(1) {
-    width: 36%;
+    width: 48%;
+  }
+
+  body.legacy-clients-view-active .workspace .list-panel table th:nth-child(5),
+  body.legacy-clients-view-active .workspace .list-panel table td:nth-child(5) {
+    width: 24%;
   }
 
   body.legacy-clients-view-active .workspace .list-panel table th:nth-child(7),
   body.legacy-clients-view-active .workspace .list-panel table td:nth-child(7) {
-    width: 24%;
+    width: 28%;
   }
 }
