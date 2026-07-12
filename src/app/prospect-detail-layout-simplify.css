@@ -96,48 +96,84 @@
   -webkit-line-clamp: 1 !important;
 }
 
-/* List index table: action sits next to the list name; source is last and can wrap. */
+/* List index table: action sits next to the list name; city is hidden because all current lists are Bogotá. */
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(1),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(1) {
-  width: 26% !important;
+  width: 28% !important;
 }
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(2),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(2) {
-  width: 14% !important;
+  width: 15% !important;
 }
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(3),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(3),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(3) {
+  width: 10% !important;
+}
+
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(4),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(4) {
-  width: 9% !important;
+  display: none !important;
 }
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(5),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(5),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(5) {
+  width: 8% !important;
+}
+
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(6),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(6),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(8),
-.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(8) {
-  width: 7% !important;
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(6) {
+  width: 8% !important;
 }
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(7),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(7) {
-  width: 12% !important;
+  width: 13% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(8),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(8) {
+  width: 8% !important;
 }
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table th:nth-child(9),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table td:nth-child(9) {
-  width: 9% !important;
+  width: 10% !important;
   font-size: 0.68rem !important;
 }
 
-/* Prospect detail table: hide phone column to avoid lateral scrolling; phone remains searchable and visible in detail panel. */
+/* Prospect detail table: hide city and phone columns to avoid lateral scrolling; both remain searchable and visible/editable in the detail panel. */
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(4),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(4),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(5),
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(5) {
   display: none !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(1),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(1) {
+  width: 42% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(2),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(2) {
+  width: 14% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(3),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(3) {
+  width: 9% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(6),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(6) {
+  width: 13% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table th:nth-child(7),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap:not(.prospect-lists-table-wrap) table td:nth-child(7) {
+  width: 22% !important;
 }
 
 @media (max-width: 860px) {
