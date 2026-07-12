@@ -5,6 +5,7 @@ import "./globals.css";
 import "./prospecting-polish.css";
 import "./prospecting-review-panel.css";
 import "./ui-density-sidebar-polish.css";
+import "./prospect-detail-layout-simplify.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
