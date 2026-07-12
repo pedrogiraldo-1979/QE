@@ -277,19 +277,19 @@ export default function ProspectListsPage() {
                 <input placeholder="Buscar por lista, segmento, ciudad o fuente" value={search} onChange={(event) => setSearch(event.target.value)} />
               </label>
             </div>
-            <div className="table-wrap">
-              <table>
+            <div className="table-wrap prospect-lists-table-wrap">
+              <table className="prospect-lists-table">
                 <thead>
                   <tr>
                     <th>Lista</th>
+                    <th>Acción</th>
                     <th>Segmento</th>
                     <th>Ciudad</th>
-                    <th>Fuente</th>
                     <th>Estado</th>
                     <th>Prospectos</th>
                     <th>Contacto / email</th>
                     <th>Creación</th>
-                    <th>Acción</th>
+                    <th>Fuente</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -301,18 +301,8 @@ export default function ProspectListsPage() {
                           <strong>{list.name}</strong>
                           <span>{list.notes || "Lista de prospección"}</span>
                         </td>
-                        <td>{list.segment || "Sin segmento"}</td>
-                        <td>{list.city || "-"}</td>
-                        <td>{list.source || "-"}</td>
-                        <td><span className="badge tone-blue">{statusLabels[list.status || ""] || list.status || "Activa"}</span></td>
-                        <td>{stats.totalProspects}</td>
                         <td>
-                          <strong>{stats.totalWithContact} con contacto</strong>
-                          <span>{stats.totalWithValidEmail} con email válido</span>
-                        </td>
-                        <td>{formatDate(list.created_at)}</td>
-                        <td>
-                          <div className="row-actions">
+                          <div className="row-actions row-actions-compact-stack">
                             <Link className="btn btn-primary compact" href={`/prospectos/${list.id}`}>
                               Revisar lista
                             </Link>
@@ -321,6 +311,16 @@ export default function ProspectListsPage() {
                             </Link>
                           </div>
                         </td>
+                        <td>{list.segment || "Sin segmento"}</td>
+                        <td>{list.city || "-"}</td>
+                        <td><span className="badge tone-blue">{statusLabels[list.status || ""] || list.status || "Activa"}</span></td>
+                        <td>{stats.totalProspects}</td>
+                        <td>
+                          <strong>{stats.totalWithContact} con contacto</strong>
+                          <span>{stats.totalWithValidEmail} con email válido</span>
+                        </td>
+                        <td>{formatDate(list.created_at)}</td>
+                        <td>{list.source || "-"}</td>
                       </tr>
                     );
                   })}
