@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import AddContactFromDetail from "@/components/AddContactFromDetail";
+import HomeCommercialWorkbench from "@/components/HomeCommercialWorkbench";
 import ProspectingRouteBridge from "@/components/ProspectingRouteBridge";
 import "./globals.css";
 import "./prospecting-polish.css";
 import "./prospecting-review-panel.css";
 import "./ui-density-sidebar-polish.css";
 import "./prospect-detail-layout-simplify.css";
+import "./home-commercial-workbench.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
@@ -19,6 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
         <AddContactFromDetail />
         <ProspectingRouteBridge />
+        <HomeCommercialWorkbench />
         <a
           className="global-add-button"
           href="/agregar"
