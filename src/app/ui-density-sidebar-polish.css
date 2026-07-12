@@ -209,6 +209,74 @@ td span,
   line-height: 1.32;
 }
 
+/* Stronger prospecting compact mode: target unclassed text inside the right panel/checklist. */
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel {
+  font-size: 13px;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-section p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .alert,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .alert p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .alert span,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .issue-row p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .contact-card p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .empty-state span {
+  font-size: 0.72rem !important;
+  line-height: 1.28 !important;
+  font-weight: 500 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .issue-row > div > strong,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .contact-card h4,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .section-title-row h4 {
+  font-size: 0.86rem !important;
+  line-height: 1.18 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .section-title-row h3,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-block h3 {
+  font-size: 0.68rem !important;
+  letter-spacing: 0.12em !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .btn,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .status-select,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .field-label {
+  font-size: 0.74rem !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel .btn {
+  min-height: 32px !important;
+  padding: 0.36rem 0.72rem !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .badge,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .issue-badge,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .ok-badge {
+  min-height: 20px !important;
+  padding: 0.12rem 0.44rem !important;
+  font-size: 0.62rem !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab small,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .metric-card span,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) td span {
+  font-size: 0.68rem !important;
+  line-height: 1.25 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab span {
+  font-size: 0.72rem !important;
+  line-height: 1.15 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .metric-card p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .panel-kicker,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .eyebrow {
+  font-size: 0.66rem !important;
+}
+
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-header h2 {
   font-size: clamp(1.22rem, 1.8vw, 1.55rem);
 }
