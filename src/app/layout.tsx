@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import AddContactFromDetail from "@/components/AddContactFromDetail";
+import ProspectingRouteBridge from "@/components/ProspectingRouteBridge";
 import "./globals.css";
+import "./prospecting-polish.css";
+import "./prospecting-review-panel.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
@@ -13,7 +16,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         {children}
         <AddContactFromDetail />
+        <ProspectingRouteBridge />
         <a
+          className="global-add-button"
           href="/agregar"
           aria-label="Agregar cliente o contacto"
           style={{
@@ -25,12 +30,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             alignItems: "center",
             justifyContent: "center",
             minHeight: "42px",
-            borderRadius: "8px",
+            borderRadius: "999px",
             background: "var(--primary)",
             color: "#fff",
             boxShadow: "0 18px 44px rgba(25, 35, 29, 0.18)",
             fontWeight: 900,
-            padding: "0 14px",
+            padding: "0 16px",
           }}
         >
           + Agregar

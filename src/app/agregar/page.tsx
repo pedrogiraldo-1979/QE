@@ -10,6 +10,7 @@ import {
   RefreshCw,
   ShieldCheck,
   Tag,
+  Target,
   UserRound,
   UsersRound,
 } from "lucide-react";
@@ -295,6 +296,10 @@ export default function AddEntryPage() {
             <Plus size={18} />
             <span>Agregar</span>
           </a>
+          <a className="nav-button" href="/prospectos">
+            <Target size={18} />
+            <span>Prospección</span>
+          </a>
           <a className="nav-button" href="/contactos/nuevo">
             <UsersRound size={18} />
             <span>Contacto</span>
@@ -340,13 +345,22 @@ export default function AddEntryPage() {
               <span className="action-helper">Ir al formulario probado de contacto y escoger el cliente.</span>
             </span>
           </button>
+
+          <a className="action-card" href="/prospectos/nuevo">
+            <span className="metric-icon"><Target size={19} /></span>
+            <span>
+              <strong>+</strong>
+              <span className="action-label">Prospecto nuevo</span>
+              <span className="action-helper">Crear empresa prospecto dentro de una lista, sin campaña ni Zoho.</span>
+            </span>
+          </a>
         </section>
 
         {mode === "selector" ? (
           <section className="home-panel">
             <div className="home-copy">
               <h2>Escoge qué vas a crear</h2>
-              <p>Usa cliente nuevo cuando la empresa todavía no existe en CRM. Usa contacto existente cuando solo vas a agregar una persona a un cliente ya creado.</p>
+              <p>Usa cliente nuevo cuando la empresa todavía no existe en CRM. Usa contacto existente cuando solo vas a agregar una persona a un cliente ya creado. Usa prospecto nuevo cuando todavía está en revisión comercial.</p>
             </div>
           </section>
         ) : null}

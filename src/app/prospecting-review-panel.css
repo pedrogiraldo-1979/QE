@@ -1,0 +1,97 @@
+/* Prospecting review panel tabs and quick filters. */
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid:not(.crm-grid-wide) > .list-panel > .panel-toolbar h2 {
+  font-size: 0;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid:not(.crm-grid-wide) > .list-panel > .panel-toolbar h2::after {
+  content: "Panel de revisión";
+  color: var(--text);
+  display: inline-block;
+  font-size: 1.12rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(112px, 1fr));
+  gap: 8px;
+  padding: 14px 18px 8px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, #fbfdfb, #f7faf7);
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab {
+  appearance: none;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  gap: 3px;
+  min-height: 76px;
+  padding: 10px 12px;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease, background 160ms ease;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab:hover {
+  border-color: rgba(31, 107, 58, 0.35);
+  box-shadow: 0 12px 28px rgba(25, 35, 29, 0.07);
+  transform: translateY(-1px);
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab.active {
+  border-color: rgba(31, 107, 58, 0.42);
+  background: #edf6ed;
+  box-shadow: inset 0 0 0 1px rgba(31, 107, 58, 0.12), 0 10px 24px rgba(25, 35, 29, 0.06);
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab span {
+  color: #1f3026;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab strong {
+  color: var(--primary);
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab small {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .filters-row-workbench {
+  grid-template-columns: minmax(280px, 1fr) minmax(140px, 170px) minmax(140px, 170px) auto;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .filters-row-workbench .btn {
+  justify-self: start;
+  white-space: nowrap;
+}
+
+@media (max-width: 1260px) {
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .filters-row-workbench {
+    grid-template-columns: 1fr;
+  }
+}
