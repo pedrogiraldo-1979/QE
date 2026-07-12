@@ -1,0 +1,249 @@
+/* Global CRM UI density and sidebar polish.
+   Visual-only: no data, routing, or business logic changes. */
+
+@media (min-width: 861px) {
+  .crm-shell {
+    grid-template-columns: 78px minmax(0, 1fr);
+    transition: grid-template-columns 180ms ease;
+  }
+
+  .crm-shell:has(.sidebar:hover),
+  .crm-shell:has(.sidebar:focus-within) {
+    grid-template-columns: 238px minmax(0, 1fr);
+  }
+
+  .sidebar {
+    overflow: hidden;
+    padding: 16px 12px;
+    transition: padding 180ms ease, box-shadow 180ms ease;
+  }
+
+  .crm-shell:has(.sidebar:hover) .sidebar,
+  .crm-shell:has(.sidebar:focus-within) .sidebar {
+    padding-inline: 16px;
+    box-shadow: 16px 0 36px rgba(10, 28, 18, 0.14);
+  }
+
+  .sidebar-brand {
+    justify-content: center;
+    gap: 0;
+    min-width: 54px;
+    transition: gap 180ms ease, justify-content 180ms ease;
+  }
+
+  .crm-shell:has(.sidebar:hover) .sidebar-brand,
+  .crm-shell:has(.sidebar:focus-within) .sidebar-brand {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .sidebar-brand div,
+  .nav-button span,
+  .sidebar-footer span {
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transform: translateX(-6px);
+    transition: max-width 180ms ease, opacity 140ms ease, transform 180ms ease;
+  }
+
+  .crm-shell:has(.sidebar:hover) .sidebar-brand div,
+  .crm-shell:has(.sidebar:hover) .nav-button span,
+  .crm-shell:has(.sidebar:hover) .sidebar-footer span,
+  .crm-shell:has(.sidebar:focus-within) .sidebar-brand div,
+  .crm-shell:has(.sidebar:focus-within) .nav-button span,
+  .crm-shell:has(.sidebar:focus-within) .sidebar-footer span {
+    max-width: 170px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .nav-button {
+    justify-content: center;
+    gap: 0;
+    min-height: 44px;
+    padding-inline: 12px;
+    transition: gap 180ms ease, justify-content 180ms ease, background 160ms ease;
+  }
+
+  .crm-shell:has(.sidebar:hover) .nav-button,
+  .crm-shell:has(.sidebar:focus-within) .nav-button {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .sidebar-footer .btn {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .crm-shell:has(.sidebar:hover) .sidebar-footer .btn,
+  .crm-shell:has(.sidebar:focus-within) .sidebar-footer .btn {
+    justify-content: center;
+    padding-inline: 0.76rem;
+  }
+}
+
+/* General secondary text: smaller and quieter so cards do not feel crowded. */
+.metric-card p,
+.metric-card span,
+.home-copy p,
+.action-helper,
+td span,
+.detail-header p,
+.detail-block p,
+.detail-panel p,
+.contact-card p,
+.contact-links a,
+.contact-links span,
+.activity-footer span,
+.activity-panel-header span,
+.empty-state span,
+.centered-message p,
+.login-copy,
+.alert p,
+.alert span {
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.detail-panel p,
+.detail-section p,
+.contact-card p {
+  margin-top: 3px;
+  margin-bottom: 6px;
+}
+
+.detail-panel strong + p,
+.issue-row div p {
+  font-size: 0.74rem;
+  line-height: 1.32;
+  margin: 2px 0 0;
+}
+
+.alert {
+  padding: 10px 12px;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.badge,
+.issue-badge,
+.ok-badge {
+  min-height: 22px;
+  padding: 0.15rem 0.48rem;
+  font-size: 0.66rem;
+}
+
+.detail-block h3,
+.section-title-row h3,
+.panel-kicker,
+.eyebrow {
+  letter-spacing: 0.1em;
+}
+
+.detail-section {
+  margin-top: 14px;
+}
+
+.section-title-row {
+  margin-bottom: 8px;
+}
+
+.contact-card {
+  gap: 8px;
+  padding: 10px;
+}
+
+.contact-card h4 {
+  font-size: 0.88rem;
+  line-height: 1.22;
+}
+
+.activity-form {
+  padding: 10px;
+}
+
+/* Prospecting-specific density overrides after the visual polish files. */
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid:not(.crm-grid-wide) {
+  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 420px);
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel {
+  padding: 16px;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab {
+  min-height: 68px;
+  padding: 9px 12px;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab span {
+  font-size: 0.76rem;
+  line-height: 1.2;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab strong {
+  font-size: 1.28rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tab small {
+  font-size: 0.66rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .badge,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .issue-badge,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .ok-badge {
+  min-height: 22px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.66rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .contact-card p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-panel p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-section p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .alert p,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .alert span {
+  font-size: 0.74rem;
+  line-height: 1.32;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-header h2 {
+  font-size: clamp(1.22rem, 1.8vw, 1.55rem);
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .detail-header p {
+  font-size: 0.76rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .section-title-row h3 {
+  font-size: 0.74rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap table {
+  min-width: 980px;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) td {
+  padding: 10px 12px;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) td strong {
+  font-size: 0.88rem;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) td span {
+  font-size: 0.72rem;
+}
+
+@media (max-width: 1180px) and (min-width: 861px) {
+  .crm-shell:has(.sidebar:hover),
+  .crm-shell:has(.sidebar:focus-within) {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid:not(.crm-grid-wide) {
+    grid-template-columns: 1fr;
+  }
+}
