@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Mail, Phone, RotateCcw, Save, UserRound, X } from "lucide-react";
+import { Edit3, Mail, Phone, RotateCcw, Save, UserRound, X } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 
 type EditableContact = {
@@ -51,8 +51,13 @@ export default function ContactCompletionBridge() {
   useEffect(() => {
     const updateActiveState = () => {
       const pageWorkspace = document.querySelector(".workspace");
-      const activeNavText = document.querySelector(".sidebar-nav .nav-button.active span")?.textContent?.trim();
-      const shouldShow = window.location.pathname === "/" && activeNavText === "Contactos" && Boolean(pageWorkspace);
+      const activeNavText = document.querySelector(".sidebar-nav .nav-button.active span")?.textContent?.trim() || "";
+      const pageTitle = document.querySelector(".workspace .topbar h1")?.textContent?.trim() || "";
+      const shouldShow =
+        window.location.pathname === "/" &&
+        Boolean(pageWorkspace) &&
+        (normalizeText(activeNavText).includes("contactos") || normalizeText(pageTitle).includes("directorio comercial"));
+
       setWorkspace(pageWorkspace);
       setActivePage(shouldShow);
     };
@@ -81,8 +86,9 @@ export default function ContactCompletionBridge() {
       const button = target?.closest("button");
       if (!button) return;
 
+      const isBridgeButton = button.classList.contains("contact-quick-edit-action");
       const label = normalizeText(button.textContent || "");
-      if (!label.includes("completar datos") && !label.includes("editar contacto")) return;
+      if (!isBridgeButton && !label.includes("completar datos") && !label.includes("editar contacto")) return;
 
       const row = button.closest("tr");
       if (!row) return;
@@ -103,6 +109,17 @@ export default function ContactCompletionBridge() {
     document.addEventListener("click", handleContactEditClick, true);
     return () => document.removeEventListener("click", handleContactEditClick, true);
   }, [activePage]);
+
+  useEffect(() => {
+    if (!activePage) return;
+
+    const decorateRows = () => decorateContactRows(contactsRef.current);
+    decorateRows();
+    const observer = new MutationObserver(decorateRows);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [activePage, contacts]);
 
   async function loadContacts() {
     setLoading(true);
@@ -189,76 +206,108 @@ export default function ContactCompletionBridge() {
   if (!activePage || !workspace) return null;
 
   return createPortal(
-    selectedContact ? (
-      <section className="contact-completion-panel" aria-label="Editar contacto comercial">
-        <div className="contact-completion-header">
-          <div>
-            <p className="panel-kicker">Completar contacto</p>
-            <h2>{selectedContact.full_name || "Contacto comercial"}</h2>
-            <span>{selectedContact.company_name || "Cliente actual"}</span>
-          </div>
-          <button className="btn btn-secondary compact" type="button" onClick={() => setSelectedContact(null)} disabled={saving}>
-            <X size={15} />
-            Cerrar
-          </button>
-        </div>
-
-        {message ? <div className="alert alert-info">{message}</div> : null}
-
-        <form className="contact-completion-form" onSubmit={handleSubmit}>
-          <label className="field-label">
-            Nombre contacto
-            <input className="input" value={form.fullName} onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))} disabled={saving} required />
-          </label>
-
-          <label className="field-label">
-            Rol operativo
-            <input className="input" value={form.role} onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))} placeholder="Compras, cocina/chef, administrador, principal..." disabled={saving} />
-          </label>
-
-          <label className="field-label">
-            Email
-            <div className="input-with-icon">
-              <Mail size={16} />
-              <input value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="correo@cliente.com" disabled={saving} />
-            </div>
-          </label>
-
-          <label className="field-label">
-            Teléfono / WhatsApp
-            <div className="input-with-icon">
-              <Phone size={16} />
-              <input value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} disabled={saving} />
-            </div>
-          </label>
-
-          <label className="field-label contact-completion-notes">
-            Notas
-            <textarea className="textarea" value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} disabled={saving} />
-          </label>
-
-          <aside className="contact-completion-summary">
-            <UserRound size={18} />
+    <>
+      {message && !selectedContact ? <div className="contact-completion-inline-message alert alert-info">{message}</div> : null}
+      {selectedContact ? (
+        <section className="contact-completion-panel" aria-label="Editar contacto comercial">
+          <div className="contact-completion-header">
             <div>
-              <strong>{form.fullName || "Contacto pendiente"}</strong>
-              <span>{form.email || "Email pendiente"} · {form.role || "Rol pendiente"}</span>
+              <p className="panel-kicker">Completar contacto</p>
+              <h2>{selectedContact.full_name || "Contacto comercial"}</h2>
+              <span>{selectedContact.company_name || "Cliente actual"}</span>
             </div>
-          </aside>
-
-          <div className="panel-actions">
-            <button className="btn btn-secondary" type="button" onClick={() => setSelectedContact(null)} disabled={saving}>
-              Cancelar
-            </button>
-            <button className="btn btn-primary" type="submit" disabled={saving || loading}>
-              {saving ? <RotateCcw size={16} className="spin" /> : <Save size={17} />}
-              {saving ? "Guardando" : "Guardar contacto"}
+            <button className="btn btn-secondary compact" type="button" onClick={() => setSelectedContact(null)} disabled={saving}>
+              <X size={15} />
+              Cerrar
             </button>
           </div>
-        </form>
-      </section>
-    ) : null,
+
+          {message ? <div className="alert alert-info">{message}</div> : null}
+
+          <form className="contact-completion-form" onSubmit={handleSubmit}>
+            <label className="field-label">
+              Nombre contacto
+              <input className="input" value={form.fullName} onChange={(event) => setForm((current) => ({ ...current, fullName: event.target.value }))} disabled={saving} required />
+            </label>
+
+            <label className="field-label">
+              Rol operativo
+              <input className="input" value={form.role} onChange={(event) => setForm((current) => ({ ...current, role: event.target.value }))} placeholder="Compras, cocina/chef, administrador, principal..." disabled={saving} />
+            </label>
+
+            <label className="field-label">
+              Email
+              <div className="input-with-icon">
+                <Mail size={16} />
+                <input value={form.email} onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))} placeholder="correo@cliente.com" disabled={saving} />
+              </div>
+            </label>
+
+            <label className="field-label">
+              Teléfono / WhatsApp
+              <div className="input-with-icon">
+                <Phone size={16} />
+                <input value={form.phone} onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))} disabled={saving} />
+              </div>
+            </label>
+
+            <label className="field-label contact-completion-notes">
+              Notas
+              <textarea className="textarea" value={form.notes} onChange={(event) => setForm((current) => ({ ...current, notes: event.target.value }))} disabled={saving} />
+            </label>
+
+            <aside className="contact-completion-summary">
+              <UserRound size={18} />
+              <div>
+                <strong>{form.fullName || "Contacto pendiente"}</strong>
+                <span>{form.email || "Email pendiente"} · {form.role || "Rol pendiente"}</span>
+              </div>
+            </aside>
+
+            <div className="panel-actions">
+              <button className="btn btn-secondary" type="button" onClick={() => setSelectedContact(null)} disabled={saving}>
+                Cancelar
+              </button>
+              <button className="btn btn-primary" type="submit" disabled={saving || loading}>
+                {saving ? <RotateCcw size={16} className="spin" /> : <Save size={17} />}
+                {saving ? "Guardando" : "Guardar contacto"}
+              </button>
+            </div>
+          </form>
+        </section>
+      ) : null}
+    </>,
     workspace
   );
+}
+
+function decorateContactRows(contacts: EditableContact[]) {
+  const pageTitle = normalizeText(document.querySelector(".workspace .topbar h1")?.textContent || "");
+  if (!pageTitle.includes("directorio comercial")) return;
+
+  const rows = Array.from(document.querySelectorAll(".workspace .list-panel table tbody tr"));
+
+  for (const row of rows) {
+    if (row.querySelector(".contact-quick-edit-action")) continue;
+    const contact = findContactFromRow(row, contacts);
+    if (!contact) continue;
+
+    const lastCell = row.querySelector("td:last-child");
+    if (!lastCell) continue;
+
+    let actions = lastCell.querySelector(".row-actions");
+    if (!actions) {
+      actions = document.createElement("div");
+      actions.className = "row-actions";
+      lastCell.appendChild(actions);
+    }
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "btn btn-primary compact contact-quick-edit-action";
+    button.innerHTML = `<span class="contact-quick-edit-icon">✎</span> Editar rápido`;
+    actions.appendChild(button);
+  }
 }
 
 function findContactFromRow(row: Element, contacts: EditableContact[]) {
