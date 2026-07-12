@@ -52,10 +52,90 @@
 
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap {
   max-height: calc(100vh - 300px) !important;
+  overflow-x: hidden !important;
+}
+
+/* Fit prospect list tables inside the panel without horizontal scrolling. */
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel .table-wrap table {
+  min-width: 0 !important;
+  width: 100% !important;
+  table-layout: fixed !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  white-space: normal !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(1),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(1) {
+  width: 28% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(2),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(2) {
+  width: 14% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(3),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(3) {
+  width: 8% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(4),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(4) {
+  width: 14% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(5),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(5) {
+  display: none !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(6),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(6) {
+  width: 10% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel th:nth-child(7),
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:nth-child(7) {
+  width: 26% !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:first-child strong,
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:first-child span {
+  display: -webkit-box !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:first-child strong {
+  -webkit-line-clamp: 2 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel td:first-child span {
+  -webkit-line-clamp: 1 !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel .row-actions {
+  flex-wrap: wrap !important;
+  gap: 4px !important;
+}
+
+.crm-shell:has(.nav-button.active[href="/prospectos"]) .list-panel .row-actions .btn.compact {
+  min-height: 26px !important;
+  padding: 0.24rem 0.48rem !important;
+  font-size: 0.62rem !important;
 }
 
 @media (max-width: 860px) {
   .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-tabs {
     padding: 8px 14px 2px !important;
+  }
+
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap {
+    overflow-x: auto !important;
   }
 }
