@@ -4,6 +4,7 @@ import ProspectingRouteBridge from "@/components/ProspectingRouteBridge";
 import "./globals.css";
 import "./prospecting-polish.css";
 import "./prospecting-review-panel.css";
+import "./ui-density-sidebar-polish.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
