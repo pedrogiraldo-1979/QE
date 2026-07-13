@@ -1,0 +1,352 @@
+body.activities-workbench-active .workspace > .crm-grid {
+  display: none !important;
+}
+
+.activities-workbench {
+  display: grid;
+  gap: 16px;
+}
+
+.activities-hero,
+.activity-card,
+.activity-kpi,
+.add-activity-panel {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 16px 38px rgba(25, 35, 29, 0.06);
+}
+
+.activities-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  padding: 18px 20px;
+}
+
+.activities-hero h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.35rem, 1.8vw, 1.85rem);
+  line-height: 1.08;
+}
+
+.activities-hero p:not(.panel-kicker) {
+  margin: 7px 0 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.38;
+}
+
+.activity-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.activity-kpi {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  min-height: 104px;
+  padding: 14px;
+}
+
+.activity-kpi.urgent {
+  border-color: rgba(164, 80, 31, 0.34);
+  background: linear-gradient(180deg, #fffaf3, #fff);
+}
+
+.activity-kpi > span:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.activity-kpi small,
+.activity-kpi em {
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+  font-style: normal;
+}
+
+.activity-kpi strong {
+  color: var(--ink);
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.activities-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(260px, 0.75fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.activity-card {
+  padding: 18px;
+}
+
+.activity-section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 13px;
+}
+
+.activity-section-title h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.activity-section-title > span {
+  display: inline-flex;
+  min-width: 38px;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.activity-list {
+  display: grid;
+  gap: 8px;
+}
+
+.activity-row {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr) 82px auto;
+  gap: 12px;
+  align-items: center;
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.activity-row.overdue {
+  background: #fffaf3;
+  border-color: rgba(164, 80, 31, 0.28);
+}
+
+.activity-date-pill,
+.activity-source-pill {
+  display: grid;
+  gap: 2px;
+  border-radius: 12px;
+  background: #f5f7f4;
+  padding: 0.48rem 0.54rem;
+  text-align: center;
+}
+
+.activity-date-pill strong {
+  color: var(--ink);
+  font-size: 0.78rem;
+  line-height: 1.1;
+}
+
+.activity-date-pill span,
+.activity-source-pill {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.activity-main-copy {
+  min-width: 0;
+}
+
+.activity-main-copy strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.activity-main-copy span,
+.activity-main-copy small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.activity-main-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.activity-row-actions .btn.compact {
+  min-height: 32px;
+  padding: 0.36rem 0.58rem;
+  font-size: 0.72rem;
+  line-height: 1.1;
+}
+
+.readiness-list {
+  display: grid;
+  gap: 9px;
+}
+
+.readiness-list div {
+  display: grid;
+  gap: 3px;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #fff;
+}
+
+.readiness-list strong {
+  color: var(--ink);
+  font-size: 0.82rem;
+}
+
+.readiness-list span {
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.3;
+}
+
+.add-activity-panel {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.add-activity-panel .panel-toolbar {
+  margin-bottom: 12px;
+}
+
+.add-activity-form {
+  display: grid;
+  gap: 14px;
+}
+
+.smart-client-input {
+  font-weight: 800;
+}
+
+.smart-company-results {
+  display: grid;
+  gap: 7px;
+  margin-top: -4px;
+}
+
+.smart-company-option {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  min-height: 42px;
+  padding: 0.56rem 0.72rem;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.smart-company-option:hover,
+.smart-company-option.selected {
+  border-color: rgba(31, 107, 58, 0.32);
+  background: var(--primary-soft);
+}
+
+.smart-company-option strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.86rem;
+  line-height: 1.2;
+}
+
+.smart-company-option span {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.smart-company-empty {
+  padding: 0.68rem 0.74rem;
+  border: 1px dashed var(--border);
+  border-radius: 13px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.add-activity-preview {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--primary-soft);
+  padding: 12px 14px;
+}
+
+.add-activity-preview div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.add-activity-preview strong {
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.add-activity-preview span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.add-activity-preview > span:last-child {
+  margin-left: auto;
+  color: var(--primary-dark);
+  font-weight: 900;
+}
+
+@media (max-width: 1180px) {
+  .activity-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .activities-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .activity-row {
+    grid-template-columns: 80px minmax(0, 1fr);
+  }
+
+  .activity-source-pill,
+  .activity-row-actions {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}
