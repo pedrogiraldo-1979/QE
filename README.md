@@ -71,6 +71,19 @@ http://localhost:3000
 npm run build
 ```
 
+## Internal ZeptoMail test
+
+The internal-only test route is available at `/prueba-correo`. It invokes the authenticated Supabase Edge Function `send-internal-update-test` and is restricted to the authorized CRM user and the fixed recipient `pedro.giraldo@gmail.com`.
+
+The ZeptoMail authorization token must remain in Supabase Edge Function secrets. Supported secret names are:
+
+- `ZEPTOMAIL_SEND_MAIL_TOKEN`
+- `ZEPTOMAIL_API_TOKEN`
+- `ZEPTOMAIL_TOKEN`
+- `ZEPTOMAIL_API_KEY`
+
+Do not add the ZeptoMail token to the repository or to any `NEXT_PUBLIC_` environment variable.
+
 ## Suggested next iterations
 
 1. Split contacts with multiple emails into separate contact rows.
