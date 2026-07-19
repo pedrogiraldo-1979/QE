@@ -77,6 +77,7 @@ The internal-only test route is available at `/prueba-correo`. It invokes the au
 
 The ZeptoMail authorization token must remain in Supabase Edge Function secrets. Supported secret names are:
 
+- `ZEPTOMAIL_SEND_TOKEN`
 - `ZEPTOMAIL_SEND_MAIL_TOKEN`
 - `ZEPTOMAIL_API_TOKEN`
 - `ZEPTOMAIL_TOKEN`
