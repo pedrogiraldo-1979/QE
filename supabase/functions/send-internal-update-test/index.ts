@@ -91,6 +91,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const rawToken = firstSecret([
+    "ZEPTOMAIL_SEND_TOKEN",
     "ZEPTOMAIL_SEND_MAIL_TOKEN",
     "ZEPTOMAIL_API_TOKEN",
     "ZEPTOMAIL_TOKEN",
@@ -103,7 +104,7 @@ Deno.serve(async (request: Request) => {
       request,
       {
         error:
-          "No se encontró el secreto de ZeptoMail. Usa ZEPTOMAIL_SEND_MAIL_TOKEN, ZEPTOMAIL_API_TOKEN, ZEPTOMAIL_TOKEN o ZEPTOMAIL_API_KEY.",
+          "No se encontró el secreto de ZeptoMail. Usa ZEPTOMAIL_SEND_TOKEN, ZEPTOMAIL_SEND_MAIL_TOKEN, ZEPTOMAIL_API_TOKEN, ZEPTOMAIL_TOKEN o ZEPTOMAIL_API_KEY.",
       },
       500,
     );
