@@ -28,7 +28,12 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
+import {
+  getProspectDisplayName,
+  isConvertedProspect,
+  normalizeProspectStatus,
+} from "@/lib/prospectOperations";
 import {
   ACTIVITY_TYPES,
   COMPANY_STATUSES,
@@ -111,10 +116,12 @@ const activityTypeLabels: Record<ActivityType, string> = {
 
 const prospectStatusLabels: Record<ProspectStatus, string> = {
   nuevo: "Nuevo",
-  contactado: "Contactado",
-  calificado: "Calificado",
-  cotizado: "Cotizado",
-  convertido: "Convertido a cliente",
+  por_revisar: "Por revisar",
+  ok_prospecto: "OK prospecto",
+  cliente_actual_excluir: "Cliente actual",
+  sin_contacto: "Sin contacto",
+  contacto_pendiente: "Contacto pendiente",
+  convertido_cliente: "Convertido a cliente",
   descartado: "Descartado",
 };
 
@@ -130,17 +137,17 @@ const statusTone: Record<CompanyStatus, string> = {
 
 const prospectStatusTone: Record<ProspectStatus, string> = {
   nuevo: "tone-slate",
-  contactado: "tone-blue",
-  calificado: "tone-green",
-  cotizado: "tone-violet",
-  convertido: "tone-emerald",
+  por_revisar: "tone-amber",
+  ok_prospecto: "tone-green",
+  cliente_actual_excluir: "tone-muted",
+  sin_contacto: "tone-slate",
+  contacto_pendiente: "tone-blue",
+  convertido_cliente: "tone-emerald",
   descartado: "tone-muted",
 };
 
 export default function HomePage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -171,27 +178,6 @@ export default function HomePage() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data: authData }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(authData.session));
-      setSessionReady(true);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadData();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
-
-  useEffect(() => {
     if (isAuthenticated) void loadData();
   }, [isAuthenticated]);
 
@@ -203,7 +189,7 @@ export default function HomePage() {
       supabase.from("companies").select("*").order("name", { ascending: true }),
       supabase.from("contacts").select("*").order("company_name", { ascending: true }),
       supabase.from("activities").select("*").order("created_at", { ascending: false }),
-      supabase.from("prospects").select("*").order("name", { ascending: true }),
+      supabase.from("prospects").select("*").order("company_name", { ascending: true }),
       supabase.from("prospect_activities").select("*").order("created_at", { ascending: false }),
     ]);
 
@@ -260,7 +246,7 @@ export default function HomePage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
@@ -272,14 +258,13 @@ export default function HomePage() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await signOut();
     setData(initialData);
     setCustomerResponses([]);
     setSelectedCompanyId(null);
     setSelectedActivityId(null);
     setSelectedProspectId(null);
     setSelectedProspectActivityId(null);
-    setIsAuthenticated(false);
   }
 
   async function updateCompanyStatus(company: Company, status: CompanyStatus) {
@@ -399,55 +384,37 @@ export default function HomePage() {
   }
 
   async function convertProspectToCustomer(prospect: Prospect) {
-    if (normalizeProspectStatus(prospect.status) === "convertido") return;
+    if (isConvertedProspect(prospect)) return;
 
     setConvertingProspectId(prospect.id);
     setMessage(null);
 
-    const { data: inserted, error: insertError } = await supabase
-      .from("companies")
-      .insert({
-        name: prospect.name,
-        legal_name: prospect.legal_name,
-        nit: prospect.nit,
-        segment: prospect.segment,
-        city: prospect.city,
-        website: prospect.website,
-        phone: prospect.phone,
-        address: prospect.address,
-        status: "cliente",
-        notes: buildConvertedProspectNotes(prospect),
-      })
-      .select("*")
-      .single();
+    const { data: converted, error } = await supabase.rpc("convert_prospect_to_company", {
+      p_prospect_id: prospect.id,
+      p_notes: buildConvertedProspectNotes(prospect),
+    });
 
-    if (insertError) {
-      setMessage(insertError.message);
+    if (error) {
+      setMessage(error.message);
       setConvertingProspectId(null);
       return;
     }
 
-    const company = inserted as Company;
-    const { error: updateError } = await supabase
-      .from("prospects")
-      .update({
-        status: "convertido",
-        converted_company_id: company.id,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", prospect.id);
-
-    if (updateError) {
-      setMessage(updateError.message);
+    const company = (Array.isArray(converted) ? converted[0] : converted) as Company | null;
+    if (!company) {
+      setMessage("No se pudo recuperar la empresa convertida.");
       setConvertingProspectId(null);
       return;
     }
 
     setData((current) => ({
       ...current,
-      companies: [...current.companies, company].sort((a, b) => a.name.localeCompare(b.name)),
+      companies: (current.companies.some((item) => item.id === company.id)
+        ? current.companies
+        : [...current.companies, company]
+      ).sort((a, b) => a.name.localeCompare(b.name)),
       prospects: current.prospects.map((item) =>
-        item.id === prospect.id ? { ...item, status: "convertido", converted_company_id: company.id } : item
+        item.id === prospect.id ? { ...item, status: "convertido_cliente", converted_company_id: company.id } : item
       ),
     }));
     setSelectedCompanyId(company.id);
@@ -560,7 +527,7 @@ export default function HomePage() {
       const matchesSearch =
         !normalizedSearch ||
         [
-          prospect.name,
+          getProspectDisplayName(prospect),
           prospect.legal_name,
           prospect.nit,
           prospect.city,
@@ -642,7 +609,9 @@ export default function HomePage() {
   const nextProspectActivity = getNextProspectActivity(selectedProspectActivities);
 
   const inFollowUpCount = data.companies.filter(isInFollowUp).length;
-  const activeProspectsCount = data.prospects.filter((prospect) => !["convertido", "descartado"].includes(normalizeProspectStatus(prospect.status))).length;
+  const activeProspectsCount = data.prospects.filter(
+    (prospect) => !["convertido_cliente", "descartado"].includes(normalizeProspectStatus(prospect.status))
+  ).length;
   const unclassifiedCount = data.companies.filter((company) => normalizeStatus(company.status) === "nuevo").length;
   const overdueActivities = data.activities.filter((activity) => isOverdue(activity)).length;
   const overdueProspectActivities = data.prospectActivities.filter((activity) => isOverdue(activity)).length;
@@ -1196,13 +1165,13 @@ function ProspectsTable({
           {prospects.map((prospect) => {
             const nextActivity = getNextProspectActivity(activitiesByProspectId.get(prospect.id) || []);
             const status = normalizeProspectStatus(prospect.status);
-            const isConverted = status === "convertido";
+            const isConverted = status === "convertido_cliente";
             const isConverting = convertingProspectId === prospect.id;
 
             return (
               <tr key={prospect.id} className={selectedProspectId === prospect.id ? "selected" : ""} onClick={() => onSelect(prospect.id)}>
                 <td>
-                  <strong>{prospect.name}</strong>
+                  <strong>{getProspectDisplayName(prospect)}</strong>
                   <span>{prospect.source || prospect.city || "Origen pendiente"}</span>
                 </td>
                 <td>{prospect.segment || "Sin segmento"}</td>
@@ -1738,7 +1707,7 @@ function ProspectDetailPanel({
   }
 
   const status = normalizeProspectStatus(prospect.status);
-  const converted = status === "convertido";
+  const converted = status === "convertido_cliente";
 
   return (
     <aside className="detail-panel">
@@ -1749,7 +1718,7 @@ function ProspectDetailPanel({
             <ProspectStatusBadge status={prospect.status} />
             {prospect.segment ? <span className="badge">{prospect.segment}</span> : <span className="badge tone-amber">Segmento pendiente</span>}
           </div>
-          <h2>{prospect.name}</h2>
+          <h2>{getProspectDisplayName(prospect)}</h2>
           <p>{prospect.legal_name || prospect.source || "Oportunidad comercial"}</p>
         </div>
         <button className="btn btn-primary" type="button" disabled={converted || converting} onClick={onConvert}>
@@ -1949,7 +1918,7 @@ function ProspectActivityPanel({
           <div>
             <p className="panel-kicker">Prospección</p>
             <h2>Nueva actividad</h2>
-            <span>{prospect.name}</span>
+            <span>{getProspectDisplayName(prospect)}</span>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="Cerrar">
             <X size={18} />
@@ -2163,10 +2132,6 @@ function CenteredMessage({ title, description }: { title: string; description: s
 
 function normalizeStatus(status?: string | null): CompanyStatus {
   return COMPANY_STATUSES.includes(status as CompanyStatus) ? (status as CompanyStatus) : "nuevo";
-}
-
-function normalizeProspectStatus(status?: string | null): ProspectStatus {
-  return PROSPECT_STATUSES.includes(status as ProspectStatus) ? (status as ProspectStatus) : "nuevo";
 }
 
 function formatActivityType(type: ActivityType | string) {

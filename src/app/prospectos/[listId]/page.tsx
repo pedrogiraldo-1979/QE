@@ -28,13 +28,14 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
 import type { Company, Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
 import {
   findPossibleCompanyMatches,
   getConversionReadiness,
   getProspectDisplayName,
   isValidEmail,
+  normalizeProspectStatus,
   validateProspectContact,
   type CompanyDuplicateMatch,
   type ConversionReadinessItem,
@@ -131,10 +132,8 @@ const emptyContactForm: ContactForm = {
 export default function ProspectListDetailPage() {
   const params = useParams<{ listId?: string | string[] }>();
   const listId = Array.isArray(params.listId) ? params.listId[0] : params.listId || "";
-  const supabase = getSupabaseClient();
+  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
 
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -155,27 +154,6 @@ export default function ProspectListDetailPage() {
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContact, setEditContact] = useState<ContactForm>(emptyContactForm);
   const [showNewProspect, setShowNewProspect] = useState(false);
-
-  useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-      setSessionReady(true);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadData();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase, listId]);
 
   useEffect(() => {
     if (isAuthenticated) void loadData();
@@ -271,7 +249,7 @@ export default function ProspectListDetailPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
@@ -283,8 +261,7 @@ export default function ProspectListDetailPage() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
+    await signOut();
     setProspects([]);
     setContacts([]);
     setCompanies([]);
@@ -388,14 +365,7 @@ export default function ProspectListDetailPage() {
     if (!confirmed) return;
 
     const prospectId = selectedProspect.id;
-    const { error: contactsError } = await supabase.from("prospect_contacts").delete().eq("prospect_id", prospectId);
-
-    if (contactsError) {
-      setMessage(contactsError.message);
-      return;
-    }
-
-    const { error } = await supabase.from("prospects").delete().eq("id", prospectId);
+    const { error } = await supabase.rpc("delete_prospect", { p_prospect_id: prospectId });
 
     if (error) {
       setMessage(error.message);
@@ -1081,13 +1051,6 @@ function matchesReviewTab(prospect: Prospect, contacts: ProspectContact[], tab: 
   if (tab === "todos") return true;
   if (tab === "sin_contacto") return contacts.length === 0;
   return normalizeProspectStatus(prospect.status) === tab;
-}
-
-function normalizeProspectStatus(status?: string | null): ProspectStatus {
-  if (status === "por_validar" || status === "calificado") return "por_revisar";
-  if (status === "convertido") return "convertido_cliente";
-  if (status === "contactado" || status === "cotizado") return "contacto_pendiente";
-  return (status || "nuevo") as ProspectStatus;
 }
 
 function nullIfBlank(value: string) {

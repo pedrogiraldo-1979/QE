@@ -9,7 +9,15 @@ export type CompanyStatus =
 
 export type ActivityType = "note" | "call" | "email" | "whatsapp" | "follow_up" | "meeting";
 
-export type ProspectStatus = string;
+export type ProspectStatus =
+  | "nuevo"
+  | "por_revisar"
+  | "ok_prospecto"
+  | "cliente_actual_excluir"
+  | "sin_contacto"
+  | "contacto_pendiente"
+  | "convertido_cliente"
+  | "descartado";
 
 export type ProspectPriority = string;
 
@@ -85,12 +93,12 @@ export interface Prospect {
   converted_company_id: string | null;
   created_at: string | null;
   updated_at: string | null;
-  // Legacy compatibility for the original single-page CRM prospecting view.
-  name: string;
-  contact_name: string | null;
-  contact_role: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
+  // Read-only compatibility while legacy rows and the original home view are stabilized.
+  name?: string | null;
+  contact_name?: string | null;
+  contact_role?: string | null;
+  contact_email?: string | null;
+  contact_phone?: string | null;
 }
 
 export interface ProspectContact {
@@ -137,7 +145,7 @@ export const ACTIVITY_TYPES: ActivityType[] = [
   "meeting",
 ];
 
-export const PROSPECT_STATUSES: string[] = [
+export const PROSPECT_STATUSES: ProspectStatus[] = [
   "nuevo",
   "por_revisar",
   "ok_prospecto",

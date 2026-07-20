@@ -1,12 +1,5 @@
 import type { Metadata } from "next";
-import ActivitiesOperationalWorkbench from "@/components/ActivitiesOperationalWorkbench";
-import AddActivityEntryBridge from "@/components/AddActivityEntryBridge";
-import AddContactFromDetail from "@/components/AddContactFromDetail";
-import ContactCompletionBridge from "@/components/ContactCompletionBridge";
-import GlobalTopbarAddAction from "@/components/GlobalTopbarAddAction";
-import HomeCommercialWorkbench from "@/components/HomeCommercialWorkbench";
-import LegacyViewLayoutPolish from "@/components/LegacyViewLayoutPolish";
-import ProspectingRouteBridge from "@/components/ProspectingRouteBridge";
+import CrmClientBridges from "@/components/CrmClientBridges";
 import "./globals.css";
 import "./prospecting-polish.css";
 import "./prospecting-review-panel.css";
@@ -28,14 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="es">
       <body>
         {children}
-        <AddContactFromDetail />
-        <ProspectingRouteBridge />
-        <HomeCommercialWorkbench />
-        <ActivitiesOperationalWorkbench />
-        <LegacyViewLayoutPolish />
-        <AddActivityEntryBridge />
-        <ContactCompletionBridge />
-        <GlobalTopbarAddAction />
+        <CrmClientBridges />
       </body>
     </html>
   );

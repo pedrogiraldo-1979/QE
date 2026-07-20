@@ -1,3 +1,5 @@
+import { PROSPECT_STATUSES, type ProspectStatus } from "./types.ts";
+
 export type ProspectQualityContact = {
   full_name?: string | null;
   email?: string | null;
@@ -46,6 +48,23 @@ export type ConversionReadinessItem = {
 
 export function getProspectDisplayName(prospect: ProspectQualityProspect) {
   return prospect.company_name || prospect.name || prospect.legal_name || "Prospecto sin nombre";
+}
+
+export function normalizeProspectStatus(status?: string | null): ProspectStatus {
+  const normalized = (status || "").trim().toLowerCase();
+
+  if (normalized === "por_validar" || normalized === "calificado") return "por_revisar";
+  if (normalized === "contactado" || normalized === "cotizado") return "contacto_pendiente";
+  if (normalized === "convertido") return "convertido_cliente";
+  if (PROSPECT_STATUSES.includes(normalized as ProspectStatus)) return normalized as ProspectStatus;
+  return "nuevo";
+}
+
+export function isConvertedProspect(prospect: {
+  status?: string | null;
+  converted_company_id?: string | null;
+}) {
+  return Boolean(prospect.converted_company_id) || normalizeProspectStatus(prospect.status) === "convertido_cliente";
 }
 
 export function validateProspectContact(contact: ProspectQualityContact): ContactValidation {

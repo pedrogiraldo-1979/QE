@@ -44,20 +44,23 @@ Do not put a Supabase `service_role` key in this app. This is a browser-facing M
 
 ## Auth setup
 
-Because RLS is enabled and policies are limited to authenticated users, create at least one user in Supabase:
+Creating a Supabase Auth user is not enough to access the CRM. The user must also be active in the private CRM allowlist documented in `docs/AUTHORIZATION.md`.
 
 1. Supabase Dashboard → Authentication → Users
-2. Add user
-3. Use that email/password to log into the app
+2. Add the user
+3. Add its generated UUID to `private.crm_authorized_users` through a reviewed migration
+4. Use that email/password to log into the app
 
-For a public deployment, keep signups disabled unless you add user ownership/roles later.
+Keep public signups disabled. A signed-in user outside the allowlist is logged out by the frontend and receives no CRM rows under RLS.
 
 ## Local development
 
 ```bash
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm dev
 ```
+
+The repository uses `pnpm@11.7.0`. Node `24.14.0` is recorded in `.nvmrc`; Next.js requires Node 20.9 or newer.
 
 Open:
 
@@ -68,8 +71,14 @@ http://localhost:3000
 ## Build
 
 ```bash
-npm run build
+pnpm typecheck
+pnpm test
+pnpm build
 ```
+
+## Repository structure
+
+Application code under `src/` is canonical. The duplicate application files at the repository root are legacy references and must not be edited, moved, or removed until the dedicated cleanup plan is approved.
 
 ## Internal ZeptoMail test
 

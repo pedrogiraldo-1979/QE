@@ -18,8 +18,9 @@ import {
   Target,
   UsersRound,
 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
-import type { Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
+import { useCrmSession } from "@/hooks/useCrmSession";
+import type { Prospect, ProspectContact, ProspectList } from "@/lib/types";
+import { normalizeProspectStatus } from "@/lib/prospectOperations";
 
 interface ProspectListStats {
   totalProspects: number;
@@ -34,9 +35,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export default function ProspectListsPage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -46,27 +45,6 @@ export default function ProspectListsPage() {
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [contacts, setContacts] = useState<ProspectContact[]>([]);
   const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-      setSessionReady(true);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadData();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
 
   useEffect(() => {
     if (isAuthenticated) void loadData();
@@ -99,7 +77,7 @@ export default function ProspectListsPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
@@ -111,8 +89,7 @@ export default function ProspectListsPage() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
+    await signOut();
     setLists([]);
     setProspects([]);
     setContacts([]);
@@ -369,12 +346,6 @@ function CenteredMessage({ title, description }: { title: string; description: s
       </div>
     </div>
   );
-}
-
-function normalizeProspectStatus(status?: string | null): ProspectStatus {
-  if (status === "por_validar" || status === "calificado") return "por_revisar";
-  if (status === "convertido") return "convertido_cliente";
-  return (status || "nuevo") as ProspectStatus;
 }
 
 function isValidEmail(email?: string | null) {

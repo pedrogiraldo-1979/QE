@@ -15,7 +15,7 @@ import {
   Target,
   UsersRound,
 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
 import type { Prospect, ProspectList } from "@/lib/types";
 
 type ProspectForm = {
@@ -45,9 +45,7 @@ const emptyProspectForm: ProspectForm = {
 };
 
 export default function NewProspectPage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -60,26 +58,8 @@ export default function NewProspectPage() {
   const [createdProspect, setCreatedProspect] = useState<Prospect | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-      setSessionReady(true);
-      if (data.session) void loadLists();
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadLists();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    if (isAuthenticated) void loadLists();
+  }, [isAuthenticated]);
 
   async function loadLists() {
     setLoading(true);
@@ -107,7 +87,7 @@ export default function NewProspectPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
@@ -119,8 +99,7 @@ export default function NewProspectPage() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
+    await signOut();
     setLists([]);
     setCreatedProspect(null);
   }

@@ -74,8 +74,6 @@ export default function AddContactFromDetail() {
       link.href = href;
     }
 
-    void loadCompanies();
-
     const observer = new MutationObserver(updateButton);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
 

@@ -12,7 +12,7 @@ import {
   UserRound,
   UsersRound,
 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
 import type { Company, Contact } from "@/lib/types";
 
 const CONTACT_TYPES = ["principal", "secundario", "compras", "chef", "almacen", "operaciones", "administrativo"] as const;
@@ -39,9 +39,7 @@ const emptyForm: FormState = {
 };
 
 export default function NewContactPage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -53,26 +51,8 @@ export default function NewContactPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-      setSessionReady(true);
-      if (data.session) void loadData();
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadData();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
+    if (isAuthenticated) void loadData();
+  }, [isAuthenticated]);
 
   async function loadData() {
     setLoading(true);
@@ -104,7 +84,7 @@ export default function NewContactPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);

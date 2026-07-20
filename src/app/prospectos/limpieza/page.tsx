@@ -3,14 +3,12 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, FileQuestion, LogOut, RefreshCw, Search, ShieldCheck, Trash2 } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
 import type { Prospect, ProspectContact, ProspectList } from "@/lib/types";
 import { getProspectDisplayName } from "@/lib/prospectOperations";
 
 export default function ProspectCleanupPage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -22,27 +20,6 @@ export default function ProspectCleanupPage() {
   const [search, setSearch] = useState("");
   const [listFilter, setListFilter] = useState("todos");
   const [deletingId, setDeletingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-
-    supabase.auth.getSession().then(({ data }) => {
-      if (!mounted) return;
-      setIsAuthenticated(Boolean(data.session));
-      setSessionReady(true);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session));
-      setSessionReady(true);
-      if (session) void loadData();
-    });
-
-    return () => {
-      mounted = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [supabase]);
 
   useEffect(() => {
     if (isAuthenticated) void loadData();
@@ -75,7 +52,7 @@ export default function ProspectCleanupPage() {
     setAuthError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
@@ -87,8 +64,7 @@ export default function ProspectCleanupPage() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    setIsAuthenticated(false);
+    await signOut();
     setProspects([]);
     setContacts([]);
     setLists([]);
@@ -106,15 +82,7 @@ export default function ProspectCleanupPage() {
     setDeletingId(prospect.id);
     setMessage(null);
 
-    const { error: contactsError } = await supabase.from("prospect_contacts").delete().eq("prospect_id", prospect.id);
-
-    if (contactsError) {
-      setMessage(contactsError.message);
-      setDeletingId(null);
-      return;
-    }
-
-    const { error: prospectError } = await supabase.from("prospects").delete().eq("id", prospect.id);
+    const { error: prospectError } = await supabase.rpc("delete_prospect", { p_prospect_id: prospect.id });
 
     if (prospectError) {
       setMessage(prospectError.message);

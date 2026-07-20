@@ -1,0 +1,153 @@
+# Registro de decisiones
+
+Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta no se considera autorizada hasta cambiar su estado a **Aceptada**, con fecha y responsable.
+
+## D-001 — Documentar antes de reorganizar
+
+- Estado: Aceptada
+- Fecha: 2026-07-19
+- Contexto: existen duplicados y áreas de alto acoplamiento; una reorganización inmediata podría alterar comportamiento o perder código útil.
+- Decisión: iniciar únicamente una fase documental con PRD, roadmap, decisiones y auditoría.
+- Consecuencia: no se modifica código funcional, Supabase ni datos durante esta fase.
+
+## D-002 — Proteger duplicados hasta aprobación
+
+- Estado: Aceptada
+- Fecha: 2026-07-19
+- Contexto: hay pares de archivos en raíz y `src/` con contenidos distintos.
+- Decisión: no borrar ni mover estos archivos hasta presentar un plan, verificar la fuente canónica y recibir aprobación explícita.
+- Consecuencia: la ambigüedad permanece temporalmente, pero se evita una pérdida prematura.
+
+## D-003 — Usar `main` actualizada como baseline documental
+
+- Estado: Aceptada
+- Fecha: 2026-07-19
+- Contexto: el trabajo comenzó en `feature/crm-ui-v1`, con árbol limpio.
+- Decisión: cambiar a `main`, actualizar por fast-forward desde GitHub y documentar sobre el commit `ecc2704c7c0a9e2da3f7f6c1d546b72bb0d644f3`.
+- Consecuencia: los hallazgos de auditoría son trazables a ese commit.
+
+## D-004 — Considerar `src/` como fuente canónica
+
+- Estado: Aceptada
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: `tsconfig.json` mapea `@/*` a `./src/*`; las rutas activas están en `src/app` y las importaciones observadas usan `@/lib`.
+- Propuesta: adoptar `src/app`, `src/components` y `src/lib` como estructura canónica.
+- Evidencia completada: typecheck, build local, manifest de rutas, source maps y smoke HTTP local usan `src/` y no los duplicados raíz.
+- Evidencia pendiente: confirmar configuración/raíz del despliegue remoto antes de eliminar los duplicados.
+- Consecuencia si se acepta: los archivos raíz duplicados podrán evaluarse para retiro en un cambio separado y reversible.
+
+## D-005 — Separar UI, dominio y acceso a datos
+
+- Estado: Propuesta
+- Contexto: varias páginas cliente combinan autenticación, consultas, mutaciones, estado, reglas y presentación; `src/app/page.tsx` supera las dos mil líneas.
+- Propuesta: modularizar por dominio y responsabilidad, conservando rutas y comportamiento.
+- Consecuencia si se acepta: más archivos y límites explícitos, a cambio de menor acoplamiento y mejor capacidad de prueba.
+
+## D-006 — Mantener cambios de backend fuera de la reorganización
+
+- Estado: Aceptada
+- Fecha: 2026-07-19
+- Contexto: el cliente depende de múltiples tablas, RPC y una Edge Function, pero el backend no fue auditado en esta fase.
+- Propuesta: no mezclar reorganización de frontend con migraciones, políticas RLS, Auth, funciones o cambios de datos.
+- Consecuencia si se acepta: cualquier ajuste de backend tendrá documento, autorización y verificación independientes.
+
+## D-007 — Definir gestor de paquetes y lockfile
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-19
+- Contexto: `package.json` define scripts y dependencias, pero no se observó un lockfile rastreado en el inventario actual.
+- Decisión: usar `pnpm@11.7.0`, Node `24.14.0` como runtime local recomendado y rastrear `pnpm-lock.yaml`.
+- Evidencia: la instalación existente fue creada por pnpm 11.7.0; el lock promovido coincide exactamente con el lock del virtual store utilizado por el baseline.
+
+## D-008 — Estrategia de pruebas
+
+- Estado: Pendiente
+- Contexto: no se observaron archivos ni scripts de pruebas automatizadas en la estructura inspeccionada.
+- Decisión requerida: acordar niveles de prueba, entorno de datos seguro y criterios mínimos de CI.
+- Restricción: las pruebas que muten datos deben usar un entorno controlado y autorización específica.
+
+## D-009 — Unificar el estado y contrato de prospectos
+
+- Estado: Aceptada; estabilización frontend implementada
+- Fecha: 2026-07-19
+- Contexto: la vista heredada y el módulo nuevo usan campos y estados incompatibles (`name`/`company_name`, `convertido`/`convertido_cliente` y dos vocabularios de workflow).
+- Propuesta: acordar una única máquina de estados y un contrato canónico antes de modificar conversión, filtros o métricas.
+- Consecuencia si se acepta: se necesitará una estrategia de compatibilidad para datos existentes y pruebas de normalización.
+- Implementación: estados canónicos centralizados, normalización de valores heredados, `company_name` como campo principal y protección por `converted_company_id`.
+- Restricción pendiente: no migrar datos ni esquema sin autorización explícita.
+
+## D-010 — Hacer atómicas las operaciones de integridad
+
+- Estado: Aceptada e implementada para conversión y eliminación de prospectos
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: conversión y eliminación ejecutan varias mutaciones independientes y pueden dejar estados parciales.
+- Decisión: implementar RPC `SECURITY INVOKER`, autenticadas, transaccionales e idempotentes para convertir y eliminar prospectos.
+- Consecuencia: el cliente deja de ejecutar pasos parciales; las altas conjuntas de empresa/contacto permanecen pendientes de un diseño separado.
+- Evidencia: migración `20260720001733_phase_2_stabilization.sql`, permisos remotos comprobados y build aprobado. No se ejecutaron mutaciones de prueba contra datos productivos.
+
+## D-011 — Separar superficies públicas e internas
+
+- Estado: Aceptada; aislamiento frontend implementado
+- Fecha: 2026-07-19
+- Contexto: el layout raíz monta bridges CRM en todas las rutas; uno consulta `companies` inmediatamente incluso en la ruta pública.
+- Propuesta: usar límites de layout/ruta que impidan cargar bridges y consultas internas en superficies públicas.
+- Implementación: los bridges se cargan dinámicamente solo en las rutas que los utilizan. La ruta pública no descarga sus módulos en el smoke de producción.
+- Pendiente: validar RLS como defensa obligatoria del backend.
+
+## D-013 — Centralizar sesión CRM
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-19
+- Contexto: siete rutas repetían suscripción, login y logout, y algunas disparaban dos cargas al iniciar sesión.
+- Decisión: centralizar el ciclo de sesión en `useCrmSession`, dejando las consultas de cada dominio en su ruta.
+- Consecuencia: un solo lifecycle de Auth por página y carga de datos gobernada por el cambio de estado autenticado.
+
+## D-012 — Baseline técnico local
+
+- Estado: Aceptada como evidencia, no como validación funcional completa
+- Fecha: 2026-07-19
+- Decisión: registrar typecheck, build, manifests y smoke HTTP como baseline local del commit `ecc2704`.
+- Limitación: no hubo hidratación con variables reales, login, acceso a datos ni validación del backend remoto.
+
+## D-014 — Aplicar mínimo de privilegio a las RPC
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: todas las funciones heredaban ejecución desde `PUBLIC`; cualquier sesión anónima podía listar, aprobar o rechazar respuestas internas con privilegios del propietario.
+- Decisión: reservar `get_cu_form` y `submit_cu_form` para `anon`/`authenticated`; retirar `PUBLIC`; convertir las RPC internas a `SECURITY INVOKER` y concederlas solo a `authenticated`.
+- Consecuencia: las operaciones internas respetan RLS y ya no son invocables sin sesión. Las dos RPC públicas conservan `SECURITY DEFINER` por el flujo basado en token.
+
+## D-015 — Posponer el endurecimiento de RLS hasta definir autorización
+
+- Estado: Sustituida por D-016
+- Fecha: 2026-07-19
+- Contexto: las nueve tablas expuestas tienen políticas `ALL` con `USING (true)` y `WITH CHECK (true)` para cualquier usuario autenticado, pero el esquema no contiene propietario ni rol de negocio.
+- Decisión: no inventar ownership ni hardcodear una identidad durante la estabilización. Mantener RLS habilitado, documentar el riesgo y exigir una decisión de producto antes de sustituir las políticas.
+- Consecuencia: el CRM sigue siendo apropiado solo para un conjunto estrictamente controlado de usuarios internos; no se deben habilitar registros públicos ni invitar usuarios adicionales todavía.
+
+## D-016 — Autorizar mediante allowlist privada
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: existen dos cuentas Auth internas y ninguna columna de ownership en las tablas de negocio. Un modelo por fila ampliaría el alcance sin una necesidad de producto confirmada.
+- Decisión: registrar membresía en `private.crm_authorized_users`, comprobarla mediante una función privada y exigirla en las nueve políticas RLS. Pedro queda como `admin` y Ventas como `member`; ambos roles conservan por ahora el mismo CRUD.
+- Seguridad: `anon` no conserva privilegios directos sobre tablas; la tabla de membresía no está expuesta; las cuentas Auth anónimas se rechazan; el frontend valida la autorización y cierra sesiones no incluidas.
+- Operación: altas, bajas y cambios de rol deben realizarse con migraciones revisadas según `docs/AUTHORIZATION.md`. Crear una cuenta Auth por sí sola no concede acceso.
+- Evidencia: ambos miembros ven 83 empresas, 220 prospectos y 8 respuestas en pruebas RLS; una identidad externa ve cero filas; una consulta `anon` directa recibe `42501 permission denied`.
+
+## Plantilla para nuevas decisiones
+
+### D-XXX — Título
+
+- Estado: Propuesta | Aceptada | Rechazada | Sustituida
+- Fecha:
+- Responsable:
+- Contexto:
+- Decisión:
+- Alternativas:
+- Consecuencias:
+- Evidencia/verificación:
