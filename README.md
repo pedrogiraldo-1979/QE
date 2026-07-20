@@ -80,7 +80,7 @@ http://localhost:3000
 pnpm verify
 ```
 
-El pipeline ejecuta typecheck, 15 pruebas unitarias/de contrato, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
+El pipeline ejecuta typecheck, 16 pruebas unitarias/de contrato, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 
@@ -88,7 +88,7 @@ Las pruebas autenticadas y mutantes están separadas del suite normal y exigen u
 
 ## Repository structure
 
-Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. See `docs/DATA-CONTRACTS.md` for the verified backend surface. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
+Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. `supabase/migrations/20260720000000_initial_crm_baseline.sql` reconstructs the schema without users or business data, followed by the incremental migrations. See `docs/DATA-CONTRACTS.md` for the verified backend surface. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
 
 ## Internal ZeptoMail test
 

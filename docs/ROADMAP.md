@@ -179,7 +179,7 @@ Objetivo: hacer el sistema seguro de evolucionar y operar.
 
 Trabajo completado:
 
-- 15 pruebas nativas de Node para reglas puras y contratos críticos de datos;
+- 16 pruebas nativas de Node para reglas puras, contratos críticos de datos y presencia de la baseline;
 - barreras contra deriva de tablas/RPC, regreso de `select("*")`, argumentos RPC incorrectos y relajación de la transición de rechazo;
 - smoke HTTP reproducible para ocho rutas y una respuesta `404`;
 - CI en GitHub Actions con instalación congelada, typecheck, pruebas, build y smoke del servidor de producción;
@@ -192,12 +192,32 @@ Trabajo completado:
 
 Deuda controlada:
 
-- reconstrucción reproducible del esquema inicial: las migraciones versionadas actuales son incrementales y no levantan por sí solas un proyecto vacío;
 - completar la comparación visual autenticada de Prospección, portales y los cinco bridges complejos;
 - cobertura automática de navegador; no se añadió Playwright ni otra dependencia sin un gate específico;
 - telemetría de aplicación más allá de los logs de CI y Vercel, pendiente de definir retención, alertas y proveedor.
 
-Criterio para el siguiente gate: crear una migración baseline revisable que reconstruya el esquema en vacío y repetir la suite aislada desde esa fuente versionada. No aplicar esa baseline sobre producción.
+Criterio cumplido por la Fase 7: el esquema se reconstruye desde las migraciones versionadas y la suite aislada vuelve a aprobar.
+
+## Fase 7 — Reproducibilidad de Supabase (completada)
+
+Objetivo: reconstruir el contrato del backend desde un proyecto vacío sin copiar datos ni identidades productivas.
+
+Trabajo completado:
+
+- baseline estructural `20260720000000_initial_crm_baseline.sql` generada con Supabase CLI y ordenada antes de las cinco incrementales;
+- nueve tablas públicas, tabla privada de autorización, RLS, FKs, índices, nueve funciones y grants explícitos reproducidos sin datos;
+- membresías específicas de entorno retiradas de la migración estructural de allowlist;
+- seis migraciones aplicadas en orden sobre un proyecto vacío;
+- firmas de columnas, constraints, índices, funciones, políticas y 47 grants idénticas a producción;
+- advisors sin regresiones críticas y suite autenticada/mutante 8/8;
+- fixtures y usuarios sintéticos eliminados; entorno temporal pausado.
+
+Deuda operativa controlada:
+
+- la baseline no se registró en el historial productivo durante esta fase; antes de la próxima migración remota debe reconciliarse su estado con `supabase migration repair` mediante un gate separado y revisado;
+- permanecen la comparación visual de Prospección/bridges, automatización de navegador y definición de telemetría.
+
+Siguiente gate recomendado: cerrar la validación visual autenticada restante sin cambios de esquema ni datos.
 
 ## Orden de aprobación solicitado
 

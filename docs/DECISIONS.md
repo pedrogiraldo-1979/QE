@@ -185,7 +185,18 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Decisión: mantener una suite separada, excluida de `pnpm test`, que sólo se habilita con variables `QE_TEST_*` de un proyecto desechable. La URL, el `project_ref` y una segunda confirmación deben coincidir, y el proyecto productivo conocido queda bloqueado explícitamente.
 - Operación: crear fixtures sintéticos, retirar usuarios y filas de prueba, y pausar o eliminar el proyecto al terminar. Nunca copiar filas, credenciales o secretos de producción.
 - Evidencia: 8/8 pruebas de integración aprobadas en un proyecto gratuito aislado; el proyecto productivo no recibió migraciones ni mutaciones durante esta ejecución.
-- Consecuencia: queda abierta una baseline versionada porque las migraciones existentes son incrementales y no reconstruyen actualmente el esquema desde cero.
+- Consecuencia: la deuda de baseline quedó resuelta por D-021; las pruebas mutantes continúan separadas del CI normal porque requieren un entorno desechable.
+
+## D-021 — Separar la baseline estructural de los datos de autorización
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-20
+- Responsable: Pedro
+- Contexto: las migraciones incrementales asumían tablas preexistentes y la migración de allowlist incluía dos UUID productivos, por lo que un proyecto vacío no podía reproducirse sin copiar identidades.
+- Decisión: añadir una baseline anterior e idempotente con el contrato estructural vigente y retirar toda siembra de membresías de las migraciones de esquema. Los miembros se provisionan después de Auth mediante una operación revisada por entorno.
+- Seguridad: todas las tablas expuestas habilitan RLS; los grants se declaran explícitamente; las únicas RPC anónimas siguen siendo las dos operaciones públicas por token; no se usan `user_metadata` ni claves privadas.
+- Evidencia: las seis migraciones se aplicaron desde cero; firmas de columnas, constraints, índices, nueve funciones, nueve políticas y 47 grants coincidieron con producción; integración 8/8 y advisors sin nuevas alertas críticas.
+- Operación: la baseline no se aplicó ni se registró en producción. Antes de la siguiente migración productiva se debe ejecutar, con revisión separada, `supabase migration repair --linked --status applied 20260720000000`.
 
 ## Plantilla para nuevas decisiones
 

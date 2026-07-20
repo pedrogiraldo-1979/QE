@@ -578,5 +578,29 @@ Resultado y deuda:
 
 - los advisors no detectaron una regresión crítica; persistieron únicamente las advertencias deliberadas de las dos RPC públicas `SECURITY DEFINER` y avisos informativos de índices sin uso en la base nueva;
 - el suite normal continúa siendo no mutante; la integración requiere variables `QE_TEST_*` y falla si faltan;
-- la deuda prioritaria es crear una baseline reproducible del esquema, revisarla fuera de producción y repetir desde cero este gate;
+- la deuda de baseline quedó resuelta y verificada en la sección 20;
 - al cerrar la prueba se eliminaron todas las filas de negocio, la allowlist y los usuarios Auth sintéticos; los conteos quedaron en cero y el proyecto temporal entró en pausa. La eliminación definitiva del proyecto puede requerir el Dashboard de Supabase.
+
+## 20. Baseline reproducible de Supabase — Fase 7
+
+Fecha: 2026-07-20. Alcance autorizado: estructura Supabase versionada y validación mutante exclusiva en el proyecto temporal; producción permaneció sin cambios de esquema, historial ni datos.
+
+Implementación:
+
+- baseline creada con Supabase CLI 2.109.1 y ordenada como `20260720000000_initial_crm_baseline.sql`;
+- contiene nueve tablas públicas, la tabla privada de autorización, FKs, índices, RLS, nueve funciones y grants explícitos;
+- no contiene usuarios Auth, membresías ni filas de negocio;
+- la migración de allowlist dejó de sembrar dos UUID productivos y ahora declara que la membresía se provisiona por entorno;
+- el cambio reciente de Supabase que retira la exposición automática de tablas nuevas quedó cubierto mediante `GRANT` explícito y RLS.
+
+Validación desde cero:
+
+- proyecto temporal confirmado `ACTIVE_HEALTHY`, reseteado a cero tablas CRM, cero esquema privado y cero historial antes del replay;
+- los seis archivos locales se aplicaron en orden sin errores;
+- producción y el proyecto reconstruido reportaron las mismas firmas normalizadas para columnas, constraints, índices, funciones, políticas y 47 grants;
+- resultado estructural: nueve tablas públicas con RLS, una tabla privada, nueve funciones y nueve políticas;
+- advisors: sólo los avisos esperados de las dos RPC públicas `SECURITY DEFINER`, la tabla privada sin política de cliente y los índices todavía sin uso en una base nueva;
+- dos identidades sintéticas permitieron repetir la suite autenticada/mutante: 8/8 aprobadas;
+- después de la prueba, las nueve tablas, la allowlist y Auth quedaron en cero; el proyecto temporal terminó en estado `INACTIVE`.
+
+Límite operativo: `20260720000000` no se registró en el historial de producción. Antes de desplegar otra migración remota se necesita un gate separado para ejecutar `supabase migration repair --linked --status applied 20260720000000`, sin ejecutar el SQL de la baseline sobre producción.

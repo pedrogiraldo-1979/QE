@@ -34,6 +34,8 @@ values ('UUID_GENERADO_POR_AUTH', 'member', true);
 
 No usar emails como clave de autorización y no añadir permisos en `user_metadata`.
 
+La baseline y las migraciones estructurales no siembran membresías. Los UUID pertenecen al entorno y deben añadirse únicamente después de crear las cuentas Auth correspondientes, mediante una migración operativa revisada para ese proyecto.
+
 ## Desactivar o reactivar
 
 Preferir desactivar la membresía cuando se necesite conservar trazabilidad:

@@ -12,6 +12,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Instalar con Node `24.14.0`, pnpm `11.7.0` y `pnpm install --frozen-lockfile`.
 - [ ] Comprobar que las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` existen antes del build.
 - [ ] Si cambia la capa de datos, regenerar `src/lib/database.types.ts`, contrastar migraciones remotas/locales y actualizar `docs/DATA-CONTRACTS.md`.
+- [ ] Antes de cualquier nueva migración productiva, comprobar el historial remoto. Si la baseline sigue ausente, aprobar y ejecutar una sola vez `supabase migration repair --linked --status applied 20260720000000`; no ejecutar su SQL sobre producción.
 
 ## 2. Gates locales obligatorios
 

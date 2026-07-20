@@ -9,6 +9,7 @@ Fecha de verificación: 2026-07-19. Proyecto: `QE2026` (`izbfawwmbilmsrdjaanw`).
 - `src/lib/data/queryColumns.ts` define las columnas que el frontend solicita; no se usa `select("*")`.
 - `src/lib/data/queryLimits.ts` distingue selectores de referencia de feeds resumidos.
 - Los tipos deben regenerarse desde Supabase después de cada migración y revisarse en el mismo commit; no se editan formas de tablas o RPC manualmente.
+- `supabase/migrations/20260720000000_initial_crm_baseline.sql` es la fuente estructural para proyectos vacíos. No contiene usuarios, membresías ni filas; las cinco migraciones posteriores conservan la evolución incremental.
 
 Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HEALTHY`.
 
@@ -29,6 +30,8 @@ Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HE
 `anon` no tiene privilegios directos sobre estas tablas. Cada política pública exige `private.is_crm_authorized()` tanto en `USING` como en `WITH CHECK`. La tabla `private.crm_authorized_users` no está expuesta a la Data API y contiene dos membresías activas.
 
 Las tablas nuevas ya no deben asumirse expuestas automáticamente: toda migración futura debe declarar `GRANT` explícito y RLS antes de ser consumida desde el frontend.
+
+La reproducción desde cero fue contrastada mediante firmas normalizadas de columnas, constraints, índices, funciones, políticas y grants. El resultado coincidió con el proyecto productivo sin leer ni copiar filas productivas.
 
 ## RPC públicas
 

@@ -6,7 +6,7 @@ create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 grant usage on schema private to authenticated;
 
-create table private.crm_authorized_users (
+create table if not exists private.crm_authorized_users (
   user_id uuid primary key references auth.users (id) on delete cascade,
   role text not null default 'member' check (role in ('admin', 'member')),
   active boolean not null default true,
@@ -17,15 +17,7 @@ create table private.crm_authorized_users (
 alter table private.crm_authorized_users enable row level security;
 revoke all on table private.crm_authorized_users from public, anon, authenticated;
 
-insert into private.crm_authorized_users (user_id, role, active)
-values
-  ('00e1052a-0a42-4110-a8b1-8674a5bafd39', 'admin', true),
-  ('db298892-d846-4c68-b2df-7f26973a5515', 'member', true)
-on conflict (user_id) do update
-set
-  role = excluded.role,
-  active = excluded.active,
-  updated_at = now();
+-- Memberships are environment-specific data and must be provisioned separately.
 
 create or replace function private.is_crm_authorized()
 returns boolean

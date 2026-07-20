@@ -79,3 +79,32 @@ test("la migración mantiene terminal el rechazo y restringe su ejecución", asy
   assert.match(migration, /revoke execute[^;]+from public, anon, authenticated;/i);
   assert.match(migration, /grant execute[^;]+to authenticated;/i);
 });
+
+test("la baseline reconstruye el contrato sin sembrar identidades ni datos", async () => {
+  const migrationDirectory = path.join(repositoryRoot, "supabase", "migrations");
+  const migrations = (await readdir(migrationDirectory)).filter((name) => name.endsWith(".sql")).sort();
+  const baselineName = "20260720000000_initial_crm_baseline.sql";
+  const baseline = await read(`supabase/migrations/${baselineName}`);
+  const authorization = await read("supabase/migrations/20260720012043_crm_authorization_allowlist.sql");
+  const tables = [
+    "activities",
+    "companies",
+    "contacts",
+    "cu_links",
+    "cu_responses",
+    "prospect_activities",
+    "prospect_contacts",
+    "prospect_lists",
+    "prospects",
+  ];
+
+  assert.equal(migrations[0], baselineName);
+  for (const table of tables) {
+    assert.match(baseline, new RegExp(`create table if not exists public\\.${table}\\b`, "i"));
+    assert.match(baseline, new RegExp(`alter table public\\.${table} enable row level security`, "i"));
+  }
+  assert.match(baseline, /create table if not exists private\.crm_authorized_users\b/i);
+  assert.match(baseline, /grant select, insert, update, delete on table[\s\S]+to authenticated;/i);
+  assert.doesNotMatch(baseline, /insert\s+into\s+private\.crm_authorized_users/i);
+  assert.doesNotMatch(authorization, /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
+});
