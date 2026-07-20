@@ -451,3 +451,32 @@ Ejecución autorizada:
 - el manifest mantuvo el baseline y los source maps conservaron referencias a `src/` sin referencias a las copias eliminadas.
 
 Decisión operativa: Fase 3 completada localmente; el commit estructural debe validarse en producción antes de cerrar la entrega remota.
+
+## 16. Modularización de interfaz — Fase 4
+
+Fecha: 2026-07-19.
+
+Baseline inicial:
+
+- `src/app/page.tsx`: 2.375 líneas;
+- lógica de vista, calidad, filtros, formatters, carga, mutaciones y tablas coexistían en la misma ruta;
+- `CrmClientBridges` montaba ocho extensiones dinámicas en `/`.
+
+Corte estructural ejecutado:
+
+- `src/features/crm/dashboardModel.ts` concentra tipos de vista, etiquetas, formatters, filtros, calidad y selección de próxima actividad;
+- `src/hooks/useCrmDashboardData.ts` concentra las cinco lecturas paralelas del dashboard y la lectura/aprobación/rechazo de respuestas, conservando los nombres de tablas y RPC;
+- `src/components/crm/` contiene vistas nombradas separadas para inicio, métricas, navegación, empresas, contactos, actividades, prospectos, calidad y respuestas;
+- `src/app/page.tsx` quedó en 1.500 líneas, una reducción de 875 líneas (36,8 %);
+- `GlobalTopbarAddAction`, `AddContactFromDetail` y `ProspectingRouteBridge` fueron retirados; botón Agregar, enlace contextual de contacto y navegación usan React/Next directamente;
+- la selección de próxima actividad dejó de ordenar en sitio el arreglo recibido y ahora preserva el orden fuente;
+- se añadieron cinco pruebas puras para estados de cliente, próxima actividad, vencimiento, calidad de contacto, enlaces y respuestas.
+
+Fuera de alcance y sin cambios:
+
+- esquema, RLS, Auth, Edge Functions, secretos y datos de Supabase;
+- nombres de tablas, columnas y RPC usados por el frontend;
+- cinco bridges complejos que dependen de portales, workbenches o decoración DOM;
+- archivos CSS y parches visuales, pendientes de una comparación autenticada.
+
+Verificación local completada: typecheck aprobado, 11/11 pruebas aprobadas, build de las mismas 10 rutas y smoke HTTP `200` en 7 rutas representativas. La verificación remota se ejecutará al publicar el commit de Fase 4.

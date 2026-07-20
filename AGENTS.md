@@ -32,9 +32,9 @@ Si la documentación contradice el comportamiento comprobado del sistema, regist
 - `src/lib/`: cliente de Supabase, tipos y operaciones compartidas.
 - `supabase/functions/`: Edge Functions; fuera de alcance salvo autorización expresa.
 - `docs/`: producto, roadmap, decisiones y auditoría.
-- Raíz: configuración del proyecto y un conjunto de archivos duplicados heredados. Su tratamiento sigue pendiente de una aprobación separada.
+- Raíz: configuración del proyecto. Los duplicados heredados fueron auditados y retirados en la Fase 3 autorizada.
 
-La fuente canónica de código es `src/`. Esta decisión fue aprobada el 2026-07-19 después de verificar alias, imports, typecheck, build, manifests, source maps y rutas locales. Los duplicados de raíz no deben editarse ni eliminarse sin el gate específico de limpieza.
+La fuente canónica de código es `src/`. Esta decisión fue aprobada el 2026-07-19 después de verificar alias, imports, typecheck, build, manifests, source maps y rutas locales. La Fase 4 separó el modelo puro del dashboard, su acceso a datos y las vistas por dominio bajo `src/features/`, `src/hooks/` y `src/components/crm/`.
 
 ## Flujo de trabajo
 
@@ -58,7 +58,6 @@ La fuente canónica de código es `src/`. Esta decisión fue aprobada el 2026-07
 
 Se necesita aprobación explícita antes de:
 
-- eliminar o mover los duplicados de la raíz;
 - reorganizar rutas o extraer módulos de las páginas actuales;
 - cambiar tablas, RPC, RLS, Auth, Edge Functions o datos de Supabase;
 - introducir dependencias, servicios externos o variables de entorno nuevas;

@@ -116,7 +116,7 @@ Estado de la auditoría:
 
 Resultado: el gate técnico y la aprobación explícita quedaron satisfechos. La reversión consiste en revertir únicamente el commit estructural de limpieza.
 
-## Fase 4 — Modularización de interfaz, pendiente de aprobación
+## Fase 4 — Modularización de interfaz (corte estructural completado)
 
 Objetivo: reducir acoplamiento y tamaño de páginas sin cambiar reglas de negocio.
 
@@ -133,6 +133,21 @@ Criterios de salida:
 - ninguna regresión en la matriz de flujos;
 - límites claros entre UI, lógica de dominio y acceso a datos;
 - archivos principales reducidos a responsabilidades coherentes.
+
+Trabajo completado:
+
+1. tipos de vista, constantes, formatters, filtros y validaciones puras extraídos a `src/features/crm/dashboardModel.ts`;
+2. carga del dashboard y revisión de respuestas extraídas a `src/hooks/useCrmDashboardData.ts`, sin cambiar tablas ni RPC;
+3. vistas de empresas, contactos, actividades, prospectos, calidad y respuestas separadas en componentes de `src/components/crm/`;
+4. botón global Agregar, navegación a Prospección y alta de contacto desde cliente reemplazados por composición React/Next directa;
+5. `src/app/page.tsx` reducido de 2.375 a 1.500 líneas;
+6. cinco pruebas puras nuevas añadidas; baseline total elevado de 6 a 11 pruebas.
+
+Deuda controlada:
+
+- permanecen cinco bridges complejos asociados a workbenches, portales y edición rápida;
+- no se consolidaron ni retiraron parches CSS porque falta una comparación visual autenticada;
+- esos dos puntos requieren el gate visual/funcional de Fase 6, no cambios de Supabase.
 
 ## Fase 5 — Contratos y capa de datos, requiere autorización de Supabase
 

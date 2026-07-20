@@ -302,6 +302,10 @@ export default function AddEntryPage() {
               <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
             </button>
+            <a className="btn btn-primary global-topbar-add-action" href="/agregar" aria-label="Agregar cliente o contacto">
+              <Plus size={17} />
+              Agregar
+            </a>
           </div>
         </header>
 

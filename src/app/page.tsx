@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Activity as ActivityIcon,
   Building2,
@@ -29,6 +31,44 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import { useCrmDashboardData } from "@/hooks/useCrmDashboardData";
+import { HomePanel } from "@/components/crm/HomePanel";
+import { MetricCard } from "@/components/crm/MetricCard";
+import { NavButton } from "@/components/crm/NavButton";
+import { ActivitiesTable } from "@/components/crm/ActivitiesTable";
+import { CompanyTable } from "@/components/crm/CompanyTable";
+import { ContactsTable } from "@/components/crm/ContactsTable";
+import { CustomerResponsesTable } from "@/components/crm/CustomerResponsesTable";
+import { DataIssuesTable } from "@/components/crm/DataIssuesTable";
+import { ProspectsTable } from "@/components/crm/ProspectsTable";
+import {
+  activityTypeLabels,
+  buildConvertedProspectNotes,
+  countByStatus,
+  filterCustomerResponses,
+  filterDataIssues,
+  formatActivityType,
+  formatContactRole,
+  getCompanyIssues,
+  getContactIssues,
+  getNextActivity,
+  getPageTitle,
+  getResultCount,
+  getSearchPlaceholder,
+  getViewHeading,
+  getViewTitle,
+  isInFollowUp,
+  isOverdue,
+  normalizeStatus,
+  normalizeUrl,
+  prospectStatusLabels,
+  prospectStatusTone,
+  statusLabels,
+  statusTone,
+  type DataIssueGroup,
+  type DataTab,
+  type ViewMode,
+} from "@/features/crm/dashboardModel";
 import {
   getProspectDisplayName,
   isConvertedProspect,
@@ -45,114 +85,30 @@ import {
   type Contact,
   type Prospect,
   type ProspectActivity,
-  type ProspectStatus,
 } from "@/lib/types";
 
-type ViewMode = "home" | "prospecting" | "companies" | "contacts" | "activities" | "data";
-
-interface DashboardData {
-  companies: Company[];
-  contacts: Contact[];
-  activities: Activity[];
-  prospects: Prospect[];
-  prospectActivities: ProspectActivity[];
-}
-
-interface DataIssueGroup {
-  id: string;
-  type: "company" | "contact";
-  title: string;
-  subtitle: string;
-  issues: string[];
-  companyId: string | null;
-}
-
-type DataTab = "pending" | "responses";
-
-type CustomerUpdateResponse = Record<string, unknown> & {
-  response_id?: string | number | null;
-  id?: string | number | null;
-  cliente_id?: string | null;
-  company_id?: string | null;
-  nombre_cliente?: string | null;
-  company_name?: string | null;
-  submitted_at?: string | null;
-  created_at?: string | null;
-  payload?: Record<string, unknown> | null;
-};
-
-interface CustomerUpdateChange {
-  label: string;
-  currentValue: string;
-  newValue: string;
-}
-
-const initialData: DashboardData = {
-  companies: [],
-  contacts: [],
-  activities: [],
-  prospects: [],
-  prospectActivities: [],
-};
-
-const statusLabels: Record<CompanyStatus, string> = {
-  nuevo: "Estado por validar",
-  "por validar": "Por validar",
-  contactado: "Contactado",
-  interesado: "Interesado",
-  cotizado: "Cotizado",
-  cliente: "Cliente activo",
-  descartado: "Descartado",
-};
-
-const activityTypeLabels: Record<ActivityType, string> = {
-  note: "Nota",
-  call: "Llamada",
-  email: "Email",
-  whatsapp: "WhatsApp",
-  follow_up: "Seguimiento",
-  meeting: "Reunion",
-};
-
-const prospectStatusLabels: Record<ProspectStatus, string> = {
-  nuevo: "Nuevo",
-  por_revisar: "Por revisar",
-  ok_prospecto: "OK prospecto",
-  cliente_actual_excluir: "Cliente actual",
-  sin_contacto: "Sin contacto",
-  contacto_pendiente: "Contacto pendiente",
-  convertido_cliente: "Convertido a cliente",
-  descartado: "Descartado",
-};
-
-const statusTone: Record<CompanyStatus, string> = {
-  nuevo: "tone-slate",
-  "por validar": "tone-amber",
-  contactado: "tone-blue",
-  interesado: "tone-green",
-  cotizado: "tone-violet",
-  cliente: "tone-emerald",
-  descartado: "tone-muted",
-};
-
-const prospectStatusTone: Record<ProspectStatus, string> = {
-  nuevo: "tone-slate",
-  por_revisar: "tone-amber",
-  ok_prospecto: "tone-green",
-  cliente_actual_excluir: "tone-muted",
-  sin_contacto: "tone-slate",
-  contacto_pendiente: "tone-blue",
-  convertido_cliente: "tone-emerald",
-  descartado: "tone-muted",
-};
-
 export default function HomePage() {
+  const router = useRouter();
   const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState<DashboardData>(initialData);
+  const [authLoading, setAuthLoading] = useState(false);
+  const {
+    data,
+    setData,
+    loading,
+    message,
+    setMessage,
+    customerResponses,
+    customerResponsesLoading,
+    customerResponsesError,
+    processingResponseId,
+    loadData,
+    loadCustomerResponses,
+    reviewCustomerResponse,
+    resetData,
+  } = useCrmDashboardData(supabase, isAuthenticated);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
@@ -162,10 +118,6 @@ export default function HomePage() {
   const [segmentFilter, setSegmentFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
   const [dataTab, setDataTab] = useState<DataTab>("pending");
-  const [customerResponses, setCustomerResponses] = useState<CustomerUpdateResponse[]>([]);
-  const [customerResponsesLoading, setCustomerResponsesLoading] = useState(false);
-  const [customerResponsesError, setCustomerResponsesError] = useState<string | null>(null);
-  const [processingResponseId, setProcessingResponseId] = useState<string | null>(null);
   const [activityPanelOpen, setActivityPanelOpen] = useState(false);
   const [newActivityNotes, setNewActivityNotes] = useState("");
   const [newActivityType, setNewActivityType] = useState<ActivityType>("follow_up");
@@ -175,92 +127,35 @@ export default function HomePage() {
   const [newProspectActivityType, setNewProspectActivityType] = useState<ActivityType>("follow_up");
   const [newProspectActivityDueDate, setNewProspectActivityDueDate] = useState("");
   const [convertingProspectId, setConvertingProspectId] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) void loadData();
-  }, [isAuthenticated]);
-
-  async function loadData() {
-    setLoading(true);
-    setMessage(null);
-
-    const [companiesResult, contactsResult, activitiesResult, prospectsResult, prospectActivitiesResult] = await Promise.all([
-      supabase.from("companies").select("*").order("name", { ascending: true }),
-      supabase.from("contacts").select("*").order("company_name", { ascending: true }),
-      supabase.from("activities").select("*").order("created_at", { ascending: false }),
-      supabase.from("prospects").select("*").order("company_name", { ascending: true }),
-      supabase.from("prospect_activities").select("*").order("created_at", { ascending: false }),
-    ]);
-
-    if (companiesResult.error || contactsResult.error || activitiesResult.error) {
-      setMessage(
-        companiesResult.error?.message ||
-          contactsResult.error?.message ||
-          activitiesResult.error?.message ||
-          "No pudimos cargar los datos."
-      );
-      setLoading(false);
-      return;
-    }
-
-    const companies = (companiesResult.data || []) as Company[];
-    const contacts = (contactsResult.data || []) as Contact[];
-    const activities = (activitiesResult.data || []) as Activity[];
-    const prospects = prospectsResult.error ? [] : ((prospectsResult.data || []) as Prospect[]);
-    const prospectActivities = prospectActivitiesResult.error ? [] : ((prospectActivitiesResult.data || []) as ProspectActivity[]);
-
-    setData({ companies, contacts, activities, prospects, prospectActivities });
-    setSelectedCompanyId((current) => (current && companies.some((company) => company.id === current) ? current : null));
-    setSelectedActivityId((current) => (current && activities.some((activity) => activity.id === current) ? current : null));
-    setSelectedProspectId((current) => (current && prospects.some((prospect) => prospect.id === current) ? current : null));
+    setSelectedCompanyId((current) => (current && data.companies.some((company) => company.id === current) ? current : null));
+    setSelectedActivityId((current) => (current && data.activities.some((activity) => activity.id === current) ? current : null));
+    setSelectedProspectId((current) => (current && data.prospects.some((prospect) => prospect.id === current) ? current : null));
     setSelectedProspectActivityId((current) =>
-      current && prospectActivities.some((activity) => activity.id === current) ? current : null
+      current && data.prospectActivities.some((activity) => activity.id === current) ? current : null,
     );
-    if (prospectsResult.error || prospectActivitiesResult.error) {
-      setMessage(prospectsResult.error?.message || prospectActivitiesResult.error?.message || "No pudimos cargar prospeccion.");
-    }
-    setLoading(false);
-    void loadCustomerResponses();
-  }
-
-  async function loadCustomerResponses() {
-    setCustomerResponsesLoading(true);
-    setCustomerResponsesError(null);
-
-    const { data: responses, error } = await supabase.rpc("get_cu_pending_reviews");
-
-    if (error) {
-      setCustomerResponses([]);
-      setCustomerResponsesError(error.message);
-      setCustomerResponsesLoading(false);
-      return;
-    }
-
-    setCustomerResponses(((responses || []) as CustomerUpdateResponse[]).filter((response) => Boolean(getResponseId(response))));
-    setCustomerResponsesLoading(false);
-  }
+  }, [data]);
 
   async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAuthError(null);
-    setLoading(true);
+    setAuthLoading(true);
 
     const error = await signIn(email, password);
 
     if (error) {
       setAuthError(error.message);
-      setLoading(false);
+      setAuthLoading(false);
       return;
     }
 
-    setLoading(false);
+    setAuthLoading(false);
   }
 
   async function handleSignOut() {
     await signOut();
-    setData(initialData);
-    setCustomerResponses([]);
+    resetData();
     setSelectedCompanyId(null);
     setSelectedActivityId(null);
     setSelectedProspectId(null);
@@ -426,25 +321,6 @@ export default function HomePage() {
     setMessage("Prospecto convertido a cliente.");
   }
 
-  async function reviewCustomerResponse(response: CustomerUpdateResponse, action: "approve" | "reject") {
-    const responseId = getResponseId(response);
-    if (!responseId) return;
-
-    setProcessingResponseId(responseId);
-    const rpcName = action === "approve" ? "approve_cu_response" : "reject_cu_response";
-    const { error } = await supabase.rpc(rpcName, { response_id: responseId });
-
-    if (error) {
-      setMessage(error.message);
-      setProcessingResponseId(null);
-      return;
-    }
-
-    setCustomerResponses((current) => current.filter((item) => getResponseId(item) !== responseId));
-    setMessage(action === "approve" ? "Respuesta aprobada." : "Respuesta rechazada.");
-    setProcessingResponseId(null);
-  }
-
   const companyById = useMemo(() => {
     return new Map(data.companies.map((company) => [company.id, company]));
   }, [data.companies]);
@@ -606,7 +482,7 @@ export default function HomePage() {
   const selectedActivities = selectedCompany ? activitiesByCompanyId.get(selectedCompany.id) || [] : [];
   const nextActivity = getNextActivity(selectedActivities);
   const selectedProspectActivities = selectedProspect ? prospectActivitiesByProspectId.get(selectedProspect.id) || [] : [];
-  const nextProspectActivity = getNextProspectActivity(selectedProspectActivities);
+  const nextProspectActivity = getNextActivity(selectedProspectActivities);
 
   const inFollowUpCount = data.companies.filter(isInFollowUp).length;
   const activeProspectsCount = data.prospects.filter(
@@ -720,9 +596,9 @@ export default function HomePage() {
               />
             </label>
             {authError ? <p className="alert alert-danger">{authError}</p> : null}
-            <button className="btn btn-primary full-width" type="submit" disabled={loading}>
+            <button className="btn btn-primary full-width" type="submit" disabled={authLoading}>
               <ShieldCheck size={18} />
-              {loading ? "Entrando..." : "Entrar"}
+              {authLoading ? "Entrando..." : "Entrar"}
             </button>
           </form>
         </section>
@@ -743,7 +619,7 @@ export default function HomePage() {
 
         <nav className="sidebar-nav" aria-label="Vistas del CRM">
           <NavButton icon={Home} label="Inicio" active={viewMode === "home"} onClick={() => goToView("home")} />
-          <NavButton icon={Target} label="Prospección" active={viewMode === "prospecting"} onClick={() => goToView("prospecting")} />
+          <NavButton icon={Target} label="Prospección" active={false} onClick={() => router.push("/prospectos")} />
           <NavButton icon={Building2} label="Clientes" active={viewMode === "companies"} onClick={() => goToView("companies")} />
           <NavButton icon={UsersRound} label="Contactos" active={viewMode === "contacts"} onClick={() => goToView("contacts")} />
           <NavButton icon={ActivityIcon} label="Actividades" active={viewMode === "activities"} onClick={() => goToView("activities")} />
@@ -787,6 +663,10 @@ export default function HomePage() {
               <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
             </button>
+            <Link className="btn btn-primary global-topbar-add-action" href="/agregar" aria-label="Agregar cliente o contacto">
+              <Plus size={17} />
+              Agregar
+            </Link>
           </div>
         </header>
 
@@ -814,7 +694,7 @@ export default function HomePage() {
             rolesPending={rolesPending}
             overdueActivities={overdueActivities}
             dataToValidate={dataToValidateCount}
-            onOpenProspecting={() => goToView("prospecting")}
+            onOpenProspecting={() => router.push("/prospectos")}
             onOpenCompanies={() => goToView("companies")}
             onOpenFollowUp={() => goToView("companies")}
             onOpenContacts={() => goToView("contacts")}
@@ -1023,528 +903,6 @@ export default function HomePage() {
     </main>
   );
 }
-
-function HomePanel({
-  companies,
-  prospects,
-  inFollowUp,
-  contacts,
-  contactsWithoutEmail,
-  rolesPending,
-  overdueActivities,
-  dataToValidate,
-  onOpenProspecting,
-  onOpenCompanies,
-  onOpenFollowUp,
-  onOpenContacts,
-  onOpenActivities,
-  onOpenData,
-}: {
-  companies: number;
-  prospects: number;
-  inFollowUp: number;
-  contacts: number;
-  contactsWithoutEmail: number;
-  rolesPending: number;
-  overdueActivities: number;
-  dataToValidate: number;
-  onOpenProspecting: () => void;
-  onOpenCompanies: () => void;
-  onOpenFollowUp: () => void;
-  onOpenContacts: () => void;
-  onOpenActivities: () => void;
-  onOpenData: () => void;
-}) {
-  return (
-    <section className="home-panel">
-      <div className="home-copy">
-        <p className="panel-kicker">Operación comercial</p>
-        <h2>Prioriza clientes y contactos antes de vender más.</h2>
-        <p>
-          Esta vista separa prospectos de clientes actuales para cuidar el embudo comercial sin mezclar oportunidades con cuentas
-          convertidas.
-        </p>
-      </div>
-
-      <div className="action-grid">
-        <ActionCard icon={Target} label="Prospección" value={prospects} helper="Oportunidades fuera de la base de clientes" onClick={onOpenProspecting} />
-        <ActionCard icon={Building2} label="Clientes en base" value={companies} helper="Clientes actuales cargados" onClick={onOpenCompanies} />
-        <ActionCard icon={UsersRound} label="Contactos comerciales" value={contacts} helper="Personas asociadas a clientes" onClick={onOpenContacts} />
-        <ActionCard icon={Tag} label="En seguimiento" value={inFollowUp} helper="Clientes con gestión comercial abierta" onClick={onOpenFollowUp} />
-        <ActionCard icon={Mail} label="Contactos sin email" value={contactsWithoutEmail} helper="Falta canal para cotizaciones o seguimiento" onClick={onOpenContacts} />
-        <ActionCard icon={UserRound} label="Roles pendientes" value={rolesPending} helper="Identificar compras, cocina/chef o pagos" onClick={onOpenContacts} />
-        <ActionCard icon={CalendarClock} label="Actividades vencidas" value={overdueActivities} helper="Seguimientos que necesitan acción" onClick={onOpenActivities} />
-        <ActionCard icon={ClipboardCheck} label="Datos por validar" value={dataToValidate} helper="Clientes o contactos con campos incompletos" onClick={onOpenData} />
-      </div>
-    </section>
-  );
-}
-
-function ActionCard({
-  icon: Icon,
-  label,
-  value,
-  helper,
-  onClick,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: number;
-  helper: string;
-  onClick: () => void;
-}) {
-  return (
-    <button className="action-card" type="button" onClick={onClick}>
-      <span className="metric-icon">
-        <Icon size={18} />
-      </span>
-      <span>
-        <strong>{value}</strong>
-        <span className="action-label">{label}</span>
-        <span className="action-helper">{helper}</span>
-      </span>
-    </button>
-  );
-}
-
-function NavButton({ icon: Icon, label, active, onClick }: { icon: LucideIcon; label: string; active: boolean; onClick: () => void }) {
-  return (
-    <button className={`nav-button ${active ? "active" : ""}`} type="button" onClick={onClick}>
-      <Icon size={18} />
-      <span>{label}</span>
-    </button>
-  );
-}
-
-function MetricCard({ icon: Icon, label, value, helper }: { icon: LucideIcon; label: string; value: number; helper: string }) {
-  return (
-    <article className="metric-card">
-      <div className="metric-icon">
-        <Icon size={18} />
-      </div>
-      <div>
-        <p>{label}</p>
-        <strong>{value}</strong>
-        <span>{helper}</span>
-      </div>
-    </article>
-  );
-}
-
-function ProspectsTable({
-  prospects,
-  selectedProspectId,
-  activitiesByProspectId,
-  convertingProspectId,
-  onSelect,
-  onCreateActivity,
-  onConvert,
-}: {
-  prospects: Prospect[];
-  selectedProspectId: string | null;
-  activitiesByProspectId: Map<string, ProspectActivity[]>;
-  convertingProspectId: string | null;
-  onSelect: (id: string) => void;
-  onCreateActivity: (id: string) => void;
-  onConvert: (prospect: Prospect) => void;
-}) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Prospecto</th>
-            <th>Segmento</th>
-            <th>Estado</th>
-            <th>Contacto</th>
-            <th>Próxima acción</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {prospects.map((prospect) => {
-            const nextActivity = getNextProspectActivity(activitiesByProspectId.get(prospect.id) || []);
-            const status = normalizeProspectStatus(prospect.status);
-            const isConverted = status === "convertido_cliente";
-            const isConverting = convertingProspectId === prospect.id;
-
-            return (
-              <tr key={prospect.id} className={selectedProspectId === prospect.id ? "selected" : ""} onClick={() => onSelect(prospect.id)}>
-                <td>
-                  <strong>{getProspectDisplayName(prospect)}</strong>
-                  <span>{prospect.source || prospect.city || "Origen pendiente"}</span>
-                </td>
-                <td>{prospect.segment || "Sin segmento"}</td>
-                <td>
-                  <ProspectStatusBadge status={prospect.status} />
-                </td>
-                <td>
-                  <strong>{prospect.contact_name || "Contacto pendiente"}</strong>
-                  <span>{prospect.contact_email || prospect.contact_phone || "-"}</span>
-                </td>
-                <td>
-                  {nextActivity?.due_date ? `${formatActivityType(nextActivity.activity_type)} · ${nextActivity.due_date}` : "Sin seguimiento"}
-                </td>
-                <td>
-                  <div className="row-actions">
-                    <button
-                      className="btn btn-secondary compact"
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onCreateActivity(prospect.id);
-                      }}
-                    >
-                      <Plus size={14} />
-                      Crear actividad
-                    </button>
-                    <button
-                      className="btn btn-primary compact"
-                      type="button"
-                      disabled={isConverted || isConverting}
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onConvert(prospect);
-                      }}
-                    >
-                      {isConverting ? "Convirtiendo" : isConverted ? "Convertido" : "Convertir a cliente"}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {!prospects.length ? <EmptyState title="Sin prospectos" description="No hay prospectos con esos filtros." /> : null}
-    </div>
-  );
-}
-
-function CompanyTable({
-  companies,
-  selectedCompanyId,
-  activitiesByCompanyId,
-  onSelect,
-  onCreateActivity,
-  onChangeStatus,
-}: {
-  companies: Company[];
-  selectedCompanyId: string | null;
-  activitiesByCompanyId: Map<string, Activity[]>;
-  onSelect: (id: string) => void;
-  onCreateActivity: (id: string) => void;
-  onChangeStatus: (id: string) => void;
-}) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Segmento</th>
-            <th>Ciudad</th>
-            <th>Teléfono</th>
-            <th>Estado de datos</th>
-            <th>Próxima acción</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {companies.map((company) => {
-            const nextActivity = getNextActivity(activitiesByCompanyId.get(company.id) || []);
-            const companyIssues = getCompanyIssues(company);
-
-            return (
-              <tr key={company.id} className={selectedCompanyId === company.id ? "selected" : ""} onClick={() => onSelect(company.id)}>
-                <td>
-                  <strong>{company.name}</strong>
-                  <span>{company.legal_name || company.nit || "Datos legales pendientes"}</span>
-                </td>
-                <td>{company.segment || "Sin segmento"}</td>
-                <td>{company.city || "-"}</td>
-                <td>{company.phone || "-"}</td>
-                <td>
-                  {companyIssues.length ? (
-                    <span className="issue-badge">{companyIssues.length} dato(s)</span>
-                  ) : (
-                    <span className="ok-badge">Datos suficientes</span>
-                  )}
-                </td>
-                <td>{nextActivity?.due_date ? `${formatActivityType(nextActivity.activity_type)} · ${nextActivity.due_date}` : "Sin seguimiento"}</td>
-                <td>
-                  <div className="row-actions">
-                    <button
-                      className="btn btn-secondary compact"
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onCreateActivity(company.id);
-                      }}
-                    >
-                      <Plus size={14} />
-                      Crear actividad
-                    </button>
-                    <button
-                      className="btn btn-secondary compact"
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onChangeStatus(company.id);
-                      }}
-                    >
-                      Cambiar estado
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {!companies.length ? <EmptyState title="Sin clientes" description="No hay clientes con esos filtros." /> : null}
-    </div>
-  );
-}
-
-function ContactsTable({
-  contacts,
-  onSelectCompany,
-  onCompleteData,
-}: {
-  contacts: Contact[];
-  onSelectCompany: (id: string) => void;
-  onCompleteData: (companyId: string | null) => void;
-}) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Contacto comercial</th>
-            <th>Cliente</th>
-            <th>Rol operativo</th>
-            <th>Datos</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {contacts.map((contact) => {
-            const issues = getContactIssues(contact);
-            return (
-              <tr key={contact.id}>
-                <td>
-                  <strong>{contact.full_name || "Sin nombre"}</strong>
-                  <span>{contact.phone || "Teléfono pendiente"}</span>
-                </td>
-                <td>
-                  <button className="table-link" onClick={() => contact.company_id && onSelectCompany(contact.company_id)} type="button">
-                    {contact.company_name || "-"}
-                  </button>
-                </td>
-                <td>{formatContactRole(contact.role)}</td>
-                <td>
-                  <div className="issue-row">
-                    {issues.length ? issues.map((issue) => <span className="issue-badge" key={issue}>{issue}</span>) : <span className="ok-badge">Datos útiles</span>}
-                  </div>
-                </td>
-                <td>
-                  <button className="btn btn-secondary compact" type="button" onClick={() => onCompleteData(contact.company_id)}>
-                    {issues.length ? "Completar datos" : "Editar contacto"}
-                  </button>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {!contacts.length ? <EmptyState title="Sin contactos" description="No hay contactos comerciales con esa búsqueda." /> : null}
-    </div>
-  );
-}
-
-function ActivitiesTable({
-  activities,
-  companyById,
-  selectedActivityId,
-  onSelect,
-}: {
-  activities: Activity[];
-  companyById: Map<string, Company>;
-  selectedActivityId: string | null;
-  onSelect: (activity: Activity) => void;
-}) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Seguimiento</th>
-            <th>Vence</th>
-            <th>Estado</th>
-            <th>Notas</th>
-          </tr>
-        </thead>
-        <tbody>
-          {activities.map((activity) => (
-            <tr
-              key={activity.id}
-              className={selectedActivityId === activity.id ? "selected" : ""}
-              onClick={() => onSelect(activity)}
-            >
-              <td>
-                <strong>{activity.company_id ? companyById.get(activity.company_id)?.name || "-" : "-"}</strong>
-                <span>{activity.company_id ? companyById.get(activity.company_id)?.segment || "Sin segmento" : "Sin cliente"}</span>
-              </td>
-              <td>{formatActivityType(activity.activity_type)}</td>
-              <td>{activity.due_date || "-"}</td>
-              <td>{activity.completed ? "Completada" : isOverdue(activity) ? "Vencida" : "Pendiente"}</td>
-              <td>{activity.notes || "-"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {!activities.length ? <EmptyState title="Sin actividades" description="No hay seguimiento con esa búsqueda." /> : null}
-    </div>
-  );
-}
-
-function DataIssuesTable({ issues, onSelectCompany }: { issues: DataIssueGroup[]; onSelectCompany: (id: string) => void }) {
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Registro</th>
-            <th>Tipo</th>
-            <th>Campos pendientes</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {issues.map((issue) => (
-            <tr key={issue.id}>
-              <td>
-                <strong>{issue.title}</strong>
-                <span>{issue.subtitle}</span>
-              </td>
-              <td>{issue.type === "company" ? "Cliente" : "Contacto comercial"}</td>
-              <td>
-                <div className="issue-row">
-                  {issue.issues.map((item) => <span className="issue-badge" key={item}>{item}</span>)}
-                </div>
-              </td>
-              <td>
-                {issue.companyId ? (
-                  <button className="btn btn-secondary compact" type="button" onClick={() => onSelectCompany(issue.companyId!)}>
-                    Ver ficha
-                  </button>
-                ) : (
-                  "Relación pendiente"
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {!issues.length ? <EmptyState title="Datos al día" description="No hay pendientes visibles con esa búsqueda." /> : null}
-    </div>
-  );
-}
-
-function CustomerResponsesTable({
-  responses,
-  loading,
-  error,
-  processingResponseId,
-  onApprove,
-  onReject,
-  onRetry,
-}: {
-  responses: CustomerUpdateResponse[];
-  loading: boolean;
-  error: string | null;
-  processingResponseId: string | null;
-  onApprove: (response: CustomerUpdateResponse) => void;
-  onReject: (response: CustomerUpdateResponse) => void;
-  onRetry: () => void;
-}) {
-  if (loading) {
-    return <EmptyState title="Cargando respuestas" description="Consultando formularios pendientes de revisión." />;
-  }
-
-  if (error) {
-    return (
-      <div className="review-error">
-        <strong>No pudimos cargar las respuestas.</strong>
-        <span>{error}</span>
-        <button className="btn btn-secondary compact" type="button" onClick={onRetry}>
-          Reintentar
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Comparación</th>
-            <th>Fecha</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {responses.map((response) => {
-            const responseId = getResponseId(response);
-            const changes = getResponseChanges(response);
-            const isProcessing = responseId ? processingResponseId === responseId : false;
-
-            return (
-              <tr key={responseId || getResponseCustomerName(response)}>
-                <td>
-                  <strong>{getResponseCustomerName(response)}</strong>
-                  <span>{getResponseSubtitle(response)}</span>
-                </td>
-                <td>
-                  <div className="comparison-stack">
-                    {changes.map((change) => (
-                      <div className="comparison-row" key={`${responseId}-${change.label}`}>
-                        <strong>{change.label}</strong>
-                        <span>
-                          <em>Actual:</em> {change.currentValue || "-"}
-                        </span>
-                        <span>
-                          <em>Nuevo:</em> {change.newValue || "-"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </td>
-                <td>{getResponseDate(response)}</td>
-                <td>
-                  <div className="row-actions">
-                    <button className="btn btn-primary compact" type="button" disabled={!responseId || isProcessing} onClick={() => onApprove(response)}>
-                      Aprobar
-                    </button>
-                    <button className="btn btn-secondary compact" type="button" disabled={!responseId || isProcessing} onClick={() => onReject(response)}>
-                      Rechazar
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {!responses.length ? <EmptyState title="Sin respuestas pendientes" description="No hay formularios de clientes por revisar." /> : null}
-    </div>
-  );
-}
-
 function CompanyDetailPanel({
   company,
   contacts,
@@ -1581,6 +939,15 @@ function CompanyDetailPanel({
           </div>
           <h2>{company.name}</h2>
           <p>{company.legal_name || "Razón social pendiente"}</p>
+          <Link
+            id="qe-add-contact-detail-link"
+            className="btn btn-primary"
+            href={`/contactos/nuevo?companyId=${encodeURIComponent(company.id)}`}
+            aria-label="Agregar contacto a esta empresa"
+            style={{ marginTop: 10 }}
+          >
+            + Agregar contacto
+          </Link>
         </div>
         <label className="status-select">
           Estado comercial
@@ -2128,248 +1495,4 @@ function CenteredMessage({ title, description }: { title: string; description: s
       </div>
     </div>
   );
-}
-
-function normalizeStatus(status?: string | null): CompanyStatus {
-  return COMPANY_STATUSES.includes(status as CompanyStatus) ? (status as CompanyStatus) : "nuevo";
-}
-
-function formatActivityType(type: ActivityType | string) {
-  return activityTypeLabels[type as ActivityType] || type || "Actividad";
-}
-
-function formatContactRole(role?: string | null) {
-  const normalized = role?.toLowerCase().trim();
-  if (!normalized) return "Rol pendiente";
-  if (normalized.includes("compra")) return "Contacto de compras";
-  if (normalized.includes("chef") || normalized.includes("cocina")) return "Contacto de cocina/chef";
-  if (normalized.includes("pago") || normalized.includes("tesorer") || normalized.includes("factur")) return "Contacto de pagos";
-  return role || "Rol pendiente";
-}
-
-function getContactIssues(contact: Contact) {
-  const issues: string[] = [];
-  if (!contact.email?.trim()) issues.push("Sin email");
-  if (!contact.role?.trim()) issues.push("Rol pendiente");
-  if (!contact.phone?.trim()) issues.push("Teléfono pendiente");
-  if (contact.email?.trim() && hasMultipleOrInvalidEmail(contact.email)) issues.push("Email múltiple o inválido");
-  return issues;
-}
-
-function hasMultipleOrInvalidEmail(email: string) {
-  const parts = email.split(/[;,]/).map((part) => part.trim()).filter(Boolean);
-  if (parts.length > 1) return true;
-  return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-}
-
-function getCompanyIssues(company: Company) {
-  const issues: string[] = [];
-  if (normalizeStatus(company.status) === "por validar") issues.push("Datos pendientes de validar");
-  if (!company.nit?.trim()) issues.push("NIT pendiente");
-  if (!company.phone?.trim()) issues.push("Teléfono pendiente");
-  if (!company.address?.trim()) issues.push("Dirección de entrega pendiente");
-  return issues;
-}
-
-function isInFollowUp(company: Company) {
-  return ["contactado", "interesado", "cotizado"].includes(normalizeStatus(company.status));
-}
-
-function isOverdue(activity: { due_date: string | null; completed: boolean | null }) {
-  if (!activity.due_date || activity.completed) return false;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return new Date(`${activity.due_date}T00:00:00`) < today;
-}
-
-function getNextActivity(activities: Activity[]) {
-  return activities
-    .filter((activity) => !activity.completed)
-    .sort((a, b) => {
-      if (!a.due_date) return 1;
-      if (!b.due_date) return -1;
-      return a.due_date.localeCompare(b.due_date);
-    })[0] || null;
-}
-
-function getNextProspectActivity(activities: ProspectActivity[]) {
-  return activities
-    .filter((activity) => !activity.completed)
-    .sort((a, b) => {
-      if (!a.due_date) return 1;
-      if (!b.due_date) return -1;
-      return a.due_date.localeCompare(b.due_date);
-    })[0] || null;
-}
-
-function buildConvertedProspectNotes(prospect: Prospect) {
-  const details = [
-    "Convertido desde prospeccion.",
-    prospect.source ? `Origen: ${prospect.source}.` : "",
-    prospect.contact_name ? `Contacto prospecto: ${prospect.contact_name}.` : "",
-    prospect.contact_email ? `Email prospecto: ${prospect.contact_email}.` : "",
-    prospect.contact_phone ? `Telefono prospecto: ${prospect.contact_phone}.` : "",
-    prospect.notes || "",
-  ].filter(Boolean);
-
-  return details.join("\n");
-}
-
-function countByStatus(companies: Company[], status: CompanyStatus) {
-  return companies.filter((company) => normalizeStatus(company.status) === status).length;
-}
-
-function normalizeUrl(value: string) {
-  return /^https?:\/\//i.test(value) ? value : `https://${value}`;
-}
-
-function filterDataIssues(issues: DataIssueGroup[], normalizedSearch: string) {
-  if (!normalizedSearch) return issues;
-  return issues.filter((issue) =>
-    [issue.title, issue.subtitle, issue.type, ...issue.issues].some((value) => value.toLowerCase().includes(normalizedSearch))
-  );
-}
-
-function filterCustomerResponses(responses: CustomerUpdateResponse[], normalizedSearch: string) {
-  if (!normalizedSearch) return responses;
-
-  return responses.filter((response) => {
-    const changes = getResponseChanges(response);
-    return [
-      getResponseCustomerName(response),
-      getResponseSubtitle(response),
-      getResponseDate(response),
-      ...changes.flatMap((change) => [change.label, change.currentValue, change.newValue]),
-    ].some((value) => value.toLowerCase().includes(normalizedSearch));
-  });
-}
-
-function getResponseId(response: CustomerUpdateResponse) {
-  const value = response.response_id ?? response.id;
-  return value === null || value === undefined ? "" : String(value);
-}
-
-function getResponsePayload(response: CustomerUpdateResponse) {
-  return isRecord(response.payload) ? response.payload : {};
-}
-
-function getResponseCustomerName(response: CustomerUpdateResponse) {
-  return (
-    readResponseValue(response, ["nombre_cliente", "company_name", "cliente_nombre", "name"]) ||
-    "Cliente sin nombre"
-  );
-}
-
-function getResponseSubtitle(response: CustomerUpdateResponse) {
-  return readResponseValue(response, ["cliente_id", "company_id", "nit", "segmento"]) || "Formulario público";
-}
-
-function getResponseDate(response: CustomerUpdateResponse) {
-  return readResponseValue(response, ["submitted_at", "created_at", "updated_at"]) || "-";
-}
-
-function getResponseChanges(response: CustomerUpdateResponse): CustomerUpdateChange[] {
-  const fields = [
-    { label: "Razón social", current: ["razon_social_actual", "razon_social", "legal_name"], next: ["razon_social_nueva"] },
-    { label: "NIT", current: ["nit_actual", "nit"], next: ["nit_nuevo"] },
-    { label: "Contacto comercial", current: ["contacto_actual", "contacto_comercial_actual"], next: ["contacto_comercial_nuevo"] },
-    { label: "Cargo contacto", current: ["cargo_contacto_actual", "rol_actual"], next: ["cargo_contacto_nuevo"] },
-    { label: "Teléfono comercial", current: ["telefono_actual", "celular_comercial_actual"], next: ["celular_comercial_nuevo"] },
-    { label: "Correo comercial", current: ["correo_actual", "correo_comercial_actual"], next: ["correo_comercial_nuevo"] },
-    { label: "Contacto de pagos", current: ["contacto_pagos_actual"], next: ["contacto_pagos_nuevo"] },
-    { label: "Cargo pagos", current: ["cargo_pagos_actual"], next: ["cargo_pagos_nuevo"] },
-    { label: "Teléfono tesorería", current: ["telefono_tesoreria_actual"], next: ["telefono_tesoreria_nuevo"] },
-    { label: "Correo tesorería", current: ["correo_tesoreria_actual"], next: ["correo_tesoreria_nuevo"] },
-    { label: "Correo facturación", current: ["correo_facturacion_actual"], next: ["correo_facturacion_nuevo"] },
-    { label: "Dirección", current: ["direccion_actual", "address"], next: ["direccion_nueva"] },
-    { label: "Observaciones", current: [], next: ["observaciones_cliente"] },
-  ];
-
-  const changes = fields
-    .map((field) => {
-      const currentValue = readResponseValue(response, field.current);
-      const newValue = readResponseValue(response, field.next);
-      return { label: field.label, currentValue, newValue };
-    })
-    .filter((change) => change.newValue && normalizeComparable(change.currentValue) !== normalizeComparable(change.newValue));
-
-  if (changes.length) return changes;
-
-  if (readResponseValue(response, ["confirm_no_changes"]) === "true") {
-    return [{ label: "Confirmación", currentValue: "Datos registrados", newValue: "Cliente confirma sin cambios" }];
-  }
-
-  return [{ label: "Respuesta", currentValue: "-", newValue: "Sin diferencias detectadas en campos conocidos" }];
-}
-
-function readResponseValue(response: CustomerUpdateResponse, keys: string[]) {
-  const payload = getResponsePayload(response);
-
-  for (const key of keys) {
-    const direct = response[key];
-    if (direct !== null && direct !== undefined && String(direct).trim()) return String(direct);
-
-    const payloadValue = payload[key];
-    if (payloadValue !== null && payloadValue !== undefined && String(payloadValue).trim()) return String(payloadValue);
-  }
-
-  return "";
-}
-
-function normalizeComparable(value: string) {
-  return value.trim().toLowerCase();
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function getPageTitle(viewMode: ViewMode) {
-  if (viewMode === "home") return "Resumen comercial";
-  if (viewMode === "prospecting") return "Prospección";
-  if (viewMode === "contacts") return "Directorio comercial";
-  if (viewMode === "activities") return "Agenda de seguimiento";
-  if (viewMode === "data") return "Datos pendientes de validar";
-  return "Clientes actuales";
-}
-
-function getViewTitle(viewMode: ViewMode) {
-  if (viewMode === "prospecting") return "Prospección";
-  if (viewMode === "contacts") return "Contactos comerciales";
-  if (viewMode === "activities") return "Seguimiento";
-  if (viewMode === "data") return "Actualización de datos";
-  return "Clientes";
-}
-
-function getViewHeading(viewMode: ViewMode) {
-  if (viewMode === "prospecting") return "Prospectos";
-  if (viewMode === "contacts") return "Contactos comerciales";
-  if (viewMode === "activities") return "Agenda de seguimiento";
-  if (viewMode === "data") return "Datos pendientes de validar";
-  return "Base de clientes";
-}
-
-function getSearchPlaceholder(viewMode: ViewMode) {
-  if (viewMode === "prospecting") return "Buscar prospecto, contacto, origen o segmento";
-  if (viewMode === "contacts") return "Buscar contacto, cliente, rol o email";
-  if (viewMode === "activities") return "Buscar cliente, seguimiento o nota";
-  if (viewMode === "data") return "Buscar pendiente, cliente o contacto";
-  return "Buscar por cliente, NIT, ciudad o segmento";
-}
-
-function getResultCount(
-  viewMode: ViewMode,
-  companies: Company[],
-  contacts: Contact[],
-  activities: Activity[],
-  dataIssues: DataIssueGroup[],
-  customerResponses: CustomerUpdateResponse[],
-  dataTab: DataTab,
-  prospects: Prospect[]
-) {
-  if (viewMode === "prospecting") return prospects.length;
-  if (viewMode === "contacts") return contacts.length;
-  if (viewMode === "activities") return activities.length;
-  if (viewMode === "data") return dataTab === "responses" ? customerResponses.length : dataIssues.length;
-  return companies.length;
 }

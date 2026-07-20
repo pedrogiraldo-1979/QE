@@ -39,10 +39,13 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 ## D-005 — Separar UI, dominio y acceso a datos
 
-- Estado: Propuesta
+- Estado: Aceptada e implementada en su primer corte
+- Fecha: 2026-07-19
 - Contexto: varias páginas cliente combinan autenticación, consultas, mutaciones, estado, reglas y presentación; `src/app/page.tsx` supera las dos mil líneas.
-- Propuesta: modularizar por dominio y responsabilidad, conservando rutas y comportamiento.
+- Decisión: modularizar por dominio y responsabilidad, conservando rutas y comportamiento.
 - Consecuencia si se acepta: más archivos y límites explícitos, a cambio de menor acoplamiento y mejor capacidad de prueba.
+- Implementación: modelo puro en `src/features/crm`, carga/revisión en `useCrmDashboardData` y una vista exportada por archivo bajo `src/components/crm`.
+- Evidencia: `src/app/page.tsx` pasó de 2.375 a 1.500 líneas; typecheck aprobado y pruebas puras ampliadas de 6 a 11.
 
 ## D-006 — Mantener cambios de backend fuera de la reorganización
 
@@ -149,6 +152,15 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Verificación: TypeScript dejó de enumerar las copias raíz; pasaron typecheck, 6/6 pruebas, build de 10 rutas, manifest y source maps.
 - Reversión: revertir exclusivamente el commit de limpieza o recuperar los cinco archivos desde `957ba5e`.
 - Gate: cerrado tras el checkpoint `f7dff54` en `READY` y la autorización explícita de Pedro para eliminar los cinco archivos.
+
+## D-018 — Reemplazar bridges DOM solo cuando exista composición equivalente
+
+- Estado: Aceptada e implementada parcialmente
+- Fecha: 2026-07-19
+- Contexto: ocho bridges montaban observers, listeners o portales para extender vistas existentes.
+- Decisión: sustituir primero los bridges cuya intención puede expresarse con navegación o JSX directo, sin alterar flujos.
+- Implementación: se retiraron `GlobalTopbarAddAction`, `AddContactFromDetail` y `ProspectingRouteBridge`; sus acciones ahora se renderizan directamente en las rutas propietarias.
+- Límite: `HomeCommercialWorkbench`, `ActivitiesOperationalWorkbench`, `ContactCompletionBridge`, `AddActivityEntryBridge` y `LegacyViewLayoutPolish` permanecen hasta contar con equivalencia funcional y visual autenticada.
 
 ## Plantilla para nuevas decisiones
 

@@ -78,7 +78,7 @@ pnpm build
 
 ## Repository structure
 
-Application code under `src/` is canonical. The duplicate application files at the repository root are legacy references and must not be edited, moved, or removed until the dedicated cleanup plan is approved.
+Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
 
 ## Internal ZeptoMail test
 
