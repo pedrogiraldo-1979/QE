@@ -467,7 +467,7 @@ Corte estructural ejecutado:
 - `src/features/crm/dashboardModel.ts` concentra tipos de vista, etiquetas, formatters, filtros, calidad y selección de próxima actividad;
 - `src/hooks/useCrmDashboardData.ts` concentra las cinco lecturas paralelas del dashboard y la lectura/aprobación/rechazo de respuestas, conservando los nombres de tablas y RPC;
 - `src/components/crm/` contiene vistas nombradas separadas para inicio, métricas, navegación, empresas, contactos, actividades, prospectos, calidad y respuestas;
-- `src/app/page.tsx` quedó en 1.500 líneas, una reducción de 875 líneas (36,8 %);
+- `src/app/page.tsx` quedó en 1.498 líneas, una reducción de 877 líneas (36,9 %);
 - `GlobalTopbarAddAction`, `AddContactFromDetail` y `ProspectingRouteBridge` fueron retirados; botón Agregar, enlace contextual de contacto y navegación usan React/Next directamente;
 - la selección de próxima actividad dejó de ordenar en sitio el arreglo recibido y ahora preserva el orden fuente;
 - se añadieron cinco pruebas puras para estados de cliente, próxima actividad, vencimiento, calidad de contacto, enlaces y respuestas.

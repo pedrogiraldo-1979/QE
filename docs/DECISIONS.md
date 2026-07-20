@@ -45,7 +45,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Decisión: modularizar por dominio y responsabilidad, conservando rutas y comportamiento.
 - Consecuencia si se acepta: más archivos y límites explícitos, a cambio de menor acoplamiento y mejor capacidad de prueba.
 - Implementación: modelo puro en `src/features/crm`, carga/revisión en `useCrmDashboardData` y una vista exportada por archivo bajo `src/components/crm`.
-- Evidencia: `src/app/page.tsx` pasó de 2.375 a 1.500 líneas; typecheck aprobado y pruebas puras ampliadas de 6 a 11.
+- Evidencia: `src/app/page.tsx` pasó de 2.375 a 1.498 líneas; typecheck aprobado y pruebas puras ampliadas de 6 a 11.
 
 ## D-006 — Mantener cambios de backend fuera de la reorganización
 
