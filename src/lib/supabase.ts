@@ -1,8 +1,11 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/database.types";
 
-let browserClient: SupabaseClient | null = null;
+export type CrmSupabaseClient = SupabaseClient<Database>;
 
-export function getSupabaseClient(): SupabaseClient {
+let browserClient: CrmSupabaseClient | null = null;
+
+export function getSupabaseClient(): CrmSupabaseClient {
   if (browserClient) return browserClient;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -10,7 +13,7 @@ export function getSupabaseClient(): SupabaseClient {
 
   if (!supabaseUrl || !supabaseKey) {
     if (typeof window === "undefined") {
-      return createClient("https://placeholder.supabase.co", "placeholder");
+      return createClient<Database>("https://placeholder.supabase.co", "placeholder");
     }
 
     throw new Error(
@@ -18,6 +21,6 @@ export function getSupabaseClient(): SupabaseClient {
     );
   }
 
-  browserClient = createClient(supabaseUrl, supabaseKey);
+  browserClient = createClient<Database>(supabaseUrl, supabaseKey);
   return browserClient;
 }

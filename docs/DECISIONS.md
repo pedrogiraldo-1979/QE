@@ -162,6 +162,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Implementación: se retiraron `GlobalTopbarAddAction`, `AddContactFromDetail` y `ProspectingRouteBridge`; sus acciones ahora se renderizan directamente en las rutas propietarias.
 - Límite: `HomeCommercialWorkbench`, `ActivitiesOperationalWorkbench`, `ContactCompletionBridge`, `AddActivityEntryBridge` y `LegacyViewLayoutPolish` permanecen hasta contar con equivalencia funcional y visual autenticada.
 
+## D-019 — Derivar contratos del esquema remoto y limitar transiciones de revisión
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: los tipos manuales no comprobaban nombres de argumentos RPC ni protegían al frontend frente a columnas nuevas; la RPC de rechazo podía cambiar una respuesta después de aprobada.
+- Decisión: generar `Database` desde el proyecto remoto, tipar el cliente Supabase, declarar columnas explícitas y hacer terminales las decisiones de revisión.
+- Implementación: `database.types.ts`, contratos bajo `src/lib/data/`, corrección a `p_response_id` y migración `20260720031715_guard_customer_response_transitions.sql`.
+- Límite: no imponer unicidad de respuesta por enlace ni limpiar las ocho respuestas de prueba sin una decisión de producto y autorización de datos separada.
+- Evidencia: typecheck detecta el contrato RPC; verificación remota confirma `anon = false`, `authenticated = true` y conteos invariantes de 8 respuestas/8 pendientes.
+
 ## Plantilla para nuevas decisiones
 
 ### D-XXX — Título

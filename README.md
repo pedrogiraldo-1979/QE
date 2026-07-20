@@ -13,11 +13,17 @@ MVP CRM for Quindío Exquisito prospecting and follow-up.
 
 ## Supabase tables expected
 
-The app expects these existing tables:
+The app expects these existing public tables, all protected with RLS:
 
 - `companies`
 - `contacts`
 - `activities`
+- `cu_links`
+- `cu_responses`
+- `prospect_lists`
+- `prospects`
+- `prospect_contacts`
+- `prospect_activities`
 
 The initial import should already contain:
 
@@ -78,7 +84,7 @@ pnpm build
 
 ## Repository structure
 
-Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
+Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. See `docs/DATA-CONTRACTS.md` for the verified backend surface. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
 
 ## Internal ZeptoMail test
 

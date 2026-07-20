@@ -149,19 +149,29 @@ Deuda controlada:
 - no se consolidaron ni retiraron parches CSS porque falta una comparación visual autenticada;
 - esos dos puntos requieren el gate visual/funcional de Fase 6, no cambios de Supabase.
 
-## Fase 5 — Contratos y capa de datos, requiere autorización de Supabase
+## Fase 5 — Contratos y capa de datos (primer corte completado)
 
 Objetivo: alinear tipos y acceso a datos con el backend real.
 
-Trabajo propuesto, no autorizado todavía:
+Trabajo completado:
 
-- obtener o generar tipos desde el esquema verificado;
-- centralizar repositorios/servicios y manejo de errores;
-- revisar consultas amplias `select("*")` y límites fijos;
-- documentar RPC, RLS, Auth y Edge Functions;
-- revisar idempotencia y seguridad de mutaciones destructivas.
+- tipos TypeScript generados desde el proyecto remoto y cliente Supabase tipado con `Database`;
+- tipos de dominio derivados de las filas remotas, conservando sólo compatibilidad explícita de lectura;
+- dashboard y revisión de respuestas centralizados en un repositorio de datos;
+- todos los `select("*")` sustituidos por contratos de columnas compartidos;
+- límites dispersos sustituidos por límites nombrados y documentados;
+- RPC, RLS, Auth, grants, advisors y Edge Function documentados en `docs/DATA-CONTRACTS.md`;
+- argumento de revisión corregido a `p_response_id` según el contrato remoto;
+- rechazo de respuestas endurecido para permitir únicamente la transición desde `pendiente`.
 
-Gate: autorización explícita antes de inspeccionar o cambiar configuración remota, políticas, funciones o datos.
+Deuda controlada:
+
+- paginación antes de superar 1.000 entidades por dominio;
+- repositorios adicionales para mutaciones que aún pertenecen a rutas específicas;
+- decisión separada sobre múltiples respuestas por enlace público, porque el baseline contiene ocho respuestas de prueba para un mismo enlace;
+- protección de contraseñas filtradas y eventual migración del estado `por_validar` continúan pendientes.
+
+Gate de Supabase: autorizado por Pedro al continuar la Fase 5. La única migración de esta fase reemplazó una función y no modificó filas.
 
 ## Fase 6 — Calidad y operación
 

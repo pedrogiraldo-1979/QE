@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { OPERATIONAL_ACTIVITY_FEED_LIMIT, REFERENCE_ENTITY_LIMIT } from "@/lib/data/queryLimits";
 
 type CompanyRow = {
   id: string;
@@ -111,17 +112,21 @@ export default function ActivitiesOperationalWorkbench() {
 
     const [companiesResult, prospectsResult, activitiesResult, prospectActivitiesResult] = await Promise.all([
       supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
-      supabase.from("prospects").select("id,company_name,segment").order("company_name", { ascending: true }).limit(500),
+      supabase
+        .from("prospects")
+        .select("id,company_name,segment")
+        .order("company_name", { ascending: true })
+        .limit(REFERENCE_ENTITY_LIMIT),
       supabase
         .from("activities")
         .select("id,company_id,contact_id,activity_type,notes,activity_date,due_date,completed,created_at")
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(300),
+        .limit(OPERATIONAL_ACTIVITY_FEED_LIMIT),
       supabase
         .from("prospect_activities")
         .select("id,prospect_id,contact_id,activity_type,notes,activity_date,due_date,completed,created_at")
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(300),
+        .limit(OPERATIONAL_ACTIVITY_FEED_LIMIT),
     ]);
 
     if (companiesResult.error || prospectsResult.error || activitiesResult.error || prospectActivitiesResult.error) {

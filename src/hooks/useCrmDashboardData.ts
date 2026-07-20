@@ -1,7 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { CrmSupabaseClient } from "@/lib/supabase";
+import {
+  fetchCrmDashboard,
+  fetchPendingCustomerUpdates,
+  reviewCustomerUpdate,
+} from "@/lib/data/crmDashboardRepository";
 import {
   getResponseId,
   initialData,
@@ -10,7 +15,7 @@ import {
 } from "@/features/crm/dashboardModel";
 import type { Activity, Company, Contact, Prospect, ProspectActivity } from "@/lib/types";
 
-export function useCrmDashboardData(supabase: SupabaseClient, enabled: boolean) {
+export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolean) {
   const [data, setData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -22,7 +27,7 @@ export function useCrmDashboardData(supabase: SupabaseClient, enabled: boolean) 
   const loadCustomerResponses = useCallback(async () => {
     setCustomerResponsesLoading(true);
     setCustomerResponsesError(null);
-    const { data: responses, error } = await supabase.rpc("get_cu_pending_reviews");
+    const { data: responses, error } = await fetchPendingCustomerUpdates(supabase);
 
     if (error) {
       setCustomerResponses([]);
@@ -39,13 +44,8 @@ export function useCrmDashboardData(supabase: SupabaseClient, enabled: boolean) 
     setLoading(true);
     setMessage(null);
 
-    const [companiesResult, contactsResult, activitiesResult, prospectsResult, prospectActivitiesResult] = await Promise.all([
-      supabase.from("companies").select("*").order("name", { ascending: true }),
-      supabase.from("contacts").select("*").order("company_name", { ascending: true }),
-      supabase.from("activities").select("*").order("created_at", { ascending: false }),
-      supabase.from("prospects").select("*").order("company_name", { ascending: true }),
-      supabase.from("prospect_activities").select("*").order("created_at", { ascending: false }),
-    ]);
+    const [companiesResult, contactsResult, activitiesResult, prospectsResult, prospectActivitiesResult] =
+      await fetchCrmDashboard(supabase);
 
     if (companiesResult.error || contactsResult.error || activitiesResult.error) {
       setMessage(
@@ -81,8 +81,7 @@ export function useCrmDashboardData(supabase: SupabaseClient, enabled: boolean) 
     if (!responseId) return;
 
     setProcessingResponseId(responseId);
-    const rpcName = action === "approve" ? "approve_cu_response" : "reject_cu_response";
-    const { error } = await supabase.rpc(rpcName, { response_id: responseId });
+    const { error } = await reviewCustomerUpdate(supabase, action, responseId);
 
     if (error) {
       setMessage(error.message);

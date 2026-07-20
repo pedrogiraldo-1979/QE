@@ -14,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import { COMPANY_COLUMNS, CONTACT_COLUMNS } from "@/lib/data/queryColumns";
 import type { Company, Contact } from "@/lib/types";
 
 const CONTACT_TYPES = ["principal", "secundario", "compras", "chef", "almacen", "operaciones", "administrativo"] as const;
@@ -60,8 +61,8 @@ export default function NewContactPage() {
     setMessage(null);
 
     const [companiesResult, contactsResult] = await Promise.all([
-      supabase.from("companies").select("*").order("name", { ascending: true }),
-      supabase.from("contacts").select("*").order("company_name", { ascending: true }),
+      supabase.from("companies").select(COMPANY_COLUMNS).order("name", { ascending: true }),
+      supabase.from("contacts").select(CONTACT_COLUMNS).order("company_name", { ascending: true }),
     ]);
 
     if (companiesResult.error || contactsResult.error) {
@@ -142,7 +143,7 @@ export default function NewContactPage() {
         phone: phone || null,
         notes: notes || null,
       })
-      .select("*")
+      .select(CONTACT_COLUMNS)
       .single();
 
     if (error) {

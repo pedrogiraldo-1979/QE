@@ -74,6 +74,7 @@ import {
   isConvertedProspect,
   normalizeProspectStatus,
 } from "@/lib/prospectOperations";
+import { ACTIVITY_COLUMNS, PROSPECT_ACTIVITY_COLUMNS } from "@/lib/data/queryColumns";
 import {
   ACTIVITY_TYPES,
   COMPANY_STATUSES,
@@ -192,7 +193,7 @@ export default function HomePage() {
         notes: newActivityNotes.trim(),
         due_date: newActivityDueDate || null,
       })
-      .select("*")
+      .select(ACTIVITY_COLUMNS)
       .single();
 
     if (error) {
@@ -241,7 +242,7 @@ export default function HomePage() {
         notes: newProspectActivityNotes.trim(),
         due_date: newProspectActivityDueDate || null,
       })
-      .select("*")
+      .select(PROSPECT_ACTIVITY_COLUMNS)
       .single();
 
     if (error) {

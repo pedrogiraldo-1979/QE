@@ -16,6 +16,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import { PROSPECT_COLUMNS, PROSPECT_LIST_COLUMNS } from "@/lib/data/queryColumns";
 import type { Prospect, ProspectList } from "@/lib/types";
 
 type ProspectForm = {
@@ -65,7 +66,7 @@ export default function NewProspectPage() {
     setLoading(true);
     setMessage(null);
 
-    const { data, error } = await supabase.from("prospect_lists").select("*").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("prospect_lists").select(PROSPECT_LIST_COLUMNS).order("created_at", { ascending: false });
 
     if (error) {
       setMessage(error.message);
@@ -140,7 +141,7 @@ export default function NewProspectPage() {
         status: "por_revisar",
         notes: nullIfBlank(form.notes),
       })
-      .select("*")
+      .select(PROSPECT_COLUMNS)
       .single();
 
     if (error) {

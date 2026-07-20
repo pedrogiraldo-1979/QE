@@ -1,3 +1,5 @@
+import type { Tables } from "@/lib/database.types";
+
 export type CompanyStatus =
   | "nuevo"
   | "por validar"
@@ -21,110 +23,26 @@ export type ProspectStatus =
 
 export type ProspectPriority = string;
 
-export interface Company {
-  id: string;
-  name: string;
-  legal_name: string | null;
-  nit: string | null;
-  segment: string | null;
-  city: string | null;
-  website: string | null;
-  phone: string | null;
-  address: string | null;
-  status: CompanyStatus | string | null;
-  notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+export type Company = Tables<"companies">;
 
-export interface Contact {
-  id: string;
-  company_id: string | null;
-  company_name: string | null;
-  full_name: string | null;
-  role: string | null;
-  email: string | null;
-  phone: string | null;
-  notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+export type Contact = Tables<"contacts">;
 
-export interface Activity {
-  id: string;
-  company_id: string | null;
-  contact_id: string | null;
-  activity_type: ActivityType | string;
-  notes: string | null;
-  activity_date: string | null;
-  due_date: string | null;
-  completed: boolean | null;
-  created_at: string | null;
-}
+export type Activity = Tables<"activities">;
 
-export interface ProspectList {
-  id: string;
-  name: string;
-  segment: string | null;
-  source: string | null;
-  city: string | null;
-  status: string | null;
-  notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+export type ProspectList = Tables<"prospect_lists">;
 
-export interface Prospect {
-  id: string;
-  list_id: string | null;
-  company_name: string;
-  legal_name: string | null;
-  nit: string | null;
-  segment: string | null;
-  city: string | null;
-  website: string | null;
-  phone: string | null;
-  address: string | null;
-  status: ProspectStatus | string | null;
-  priority: ProspectPriority | string | null;
-  source: string | null;
-  confidence_score: number | null;
-  notes: string | null;
-  converted_company_id: string | null;
-  created_at: string | null;
-  updated_at: string | null;
+export type Prospect = Tables<"prospects"> & {
   // Read-only compatibility while legacy rows and the original home view are stabilized.
   name?: string | null;
   contact_name?: string | null;
   contact_role?: string | null;
   contact_email?: string | null;
   contact_phone?: string | null;
-}
+};
 
-export interface ProspectContact {
-  id: string;
-  prospect_id: string;
-  full_name: string | null;
-  role: string | null;
-  email: string | null;
-  phone: string | null;
-  linkedin_url: string | null;
-  notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-}
+export type ProspectContact = Tables<"prospect_contacts">;
 
-export interface ProspectActivity {
-  id: string;
-  prospect_id: string | null;
-  contact_id: string | null;
-  activity_type: ActivityType | string;
-  notes: string | null;
-  activity_date: string | null;
-  due_date: string | null;
-  completed: boolean | null;
-  created_at: string | null;
-}
+export type ProspectActivity = Tables<"prospect_activities">;
 
 export const COMPANY_STATUSES: CompanyStatus[] = [
   "nuevo",

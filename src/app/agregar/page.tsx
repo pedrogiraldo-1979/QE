@@ -15,6 +15,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import { COMPANY_COLUMNS, CONTACT_COLUMNS } from "@/lib/data/queryColumns";
 import type { Company, Contact } from "@/lib/types";
 
 type CreateMode = "selector" | "company" | "contact";
@@ -83,8 +84,8 @@ export default function AddEntryPage() {
     setMessage(null);
 
     const [companiesResult, contactsResult] = await Promise.all([
-      supabase.from("companies").select("*").order("name", { ascending: true }),
-      supabase.from("contacts").select("*").order("company_name", { ascending: true }),
+      supabase.from("companies").select(COMPANY_COLUMNS).order("name", { ascending: true }),
+      supabase.from("contacts").select(CONTACT_COLUMNS).order("company_name", { ascending: true }),
     ]);
 
     if (companiesResult.error || contactsResult.error) {
@@ -156,7 +157,7 @@ export default function AddEntryPage() {
         status: "por validar",
         notes: companyNotes || null,
       })
-      .select("*")
+      .select(COMPANY_COLUMNS)
       .single();
 
     if (companyError) {
@@ -189,7 +190,7 @@ export default function AddEntryPage() {
           phone: primaryContactPhone || null,
           notes: contactNotes || null,
         })
-        .select("*")
+        .select(CONTACT_COLUMNS)
         .single();
 
       if (contactError) {

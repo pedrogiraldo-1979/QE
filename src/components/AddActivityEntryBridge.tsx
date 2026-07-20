@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarClock, Plus, RotateCcw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { REFERENCE_ENTITY_LIMIT } from "@/lib/data/queryLimits";
 
 const activityTypeOptions = [
   { value: "follow_up", label: "Seguimiento" },
@@ -81,7 +82,11 @@ export default function AddActivityEntryBridge() {
     setLoading(true);
     const [companiesResult, prospectsResult] = await Promise.all([
       supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
-      supabase.from("prospects").select("id,company_name,segment").order("company_name", { ascending: true }).limit(600),
+      supabase
+        .from("prospects")
+        .select("id,company_name,segment")
+        .order("company_name", { ascending: true })
+        .limit(REFERENCE_ENTITY_LIMIT),
     ]);
 
     if (companiesResult.error || prospectsResult.error) {

@@ -480,3 +480,44 @@ Fuera de alcance y sin cambios:
 - archivos CSS y parches visuales, pendientes de una comparación autenticada.
 
 Verificación local completada: typecheck aprobado, 11/11 pruebas aprobadas, build de las mismas 10 rutas y smoke HTTP `200` en 7 rutas representativas. La verificación remota se ejecutará al publicar el commit de Fase 4.
+
+## 17. Contratos y capa de datos — Fase 5
+
+Fecha: 2026-07-19. Autorización: Pedro indicó continuar después del cierre de Fase 4 y del aviso explícito de que Fase 5 incluía inspección controlada de Supabase.
+
+Baseline remoto de solo lectura:
+
+- proyecto `QE2026` saludable, PostgreSQL `17.6.1.127` y PostgREST `14.5`;
+- nueve tablas públicas con RLS y los mismos conteos registrados en Fase 2;
+- ocho RPC públicas tipadas y una función privada de autorización;
+- Edge Function `send-internal-update-test` activa, versión 2 y `verify_jwt = true`;
+- `authenticated` conserva CRUD explícito sobre las nueve tablas; `anon` no conserva grants directos;
+- las nueve políticas públicas exigen la allowlist en `USING` y `WITH CHECK`.
+
+Desalineación encontrada y corregida:
+
+- `approve_cu_response` y `reject_cu_response` reciben `p_response_id`;
+- el frontend enviaba `response_id`, diferencia que los tipos manuales no detectaban;
+- el cliente ahora usa el contrato generado y envía el argumento correcto.
+
+Cambio remoto aplicado:
+
+- migración `20260720031715_guard_customer_response_transitions.sql`;
+- `reject_cu_response` sólo actualiza filas con estado `pendiente`;
+- `anon` continúa sin `EXECUTE`; `authenticated` conserva `EXECUTE`;
+- no se invocó la RPC ni se modificaron datos: los conteos posteriores siguen en 8 respuestas, todas pendientes.
+
+Capa local:
+
+- `src/lib/database.types.ts` generado desde el esquema remoto;
+- cliente `SupabaseClient<Database>` centralizado;
+- tipos de entidad derivados del contrato generado;
+- consultas amplias sustituidas por columnas explícitas compartidas;
+- dashboard/RPC de revisión movidos a `crmDashboardRepository`;
+- límites de referencia y workbench nombrados y documentados.
+
+Decisión de no intervención sobre datos: las ocho respuestas existentes corresponden a un único enlace duplicado de prueba. No se añadió una restricción única ni se cambió `is_active`/`responded_at`, porque eso requiere definir si el formulario admite reenvíos y autorizar una limpieza separada.
+
+Advisors posteriores: sin nuevas alertas. Permanecen las advertencias deliberadas de las dos RPC públicas por token, la protección de contraseñas filtradas deshabilitada y el aviso informativo de RLS sin política sobre la tabla privada sin grants de cliente.
+
+Verificación local: typecheck aprobado, 11/11 pruebas aprobadas, build de 10 rutas y smoke HTTP `200` en 7 rutas representativas. El deployment se verificará después de publicar el commit.

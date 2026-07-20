@@ -19,6 +19,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import { PROSPECT_COLUMNS, PROSPECT_CONTACT_COLUMNS, PROSPECT_LIST_COLUMNS } from "@/lib/data/queryColumns";
 import type { Prospect, ProspectContact, ProspectList } from "@/lib/types";
 import { normalizeProspectStatus } from "@/lib/prospectOperations";
 
@@ -55,9 +56,9 @@ export default function ProspectListsPage() {
     setMessage(null);
 
     const [listsResult, prospectsResult, contactsResult] = await Promise.all([
-      supabase.from("prospect_lists").select("*").order("created_at", { ascending: false }),
-      supabase.from("prospects").select("*").order("created_at", { ascending: false }),
-      supabase.from("prospect_contacts").select("*").order("created_at", { ascending: false }),
+      supabase.from("prospect_lists").select(PROSPECT_LIST_COLUMNS).order("created_at", { ascending: false }),
+      supabase.from("prospects").select(PROSPECT_COLUMNS).order("created_at", { ascending: false }),
+      supabase.from("prospect_contacts").select(PROSPECT_CONTACT_COLUMNS).order("created_at", { ascending: false }),
     ]);
 
     if (listsResult.error || prospectsResult.error || contactsResult.error) {

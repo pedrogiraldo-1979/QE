@@ -29,6 +29,12 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import {
+  COMPANY_COLUMNS,
+  PROSPECT_COLUMNS,
+  PROSPECT_CONTACT_COLUMNS,
+  PROSPECT_LIST_COLUMNS,
+} from "@/lib/data/queryColumns";
 import type { Company, Prospect, ProspectContact, ProspectList, ProspectStatus } from "@/lib/types";
 import {
   findPossibleCompanyMatches,
@@ -211,9 +217,9 @@ export default function ProspectListDetailPage() {
     setMessage(null);
 
     const [listResult, prospectsResult, companiesResult] = await Promise.all([
-      supabase.from("prospect_lists").select("*").eq("id", listId).single(),
-      supabase.from("prospects").select("*").eq("list_id", listId).order("company_name", { ascending: true }),
-      supabase.from("companies").select("*").order("name", { ascending: true }),
+      supabase.from("prospect_lists").select(PROSPECT_LIST_COLUMNS).eq("id", listId).single(),
+      supabase.from("prospects").select(PROSPECT_COLUMNS).eq("list_id", listId).order("company_name", { ascending: true }),
+      supabase.from("companies").select(COMPANY_COLUMNS).order("name", { ascending: true }),
     ]);
 
     if (listResult.error || prospectsResult.error || companiesResult.error) {
@@ -227,7 +233,11 @@ export default function ProspectListDetailPage() {
     let loadedContacts: ProspectContact[] = [];
 
     if (prospectIds.length) {
-      const contactsResult = await supabase.from("prospect_contacts").select("*").in("prospect_id", prospectIds).order("created_at", { ascending: false });
+      const contactsResult = await supabase
+        .from("prospect_contacts")
+        .select(PROSPECT_CONTACT_COLUMNS)
+        .in("prospect_id", prospectIds)
+        .order("created_at", { ascending: false });
       if (contactsResult.error) {
         setMessage(contactsResult.error.message);
         setLoading(false);
@@ -289,7 +299,7 @@ export default function ProspectListDetailPage() {
         status: "por_revisar",
         notes: nullIfBlank(newProspect.notes),
       })
-      .select("*")
+      .select(PROSPECT_COLUMNS)
       .single();
 
     if (error) {
@@ -324,7 +334,12 @@ export default function ProspectListDetailPage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase.from("prospects").update(payload).eq("id", selectedProspect.id).select("*").single();
+    const { data, error } = await supabase
+      .from("prospects")
+      .update(payload)
+      .eq("id", selectedProspect.id)
+      .select(PROSPECT_COLUMNS)
+      .single();
 
     if (error) {
       setMessage(error.message);
@@ -341,7 +356,7 @@ export default function ProspectListDetailPage() {
       .from("prospects")
       .update({ status, updated_at: new Date().toISOString() })
       .eq("id", prospect.id)
-      .select("*")
+      .select(PROSPECT_COLUMNS)
       .single();
 
     if (error) {
@@ -395,7 +410,7 @@ export default function ProspectListDetailPage() {
         linkedin_url: nullIfBlank(newContact.linkedin_url),
         notes: nullIfBlank(newContact.notes),
       })
-      .select("*")
+      .select(PROSPECT_CONTACT_COLUMNS)
       .single();
 
     if (error) {
@@ -436,7 +451,7 @@ export default function ProspectListDetailPage() {
         updated_at: new Date().toISOString(),
       })
       .eq("id", contact.id)
-      .select("*")
+      .select(PROSPECT_CONTACT_COLUMNS)
       .single();
 
     if (error) {

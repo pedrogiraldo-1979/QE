@@ -30,6 +30,8 @@ Si la documentación contradice el comportamiento comprobado del sistema, regist
 - `src/app/`: rutas, layouts y estilos del App Router.
 - `src/components/`: componentes y bridges de interfaz.
 - `src/lib/`: cliente de Supabase, tipos y operaciones compartidas.
+- `src/lib/database.types.ts`: snapshot generado del esquema remoto público.
+- `src/lib/data/`: contratos de columnas, límites y repositorios de acceso a datos.
 - `supabase/functions/`: Edge Functions; fuera de alcance salvo autorización expresa.
 - `docs/`: producto, roadmap, decisiones y auditoría.
 - Raíz: configuración del proyecto. Los duplicados heredados fueron auditados y retirados en la Fase 3 autorizada.
@@ -40,7 +42,7 @@ La fuente canónica de código es `src/`. Esta decisión fue aprobada el 2026-07
 
 1. Comprobar rama, estado del árbol y commit base.
 2. Leer la documentación aplicable y delimitar el cambio.
-3. Inspeccionar antes de editar; no inferir el esquema remoto únicamente desde los tipos TypeScript.
+3. Inspeccionar antes de editar; regenerar y contrastar `database.types.ts`, sin inferir el esquema remoto únicamente desde tipos manuales.
 4. Implementar sin ampliar el alcance.
 5. Ejecutar verificaciones proporcionales: como mínimo `pnpm typecheck` y `pnpm test`; para cambios funcionales, `pnpm build` cuando el entorno lo permita.
 6. Revisar `git diff` y confirmar que no se incluyeron secretos, datos ni archivos generados.

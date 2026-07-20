@@ -14,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
+import { HOME_ACTIVITY_FEED_LIMIT, REFERENCE_ENTITY_LIMIT } from "@/lib/data/queryLimits";
 
 type CompanyRow = {
   id: string;
@@ -123,12 +124,12 @@ export default function HomeCommercialWorkbench() {
         .from("activities")
         .select("id,company_id,activity_type,notes,due_date,completed")
         .order("due_date", { ascending: true, nullsFirst: false })
-        .limit(200),
+        .limit(HOME_ACTIVITY_FEED_LIMIT),
       supabase
         .from("prospects")
         .select("id,company_name,segment,status,priority")
         .order("company_name", { ascending: true })
-        .limit(500),
+        .limit(REFERENCE_ENTITY_LIMIT),
     ]);
 
     if (companiesResult.error || contactsResult.error || activitiesResult.error || prospectsResult.error) {
