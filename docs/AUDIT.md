@@ -554,3 +554,29 @@ Verificación observable:
 - no se introdujeron datos de usuario, payloads, tokens privados o credenciales en logs.
 
 Límite del resultado: no se validaron dashboard, tablas, portales, login real, RLS bajo sesión ni mutaciones. Esa evidencia exige una rama/proyecto Supabase controlado y credenciales de prueba. El procedimiento y la reversión quedan definidos en `docs/RELEASE-CHECKLIST.md`.
+
+## 19. Gate autenticado y mutante aislado — Fase 6
+
+Fecha: 2026-07-20. Alcance autorizado: proyecto Supabase temporal, fixtures exclusivamente sintéticos, pruebas mutantes y limpieza posterior; producción permaneció en modo de solo lectura.
+
+Entorno:
+
+- Supabase Branching no estaba disponible en el plan Free; el intento fue rechazado antes de crear recursos y no generó cargo;
+- se creó un proyecto gratuito y desechable en Canadá Central, separado del proyecto productivo;
+- no se copiaron filas productivas; la inspección del proyecto real se limitó a metadatos de catálogo necesarios para contrastar el contrato;
+- se comprobó que las cinco migraciones versionadas son incrementales y no reconstruyen las tablas iniciales en una base vacía;
+- para desbloquear exclusivamente este ensayo se reprodujo el contrato observado dentro del proyecto temporal. Esa reproducción no sustituye una migración baseline revisada y versionada.
+
+Cobertura ejecutada:
+
+- 8/8 pruebas de integración: denegación anónima, usuario externo sin acceso, allowlist administrativa, guardrails del formulario público, aprobación/rechazo terminales, conversión idempotente, eliminación idempotente y cascadas;
+- navegación autenticada manual por dashboard, clientes, contactos, actividades, actualización de datos y respuestas, usando sólo fixtures sintéticos;
+- consola limpia, sin overflow horizontal y controles con nombres accesibles después de añadir etiquetas a búsqueda y filtros;
+- la navegación automatizada hacia Prospección quedó sin evidencia visual por una restricción de seguridad del navegador de prueba; el endpoint sí permanece cubierto por smoke HTTP y los flujos de prospectos por la suite de integración.
+
+Resultado y deuda:
+
+- los advisors no detectaron una regresión crítica; persistieron únicamente las advertencias deliberadas de las dos RPC públicas `SECURITY DEFINER` y avisos informativos de índices sin uso en la base nueva;
+- el suite normal continúa siendo no mutante; la integración requiere variables `QE_TEST_*` y falla si faltan;
+- la deuda prioritaria es crear una baseline reproducible del esquema, revisarla fuera de producción y repetir desde cero este gate;
+- al cerrar la prueba se eliminaron todas las filas de negocio, la allowlist y los usuarios Auth sintéticos; los conteos quedaron en cero y el proyecto temporal entró en pausa. La eliminación definitiva del proyecto puede requerir el Dashboard de Supabase.

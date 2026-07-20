@@ -23,6 +23,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Abrir una pestaña nueva y comprobar que el login hidrata sin error overlay ni errores de consola.
 - [ ] Revisar al menos un viewport de escritorio y uno móvil; comprobar overflow y nombres/etiquetas de controles.
 - [ ] Si el cambio afecta una superficie autenticada, validarla contra un entorno de datos controlado antes de aprobar el release.
+- [ ] Ejecutar `pnpm test:integration` sólo con variables `QE_TEST_*` de un proyecto desechable; repetir el `project_ref` en `QE_TEST_SUPABASE_PROJECT_REF` y `QE_TEST_CONFIRM_DISPOSABLE_PROJECT` antes de iniciar.
 
 Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT_PUBLIC_` quedan embebidas durante el build.
 

@@ -52,6 +52,8 @@ La verificación completa local usa `pnpm verify`. Después del build, iniciar `
 
 La publicación y reversión deben seguir `docs/RELEASE-CHECKLIST.md`. No registrar payloads, tokens, emails, UUID de usuarios ni credenciales en logs de CI, navegador o despliegue.
 
+Las pruebas autenticadas o mutantes de Supabase deben ejecutarse únicamente contra un proyecto desechable y aislado, usando variables `QE_TEST_*`. Antes de ejecutarlas, comprobar explícitamente el `project_ref`; nunca apuntarlas al proyecto productivo. El entorno debe limpiarse y pausarse o eliminarse al finalizar.
+
 ## Convenciones
 
 - TypeScript estricto; evitar `any` salvo justificación documentada.

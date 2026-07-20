@@ -173,7 +173,7 @@ Deuda controlada:
 
 Gate de Supabase: autorizado por Pedro al continuar la Fase 5. La única migración de esta fase reemplazó una función y no modificó filas.
 
-## Fase 6 — Calidad y operación (primer corte operativo completado)
+## Fase 6 — Calidad y operación (gate autenticado completado)
 
 Objetivo: hacer el sistema seguro de evolucionar y operar.
 
@@ -186,15 +186,18 @@ Trabajo completado:
 - verificación de hidratación, consola, semántica básica y overflow en escritorio y móvil para el login y la superficie pública sin token;
 - variables públicas de Supabase presentes durante el build de CI, tras comprobar que inyectarlas sólo al iniciar no hidrata el bundle;
 - checklist trazable de release, observación y rollback sin datos sensibles.
+- suite de integración separada contra Supabase desechable: acceso anónimo denegado, allowlist, formularios públicos, transiciones terminales, conversión/eliminación idempotentes y cascadas;
+- verificación autenticada manual del dashboard, clientes, contactos, actividades, actualización de datos y respuestas con fixtures sintéticos;
+- nombres accesibles añadidos a búsqueda y filtros del dashboard tras el hallazgo visual.
 
 Deuda controlada:
 
-- pruebas autenticadas de navegación y mutación contra una rama/proyecto Supabase aislado;
-- comparación visual autenticada de dashboard, tablas, portales y los cinco bridges complejos;
+- reconstrucción reproducible del esquema inicial: las migraciones versionadas actuales son incrementales y no levantan por sí solas un proyecto vacío;
+- completar la comparación visual autenticada de Prospección, portales y los cinco bridges complejos;
 - cobertura automática de navegador; no se añadió Playwright ni otra dependencia sin un gate específico;
 - telemetría de aplicación más allá de los logs de CI y Vercel, pendiente de definir retención, alertas y proveedor.
 
-Criterio para el siguiente gate: disponer de un entorno Supabase controlado y credenciales de prueba sin reutilizar datos productivos. Hasta entonces, producción sólo admite smoke público/no mutante y observación de errores.
+Criterio para el siguiente gate: crear una migración baseline revisable que reconstruya el esquema en vacío y repetir la suite aislada desde esa fuente versionada. No aplicar esa baseline sobre producción.
 
 ## Orden de aprobación solicitado
 

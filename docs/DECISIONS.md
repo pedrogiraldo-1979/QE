@@ -176,6 +176,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Límite: no imponer unicidad de respuesta por enlace ni limpiar las ocho respuestas de prueba sin una decisión de producto y autorización de datos separada.
 - Evidencia: typecheck detecta el contrato RPC; verificación remota confirma `anon = false`, `authenticated = true` y conteos invariantes de 8 respuestas/8 pendientes.
 
+## D-020 — Aislar las pruebas autenticadas y mutantes de Supabase
+
+- Estado: Aceptada e implementada
+- Fecha: 2026-07-20
+- Responsable: Pedro
+- Contexto: los smoke públicos no validan RLS, allowlist, RPC transaccionales ni flujos autenticados; ejecutar esas pruebas en producción introduciría datos y riesgo operativo.
+- Decisión: mantener una suite separada, excluida de `pnpm test`, que sólo se habilita con variables `QE_TEST_*` de un proyecto desechable. La URL, el `project_ref` y una segunda confirmación deben coincidir, y el proyecto productivo conocido queda bloqueado explícitamente.
+- Operación: crear fixtures sintéticos, retirar usuarios y filas de prueba, y pausar o eliminar el proyecto al terminar. Nunca copiar filas, credenciales o secretos de producción.
+- Evidencia: 8/8 pruebas de integración aprobadas en un proyecto gratuito aislado; el proyecto productivo no recibió migraciones ni mutaciones durante esta ejecución.
+- Consecuencia: queda abierta una baseline versionada porque las migraciones existentes son incrementales y no reconstruyen actualmente el esquema desde cero.
+
 ## Plantilla para nuevas decisiones
 
 ### D-XXX — Título

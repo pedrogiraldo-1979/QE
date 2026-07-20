@@ -752,6 +752,7 @@ export default function HomePage() {
                   <Search size={17} />
                   <input
                     placeholder={getSearchPlaceholder(viewMode)}
+                    aria-label={getSearchPlaceholder(viewMode)}
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                   />
@@ -760,7 +761,11 @@ export default function HomePage() {
                   <>
                     <label className="select-shell">
                       <Filter size={16} />
-                      <select value={segmentFilter} onChange={(event) => setSegmentFilter(event.target.value)}>
+                      <select
+                        aria-label={viewMode === "prospecting" ? "Filtrar prospectos por segmento" : "Filtrar clientes por segmento"}
+                        value={segmentFilter}
+                        onChange={(event) => setSegmentFilter(event.target.value)}
+                      >
                         <option value="todos">Segmentos</option>
                         {(viewMode === "prospecting" ? prospectSegments : segments).map((segment) => (
                           <option key={segment} value={segment}>
@@ -771,7 +776,11 @@ export default function HomePage() {
                     </label>
                     <label className="select-shell">
                       <Filter size={16} />
-                      <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                      <select
+                        aria-label={viewMode === "prospecting" ? "Filtrar prospectos por estado" : "Filtrar clientes por estado"}
+                        value={statusFilter}
+                        onChange={(event) => setStatusFilter(event.target.value)}
+                      >
                         <option value="todos">Estados</option>
                         {viewMode === "prospecting"
                           ? PROSPECT_STATUSES.map((status) => (

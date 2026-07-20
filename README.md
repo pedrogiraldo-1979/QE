@@ -84,6 +84,8 @@ El pipeline ejecuta typecheck, 15 pruebas unitarias/de contrato, build de produc
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 
+Las pruebas autenticadas y mutantes están separadas del suite normal y exigen un proyecto Supabase desechable. Configurar únicamente variables `QE_TEST_*` del entorno aislado, repetir el mismo `project_ref` en `QE_TEST_SUPABASE_PROJECT_REF` y `QE_TEST_CONFIRM_DISPOSABLE_PROJECT`, y ejecutar `pnpm test:integration`; la suite bloquea el proyecto productivo conocido.
+
 ## Repository structure
 
 Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. See `docs/DATA-CONTRACTS.md` for the verified backend surface. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
