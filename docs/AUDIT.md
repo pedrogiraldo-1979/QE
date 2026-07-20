@@ -420,7 +420,7 @@ La comparación completa está en `docs/PHASE-3-DUPLICATES.md`.
 Conclusiones:
 
 - los archivos raíz `page.tsx`, `layout.tsx`, `globals.css`, `supabase.ts` y `types.ts` no generan rutas ni aparecen en source maps;
-- los cuatro archivos TypeScript raíz sí son incluidos innecesariamente por el patrón amplio de `tsconfig.json`, por lo que todavía pueden romper typecheck aunque no formen parte del runtime;
+- antes del retiro, los cuatro archivos TypeScript raíz eran incluidos innecesariamente por el patrón amplio de `tsconfig.json`, aunque no formaban parte del runtime;
 - `page.tsx` raíz quedó congelado en `d390f5e`; sus 14 funciones tienen equivalente nominal en `src/app/page.tsx`, que contiene 65 funciones y los flujos posteriores;
 - `layout.tsx` raíz no contiene bridges ni hojas de estilo posteriores;
 - `.card` es el único selector simple exclusivo de `globals.css` raíz y solo es usado por `page.tsx` raíz;
@@ -441,4 +441,13 @@ Evidencia de build y despliegue:
 - el checkpoint `f7dff54` produjo el deployment de producción `dpl_AtBieAF6GGuzDNJkPA11wzK1zvga` en estado `READY`;
 - `https://qe-chi.vercel.app` respondió `200`, mostró la variante canónica y no se detectaron errores de runtime en la hora posterior al deployment.
 
-Decisión operativa: la corrección de Vercel está confirmada. No ejecutar el retiro hasta recibir el gate explícito de eliminación.
+Ejecución autorizada:
+
+- Pedro autorizó explícitamente eliminar los cinco archivos inventariados;
+- se retiraron juntos `page.tsx`, `layout.tsx`, `globals.css`, `supabase.ts` y `types.ts` de la raíz;
+- no se modificó `src/`, Supabase ni datos;
+- `tsc --listFilesOnly` confirmó que las cuatro copias TS/TSX ya no forman parte del typecheck;
+- pasaron typecheck, 6/6 pruebas y el build de las mismas 10 rutas;
+- el manifest mantuvo el baseline y los source maps conservaron referencias a `src/` sin referencias a las copias eliminadas.
+
+Decisión operativa: Fase 3 completada localmente; el commit estructural debe validarse en producción antes de cerrar la entrega remota.

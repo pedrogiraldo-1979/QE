@@ -4,8 +4,8 @@
 
 - Auditoría: completada el 2026-07-19.
 - Fuente canónica: `src/`, aprobada previamente.
-- Eliminación: no ejecutada.
-- Gate actual: el deployment de producción ya está `READY`; resta solicitar aprobación explícita para retirar los cinco archivos.
+- Eliminación: ejecutada como una unidad el 2026-07-19.
+- Gate: cerrado mediante deployment de producción `READY` y autorización explícita de Pedro.
 
 ## Inventario comparado
 
@@ -89,33 +89,32 @@ El cambio de npm a pnpm invalidó la caché y Vercel exigió una aprobación exp
 
 El checkpoint `f7dff54` produjo el deployment de producción `dpl_AtBieAF6GGuzDNJkPA11wzK1zvga` en estado `READY`. La URL pública respondió `200` con la variante canónica y la revisión de runtime de la hora posterior no encontró errores.
 
-## Plan exacto de retiro
+## Ejecución del retiro
 
-Después de obtener un deployment `READY` del checkpoint:
+Después de obtener el deployment `READY` y la aprobación explícita:
 
-1. crear una rama dedicada desde `main` limpia;
-2. eliminar juntos únicamente:
+1. se confirmó `main` limpia y sincronizada con `origin/main` en `c0e6422`;
+2. se eliminaron juntos únicamente:
    - `page.tsx`;
    - `layout.tsx`;
    - `globals.css`;
    - `supabase.ts`;
    - `types.ts`;
-3. no mover contenido ni editar archivos canónicos en ese commit;
-4. ejecutar typecheck y confirmar que los cuatro archivos dejan de aparecer en `--listFilesOnly`;
-5. ejecutar las pruebas puras;
-6. ejecutar build y comparar manifest/rutas con el baseline;
-7. verificar que los source maps sigan apuntando a `src/`;
-8. levantar un preview de Vercel y ejecutar smoke sobre las rutas públicas e internas sin mutar datos;
-9. revisar el diff, que debe contener exactamente cinco eliminaciones;
-10. crear un commit estructural separado y solicitar aprobación antes de integrarlo.
+3. no se movió contenido ni se editaron archivos canónicos;
+4. TypeScript confirmó que las cuatro copias TS/TSX dejaron de aparecer en `--listFilesOnly`;
+5. pasaron typecheck y 6/6 pruebas puras;
+6. el build conservó las mismas 10 rutas del baseline;
+7. los source maps conservaron referencias positivas a `src/` y cero referencias a las copias raíz;
+8. el diff estructural contiene exactamente las cinco eliminaciones, además de la actualización documental del cierre;
+9. la publicación del commit debe alcanzar `READY` antes de dar por cerrada la entrega remota.
 
 ## Rollback
 
 La recuperación preferida es revertir únicamente el commit de limpieza. Como respaldo, el commit `957ba5e` conserva las cinco copias con sus hashes originales. No se requiere rollback de Supabase, datos, variables ni servicios externos porque la limpieza es exclusivamente local al repositorio.
 
-## Gate solicitado
+## Gate resuelto
 
-No aprobar todavía el borrado hasta que:
-
-- se confirme nuevamente que el árbol está limpio;
-- Pedro autorice explícitamente las cinco eliminaciones listadas.
+- árbol limpio y sincronizado antes del retiro: confirmado;
+- deployment previo `READY`: confirmado;
+- autorización explícita de Pedro: recibida;
+- eliminación limitada a los cinco archivos inventariados: confirmada.

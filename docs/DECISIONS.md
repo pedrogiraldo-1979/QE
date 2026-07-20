@@ -141,14 +141,14 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 ## D-017 — Retirar los cinco duplicados raíz como una unidad
 
-- Estado: Propuesta lista para gate, no ejecutada
+- Estado: Aceptada y ejecutada
 - Fecha: 2026-07-19
 - Contexto: `page.tsx`, `layout.tsx`, `globals.css`, `supabase.ts` y `types.ts` en la raíz son versiones heredadas; Next solo enruta `src/app`, los aliases resuelven a `src/lib` y el bundle no contiene las copias.
-- Propuesta: eliminarlos juntos en un commit estructural independiente, sin trasladar contenido ni cambiar configuración.
+- Decisión: eliminarlos juntos en un commit estructural independiente, sin trasladar contenido ni cambiar configuración.
 - Justificación: las 14 funciones del `page.tsx` raíz tienen equivalente nominal en la página canónica; `.card` es el único selector exclusivo de la hoja raíz y solo lo usa esa página; las copias de tipos y Supabase no tienen consumidores.
-- Verificación requerida: typecheck, pruebas, build, manifest, source maps, smoke de rutas y preview de Vercel.
+- Verificación: TypeScript dejó de enumerar las copias raíz; pasaron typecheck, 6/6 pruebas, build de 10 rutas, manifest y source maps.
 - Reversión: revertir exclusivamente el commit de limpieza o recuperar los cinco archivos desde `957ba5e`.
-- Gate: la instalación quedó corregida y el checkpoint `f7dff54` alcanzó `READY`; resta únicamente recibir aprobación explícita para el borrado.
+- Gate: cerrado tras el checkpoint `f7dff54` en `READY` y la autorización explícita de Pedro para eliminar los cinco archivos.
 
 ## Plantilla para nuevas decisiones
 

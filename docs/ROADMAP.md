@@ -79,7 +79,7 @@ Gates independientes:
 - inspección o modificación de Supabase requiere autorización expresa;
 - cualquier prueba que mute datos debe usar un entorno controlado.
 
-## Fase 3 — Resolución controlada de duplicados (auditoría completada; retiro pendiente de aprobación)
+## Fase 3 — Resolución controlada de duplicados (completada)
 
 Objetivo: retirar ambigüedad entre raíz y `src/`.
 
@@ -109,9 +109,12 @@ Estado de la auditoría:
 - no se encontró funcionalidad única en las copias raíz que deba trasladarse;
 - `src/` está confirmado como fuente canónica local y desplegada;
 - el plan exacto está en `docs/PHASE-3-DUPLICATES.md`;
-- no se eliminó ni modificó ningún duplicado.
+- Pedro autorizó explícitamente el retiro de los cinco archivos;
+- las cinco copias raíz fueron eliminadas juntas, sin trasladar contenido ni modificar `src/`;
+- TypeScript dejó de incluir las cuatro copias TS/TSX;
+- typecheck, 6/6 pruebas, build de 10 rutas, manifest y source maps conservaron el baseline canónico.
 
-Gate previo al retiro: el deployment de `957ba5e` falló durante `pnpm install` con `ERR_PNPM_IGNORED_BUILDS` para `sharp@0.34.5`. La corrección mínima mediante `allowBuilds` pasó instalación, typecheck, pruebas, build local y deployment de producción `READY` en `f7dff54`. Resta la aprobación explícita para retirar los cinco duplicados.
+Resultado: el gate técnico y la aprobación explícita quedaron satisfechos. La reversión consiste en revertir únicamente el commit estructural de limpieza.
 
 ## Fase 4 — Modularización de interfaz, pendiente de aprobación
 
