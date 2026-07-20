@@ -5,7 +5,7 @@
 - Auditoría: completada el 2026-07-19.
 - Fuente canónica: `src/`, aprobada previamente.
 - Eliminación: no ejecutada.
-- Gate actual: recuperar primero un deployment de producción `READY` y solicitar aprobación explícita para retirar los cinco archivos.
+- Gate actual: el deployment de producción ya está `READY`; resta solicitar aprobación explícita para retirar los cinco archivos.
 
 ## Inventario comparado
 
@@ -85,7 +85,9 @@ ERR_PNPM_IGNORED_BUILDS: Ignored build scripts: sharp@0.34.5
 Command "pnpm install" exited with 1
 ```
 
-El cambio de npm a pnpm invalidó la caché y Vercel exigió una aprobación explícita del script de build. Este problema es independiente de los duplicados. Se preparó el cambio separado `pnpm-workspace.yaml`, que autoriza exclusivamente el build de `sharp` mediante `allowBuilds`. La instalación, el typecheck, las 6 pruebas y el build local de 10 rutas quedaron correctos; falta la confirmación remota.
+El cambio de npm a pnpm invalidó la caché y Vercel exigió una aprobación explícita del script de build. Este problema es independiente de los duplicados. El cambio separado `pnpm-workspace.yaml` autoriza exclusivamente el build de `sharp` mediante `allowBuilds`. La instalación, el typecheck, las 6 pruebas y el build local de 10 rutas quedaron correctos.
+
+El checkpoint `f7dff54` produjo el deployment de producción `dpl_AtBieAF6GGuzDNJkPA11wzK1zvga` en estado `READY`. La URL pública respondió `200` con la variante canónica y la revisión de runtime de la hora posterior no encontró errores.
 
 ## Plan exacto de retiro
 
@@ -115,7 +117,5 @@ La recuperación preferida es revertir únicamente el commit de limpieza. Como r
 
 No aprobar todavía el borrado hasta que:
 
-- el problema `ERR_PNPM_IGNORED_BUILDS` esté resuelto;
-- el checkpoint tenga deployment `READY`;
 - se confirme nuevamente que el árbol está limpio;
 - Pedro autorice explícitamente las cinco eliminaciones listadas.

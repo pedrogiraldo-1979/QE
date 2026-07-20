@@ -79,7 +79,7 @@ Gates independientes:
 - inspección o modificación de Supabase requiere autorización expresa;
 - cualquier prueba que mute datos debe usar un entorno controlado.
 
-## Fase 3 — Resolución controlada de duplicados (auditoría completada; retiro bloqueado)
+## Fase 3 — Resolución controlada de duplicados (auditoría completada; retiro pendiente de aprobación)
 
 Objetivo: retirar ambigüedad entre raíz y `src/`.
 
@@ -111,7 +111,7 @@ Estado de la auditoría:
 - el plan exacto está en `docs/PHASE-3-DUPLICATES.md`;
 - no se eliminó ni modificó ningún duplicado.
 
-Gate previo al retiro: el deployment de producción del checkpoint `957ba5e` falló durante `pnpm install` con `ERR_PNPM_IGNORED_BUILDS` para `sharp@0.34.5`. La corrección mínima mediante `allowBuilds` ya pasó instalación, typecheck, pruebas y build local; falta confirmarla en un deployment `READY`. Este fallo no está causado por los duplicados.
+Gate previo al retiro: el deployment de `957ba5e` falló durante `pnpm install` con `ERR_PNPM_IGNORED_BUILDS` para `sharp@0.34.5`. La corrección mínima mediante `allowBuilds` pasó instalación, typecheck, pruebas, build local y deployment de producción `READY` en `f7dff54`. Resta la aprobación explícita para retirar los cinco duplicados.
 
 ## Fase 4 — Modularización de interfaz, pendiente de aprobación
 

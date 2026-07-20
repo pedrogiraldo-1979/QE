@@ -148,7 +148,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Justificación: las 14 funciones del `page.tsx` raíz tienen equivalente nominal en la página canónica; `.card` es el único selector exclusivo de la hoja raíz y solo lo usa esa página; las copias de tipos y Supabase no tienen consumidores.
 - Verificación requerida: typecheck, pruebas, build, manifest, source maps, smoke de rutas y preview de Vercel.
 - Reversión: revertir exclusivamente el commit de limpieza o recuperar los cinco archivos desde `957ba5e`.
-- Gate: resolver primero el deployment fallido de `957ba5e` y recibir aprobación explícita para el borrado.
+- Gate: la instalación quedó corregida y el checkpoint `f7dff54` alcanzó `READY`; resta únicamente recibir aprobación explícita para el borrado.
 
 ## Plantilla para nuevas decisiones
 

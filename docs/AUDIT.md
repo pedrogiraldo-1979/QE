@@ -437,6 +437,8 @@ Evidencia de build y despliegue:
 - el deployment de `957ba5e` falló antes del build, durante instalación de pnpm, con `ERR_PNPM_IGNORED_BUILDS` para `sharp@0.34.5`;
 - la producción continúa sirviendo el deployment anterior y el fallo no guarda relación con los duplicados;
 - se añadió `pnpm-workspace.yaml` con `allowBuilds: { sharp: true }`, el permiso mínimo compatible con pnpm 11;
-- con esa configuración, la instalación ejecutó el instalador de `sharp` y pasaron typecheck, 6/6 pruebas y el build local de 10 rutas.
+- con esa configuración, la instalación ejecutó el instalador de `sharp` y pasaron typecheck, 6/6 pruebas y el build local de 10 rutas;
+- el checkpoint `f7dff54` produjo el deployment de producción `dpl_AtBieAF6GGuzDNJkPA11wzK1zvga` en estado `READY`;
+- `https://qe-chi.vercel.app` respondió `200`, mostró la variante canónica y no se detectaron errores de runtime en la hora posterior al deployment.
 
-Decisión operativa: no ejecutar el retiro hasta confirmar la corrección con un deployment `READY` en Vercel y recibir el gate explícito de eliminación.
+Decisión operativa: la corrección de Vercel está confirmada. No ejecutar el retiro hasta recibir el gate explícito de eliminación.
