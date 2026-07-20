@@ -173,18 +173,28 @@ Deuda controlada:
 
 Gate de Supabase: autorizado por Pedro al continuar la Fase 5. La única migración de esta fase reemplazó una función y no modificó filas.
 
-## Fase 6 — Calidad y operación
+## Fase 6 — Calidad y operación (primer corte operativo completado)
 
 Objetivo: hacer el sistema seguro de evolucionar y operar.
 
-Trabajo propuesto:
+Trabajo completado:
 
-- pruebas unitarias para reglas puras;
-- pruebas de integración contra un entorno controlado;
-- pruebas end-to-end de flujos críticos;
-- accesibilidad y revisión responsive;
-- observabilidad sin datos sensibles;
-- checklist de release y rollback.
+- 15 pruebas nativas de Node para reglas puras y contratos críticos de datos;
+- barreras contra deriva de tablas/RPC, regreso de `select("*")`, argumentos RPC incorrectos y relajación de la transición de rechazo;
+- smoke HTTP reproducible para ocho rutas y una respuesta `404`;
+- CI en GitHub Actions con instalación congelada, typecheck, pruebas, build y smoke del servidor de producción;
+- verificación de hidratación, consola, semántica básica y overflow en escritorio y móvil para el login y la superficie pública sin token;
+- variables públicas de Supabase presentes durante el build de CI, tras comprobar que inyectarlas sólo al iniciar no hidrata el bundle;
+- checklist trazable de release, observación y rollback sin datos sensibles.
+
+Deuda controlada:
+
+- pruebas autenticadas de navegación y mutación contra una rama/proyecto Supabase aislado;
+- comparación visual autenticada de dashboard, tablas, portales y los cinco bridges complejos;
+- cobertura automática de navegador; no se añadió Playwright ni otra dependencia sin un gate específico;
+- telemetría de aplicación más allá de los logs de CI y Vercel, pendiente de definir retención, alertas y proveedor.
+
+Criterio para el siguiente gate: disponer de un entorno Supabase controlado y credenciales de prueba sin reutilizar datos productivos. Hasta entonces, producción sólo admite smoke público/no mutante y observación de errores.
 
 ## Orden de aprobación solicitado
 

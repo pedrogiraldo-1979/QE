@@ -44,9 +44,13 @@ La fuente canónica de código es `src/`. Esta decisión fue aprobada el 2026-07
 2. Leer la documentación aplicable y delimitar el cambio.
 3. Inspeccionar antes de editar; regenerar y contrastar `database.types.ts`, sin inferir el esquema remoto únicamente desde tipos manuales.
 4. Implementar sin ampliar el alcance.
-5. Ejecutar verificaciones proporcionales: como mínimo `pnpm typecheck` y `pnpm test`; para cambios funcionales, `pnpm build` cuando el entorno lo permita.
+5. Ejecutar verificaciones proporcionales: como mínimo `pnpm typecheck` y `pnpm test`; para cambios funcionales, `pnpm build` y el smoke HTTP con un servidor de producción local.
 6. Revisar `git diff` y confirmar que no se incluyeron secretos, datos ni archivos generados.
 7. Actualizar `docs/DECISIONS.md` si se adopta una decisión arquitectónica y `docs/AUDIT.md` si cambia el estado estructural.
+
+La verificación completa local usa `pnpm verify`. Después del build, iniciar `pnpm start` y ejecutar `pnpm test:smoke`. Las variables `NEXT_PUBLIC_` de Supabase deben existir durante el build para que el bundle del navegador pueda hidratar; un HTTP `200` por sí solo no demuestra que la interfaz cargue.
+
+La publicación y reversión deben seguir `docs/RELEASE-CHECKLIST.md`. No registrar payloads, tokens, emails, UUID de usuarios ni credenciales en logs de CI, navegador o despliegue.
 
 ## Convenciones
 

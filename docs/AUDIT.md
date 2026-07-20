@@ -521,3 +521,36 @@ Decisión de no intervención sobre datos: las ocho respuestas existentes corres
 Advisors posteriores: sin nuevas alertas. Permanecen las advertencias deliberadas de las dos RPC públicas por token, la protección de contraseñas filtradas deshabilitada y el aviso informativo de RLS sin política sobre la tabla privada sin grants de cliente.
 
 Verificación local: typecheck aprobado, 11/11 pruebas aprobadas, build de 10 rutas y smoke HTTP `200` en 7 rutas representativas. El deployment se verificará después de publicar el commit.
+
+## 18. Calidad y operación — Fase 6
+
+Fecha: 2026-07-19. Alcance autorizado: calidad, CI, verificación no mutante y operación; sin cambios funcionales, de esquema, RLS, Edge Functions o datos.
+
+Red de seguridad añadida:
+
+- cuatro pruebas de contrato elevan el total de 11 a 15;
+- se comprueban las nueve tablas y ocho RPC del contrato generado;
+- el árbol `src/` no puede reintroducir `select("*")` sin romper CI;
+- el repositorio de revisión debe conservar `p_response_id`;
+- la migración de rechazo debe conservar el estado origen `pendiente`, revocar ejecución amplia y concederla sólo a `authenticated`;
+- `scripts/smoke.mjs` comprueba ocho rutas `200`, la declaración `lang="es"`, un documento HTML y una ruta inexistente `404`;
+- `.github/workflows/ci.yml` instala desde el lockfile y ejecuta typecheck, pruebas, build y smoke.
+
+Hallazgo de verificación corregido en el procedimiento:
+
+- un primer build sin variables públicas entregó HTML `200`, pero el navegador falló al hidratar con `Missing Supabase env vars`;
+- reiniciar el servidor con variables no reparó ese bundle, porque `NEXT_PUBLIC_` se incorpora durante el build;
+- al recompilar con los valores públicos ya versionados en `.env.example`, el login hidrató correctamente y una pestaña limpia no registró warnings ni errores;
+- CI declara esos dos valores públicos en el job de build. No se añadió ninguna clave privada.
+
+Verificación observable:
+
+- build aprobado: 10/10 páginas, incluidas ocho rutas de aplicación y la ruta dinámica;
+- pruebas: 15/15 aprobadas;
+- smoke: 9/9 verificaciones aprobadas;
+- escritorio 1280×720: login visible, `lang="es"`, sin error overlay, overflow horizontal ni errores de consola;
+- móvil 390×844: login sin overflow, campos etiquetados y botón con nombre accesible;
+- superficie pública sin token: mensaje `Enlace no disponible`, sin overflow ni controles sin etiqueta;
+- no se introdujeron datos de usuario, payloads, tokens privados o credenciales en logs.
+
+Límite del resultado: no se validaron dashboard, tablas, portales, login real, RLS bajo sesión ni mutaciones. Esa evidencia exige una rama/proyecto Supabase controlado y credenciales de prueba. El procedimiento y la reversión quedan definidos en `docs/RELEASE-CHECKLIST.md`.

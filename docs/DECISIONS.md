@@ -65,10 +65,13 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 ## D-008 — Estrategia de pruebas
 
-- Estado: Pendiente
-- Contexto: no se observaron archivos ni scripts de pruebas automatizadas en la estructura inspeccionada.
-- Decisión requerida: acordar niveles de prueba, entorno de datos seguro y criterios mínimos de CI.
-- Restricción: las pruebas que muten datos deben usar un entorno controlado y autorización específica.
+- Estado: Aceptada e implementada en su primer corte
+- Fecha: 2026-07-19
+- Responsable: Pedro
+- Contexto: la Fase 2 creó una base de pruebas puras, pero faltaban CI, contratos, smoke reproducible, navegador y un procedimiento de release.
+- Decisión: usar el runner nativo de Node para reglas/contratos, ejecutar typecheck, pruebas, build y smoke HTTP en GitHub Actions, y reservar las pruebas autenticadas o mutantes para un entorno Supabase controlado.
+- Restricción: no usar producción para preparar fixtures, probar RPC mutantes ni automatizar login. No se añade un framework E2E hasta aprobar la dependencia y disponer del entorno aislado.
+- Evidencia: 15/15 pruebas, build de 10 rutas, smoke 9/9 y revisión en navegador de login y formulario público en 1280×720 y 390×844.
 
 ## D-009 — Unificar el estado y contrato de prospectos
 
