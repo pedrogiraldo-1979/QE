@@ -412,3 +412,31 @@ Pruebas de solo lectura:
 - UUID externo: no autorizado; cero filas visibles.
 - `anon`: consulta directa a `companies` rechazada con código `42501`.
 - token público inexistente: respuesta nula, sin exposición de datos.
+
+## 15. Auditoría de duplicados — Fase 3
+
+La comparación completa está en `docs/PHASE-3-DUPLICATES.md`.
+
+Conclusiones:
+
+- los archivos raíz `page.tsx`, `layout.tsx`, `globals.css`, `supabase.ts` y `types.ts` no generan rutas ni aparecen en source maps;
+- los cuatro archivos TypeScript raíz sí son incluidos innecesariamente por el patrón amplio de `tsconfig.json`, por lo que todavía pueden romper typecheck aunque no formen parte del runtime;
+- `page.tsx` raíz quedó congelado en `d390f5e`; sus 14 funciones tienen equivalente nominal en `src/app/page.tsx`, que contiene 65 funciones y los flujos posteriores;
+- `layout.tsx` raíz no contiene bridges ni hojas de estilo posteriores;
+- `.card` es el único selector simple exclusivo de `globals.css` raíz y solo es usado por `page.tsx` raíz;
+- `supabase.ts` raíz no tiene consumidores y carece del fallback seguro de render de servidor;
+- `types.ts` raíz conserva estados heredados y no contiene listas/contactos de prospectos; no tiene consumidores;
+- no existe contenido que deba migrarse desde raíz hacia `src/`.
+
+Evidencia de build y despliegue:
+
+- el manifest local genera diez páginas desde `src/app`;
+- referencias de source maps: cero para los cinco archivos raíz y referencias positivas para los cuatro equivalentes TypeScript de `src/`;
+- Vercel identifica el proyecto `qe` como Next.js, Node 24, conectado a `main`;
+- la producción previa `READY` corresponde a `ecc2704` y la URL pública entrega el texto de sesión de la variante canónica;
+- el deployment de `957ba5e` falló antes del build, durante instalación de pnpm, con `ERR_PNPM_IGNORED_BUILDS` para `sharp@0.34.5`;
+- la producción continúa sirviendo el deployment anterior y el fallo no guarda relación con los duplicados;
+- se añadió `pnpm-workspace.yaml` con `allowBuilds: { sharp: true }`, el permiso mínimo compatible con pnpm 11;
+- con esa configuración, la instalación ejecutó el instalador de `sharp` y pasaron typecheck, 6/6 pruebas y el build local de 10 rutas.
+
+Decisión operativa: no ejecutar el retiro hasta confirmar la corrección con un deployment `READY` en Vercel y recibir el gate explícito de eliminación.

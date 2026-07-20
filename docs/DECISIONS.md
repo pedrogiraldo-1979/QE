@@ -34,7 +34,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Contexto: `tsconfig.json` mapea `@/*` a `./src/*`; las rutas activas están en `src/app` y las importaciones observadas usan `@/lib`.
 - Propuesta: adoptar `src/app`, `src/components` y `src/lib` como estructura canónica.
 - Evidencia completada: typecheck, build local, manifest de rutas, source maps y smoke HTTP local usan `src/` y no los duplicados raíz.
-- Evidencia pendiente: confirmar configuración/raíz del despliegue remoto antes de eliminar los duplicados.
+- Evidencia remota completada: Vercel detecta el proyecto como Next.js desde la raíz del repositorio; la producción `READY` en `ecc2704` entrega la variante de `src/`, y los source maps locales del mismo baseline excluyen las copias raíz.
 - Consecuencia si se acepta: los archivos raíz duplicados podrán evaluarse para retiro en un cambio separado y reversible.
 
 ## D-005 — Separar UI, dominio y acceso a datos
@@ -138,6 +138,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Seguridad: `anon` no conserva privilegios directos sobre tablas; la tabla de membresía no está expuesta; las cuentas Auth anónimas se rechazan; el frontend valida la autorización y cierra sesiones no incluidas.
 - Operación: altas, bajas y cambios de rol deben realizarse con migraciones revisadas según `docs/AUTHORIZATION.md`. Crear una cuenta Auth por sí sola no concede acceso.
 - Evidencia: ambos miembros ven 83 empresas, 220 prospectos y 8 respuestas en pruebas RLS; una identidad externa ve cero filas; una consulta `anon` directa recibe `42501 permission denied`.
+
+## D-017 — Retirar los cinco duplicados raíz como una unidad
+
+- Estado: Propuesta lista para gate, no ejecutada
+- Fecha: 2026-07-19
+- Contexto: `page.tsx`, `layout.tsx`, `globals.css`, `supabase.ts` y `types.ts` en la raíz son versiones heredadas; Next solo enruta `src/app`, los aliases resuelven a `src/lib` y el bundle no contiene las copias.
+- Propuesta: eliminarlos juntos en un commit estructural independiente, sin trasladar contenido ni cambiar configuración.
+- Justificación: las 14 funciones del `page.tsx` raíz tienen equivalente nominal en la página canónica; `.card` es el único selector exclusivo de la hoja raíz y solo lo usa esa página; las copias de tipos y Supabase no tienen consumidores.
+- Verificación requerida: typecheck, pruebas, build, manifest, source maps, smoke de rutas y preview de Vercel.
+- Reversión: revertir exclusivamente el commit de limpieza o recuperar los cinco archivos desde `957ba5e`.
+- Gate: resolver primero el deployment fallido de `957ba5e` y recibir aprobación explícita para el borrado.
 
 ## Plantilla para nuevas decisiones
 
