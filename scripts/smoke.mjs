@@ -9,6 +9,7 @@ const routes = [
   "/prospectos",
   "/prospectos/limpieza",
   "/prospectos/nuevo",
+  "/piloto-campana",
   "/prueba-correo",
 ];
 
