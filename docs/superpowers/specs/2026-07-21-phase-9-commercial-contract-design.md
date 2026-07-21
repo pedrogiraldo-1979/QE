@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - Fecha: 2026-07-21.
-- Estado: diseño funcional aprobado en conversación y revisado; pendiente de integración documental.
-- Baseline objetivo: `main` en `6f3dadf` mediante el PR #22, incluyendo `9df73a1` del PR #21. El checkout local debe confirmar esa referencia antes de integrar el documento.
+- Estado: diseño funcional aprobado, revisado e integrado en `main` mediante el PR #23.
+- Baseline: `main` en `6f3dadf` al iniciar la integración; especificación publicada después mediante el PR #23 (`3a545f5`).
 - Criterios de Fase 9 cubiertos: `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03`.
 - Tipo de entrega: especificación documental. No autoriza implementación, migraciones ni cambios de Supabase o datos.
 
