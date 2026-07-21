@@ -15,6 +15,7 @@ Current product requirements live in [`docs/PRD-CRM.md`](docs/PRD-CRM.md), and s
 - Prospect lists, metrics, review filters, contacts, conversion, and controlled cleanup.
 - Public token-based customer data update form and internal response review.
 - Authenticated internal ZeptoMail test route.
+- Authenticated five-recipient campaign pilot with a closed allowlist and duplicate-send protection.
 
 ## Supabase tables expected
 
@@ -25,6 +26,7 @@ The app expects these existing public tables, all protected with RLS:
 - `activities`
 - `cu_links`
 - `cu_responses`
+- `campaign_pilot_recipients`
 - `prospect_lists`
 - `prospects`
 - `prospect_contacts`
@@ -85,7 +87,7 @@ http://localhost:3000
 pnpm verify
 ```
 
-El pipeline ejecuta typecheck, las pruebas unitarias/de contrato vigentes, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
+El pipeline ejecuta typecheck, las pruebas unitarias/de contrato vigentes, build de producción y un smoke HTTP de once verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 
@@ -96,7 +98,7 @@ La campaña de actualización cuenta con dos verificaciones adicionales:
 - `pnpm test:campaign:smoke`: comprueba rutas públicas, contrato de lectura del token sintético y rechazo de la Edge Function sin autenticación. No envía correo ni modifica datos.
 - `pnpm test:campaign:e2e`: crea una empresa, contacto, enlace y respuesta exclusivamente sintéticos; valida precarga, envío, revisión y aprobación, y limpia el fixture al terminar. Exige el mismo Supabase desechable y las variables `QE_TEST_*`; se niega a ejecutarse contra `QE2026`.
 
-El envío real de ZeptoMail permanece limitado al control interno autenticado. Las pruebas de contrato verifican que remitente, destinatario, asunto y enlace no puedan cambiarse a contactos de clientes.
+El envío general de ZeptoMail permanece deshabilitado. El único envío real permitido es un piloto separado de exactamente cinco destinatarios provisionados fuera de Git, con confirmación en dos pasos, reclamación atómica y bloqueo de reintentos automáticos.
 
 ## Repository structure
 
@@ -115,6 +117,19 @@ The ZeptoMail authorization token must remain in Supabase Edge Function secrets.
 - `ZEPTOMAIL_API_KEY`
 
 Do not add the ZeptoMail token to the repository or to any `NEXT_PUBLIC_` environment variable.
+
+## Approved campaign pilot
+
+The protected route `/piloto-campana` invokes `send-approved-campaign-pilot`. Preview and send actions require the single authorized CRM identity. Recipients are read from `campaign_pilot_recipients`; no customer email or form token is committed to the repository.
+
+Before enabling the route in an environment:
+
+1. apply `20260721023246_add_approved_campaign_pilot.sql` after reconciling migration history;
+2. provision exactly five approved rows directly in that environment by linking existing `cu_links` records;
+3. deploy both files under `supabase/functions/send-approved-campaign-pilot` with JWT verification enabled;
+4. verify preview mode before authorizing any real send.
+
+The batch is claimed atomically before the first provider call. Any interruption leaves the affected rows unavailable for automatic retry until a provider audit and an independently reviewed recovery decision.
 
 ## Product planning
 
