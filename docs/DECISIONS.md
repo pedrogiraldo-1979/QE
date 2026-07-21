@@ -256,6 +256,19 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Límite: esta decisión no autoriza migraciones, cambios de esquema, RLS, Auth, RPC, Edge Functions, limpieza de datos ni retiro de la compatibilidad de `por_validar`.
 - Evidencia/verificación: [especificación del contrato comercial](./superpowers/specs/2026-07-21-phase-9-commercial-contract-design.md), PR #23 y reconciliación de metadatos del PR #24.
 
+## D-027 — Aprobar el gobierno y la recuperación de la Etapa 2
+
+- Estado: Aceptada
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: la Fase 9 requería separar permisos, conservar evidencia auditable, sustituir borrados irreversibles por recuperación operable y eliminar la ambigüedad de múltiples respuestas por enlace.
+- Decisión: adoptar un gobierno operativo equilibrado. `member` gestiona y convierte información comercial; `admin` controla enlaces, respuestas, conciliación, eliminación, restauración y membresías. La autorización efectiva debe residir en backend y toda operación sensible exige motivo y trazabilidad.
+- Recuperación: empresas, contactos, prospectos, contactos de prospecto y actividades usan eliminación lógica. Una eliminación relacional es atómica por lote y su restauración recupera únicamente los registros eliminados por ese lote. La purga definitiva no tiene interfaz y requiere autorización del propietario, respaldo y plan separado.
+- Ciclo público: cada ciclo usa un enlace independiente y acepta una sola respuesta válida. Reenviar un enlace activo no reinicia su vencimiento; la primera entrega válida lo cierra. Los estados terminales no se reabren y cualquier corrección usa un ciclo nuevo.
+- Consecuencias: los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. El primer plan técnico cubre sólo la base RBAC; auditoría, membresías, recuperación y ciclo público requieren planes propios.
+- Límite: esta decisión no autoriza cambios de RLS, Auth, RPC, esquema, Edge Functions, migraciones, datos, purgas ni ejecución del plan RBAC.
+- Evidencia/verificación: [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md), [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) y PR #26.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
