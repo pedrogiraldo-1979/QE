@@ -20,13 +20,14 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Ejecutar `pnpm test`.
 - [ ] Ejecutar `pnpm build`.
 - [ ] Iniciar el artefacto con `pnpm start`.
-- [ ] Ejecutar `pnpm test:smoke`; las ocho rutas deben responder `200` y la inexistente `404`.
+- [ ] Ejecutar `pnpm test:smoke`; las diez rutas deben responder `200` y la inexistente `404`.
 - [ ] Abrir una pestaña nueva y comprobar que el login hidrata sin error overlay ni errores de consola.
 - [ ] Revisar al menos un viewport de escritorio y uno móvil; comprobar overflow y nombres/etiquetas de controles.
 - [ ] Si el cambio afecta una superficie autenticada, validarla contra un entorno de datos controlado antes de aprobar el release.
 - [ ] Ejecutar `pnpm test:integration` sólo con variables `QE_TEST_*` de un proyecto desechable; repetir el `project_ref` en `QE_TEST_SUPABASE_PROJECT_REF` y `QE_TEST_CONFIRM_DISPOSABLE_PROJECT` antes de iniciar.
 - [ ] Para cambios de campaña, ejecutar `pnpm test:campaign:smoke` sin autenticación y `pnpm test:campaign:e2e` únicamente en el proyecto desechable confirmado.
 - [ ] Confirmar que las pruebas de campaña usan direcciones `.invalid` para fixtures y que ningún paso automatizado invoca un envío a clientes.
+- [ ] Para el piloto real, verificar en modo preview que existan exactamente cinco filas `approved`, con correos únicos, enlaces activos y cero respuestas previas; no usar el send durante pruebas.
 
 Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT_PUBLIC_` quedan embebidas durante el build.
 
@@ -37,6 +38,9 @@ Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT
 - [ ] Verificar RLS, grants y advisors después de cualquier cambio de backend.
 - [ ] Comparar conteos antes/después cuando la migración declara que no modifica filas.
 - [ ] Preparar SQL de reversión cuando sea seguro; una reversión destructiva de datos requiere aprobación separada.
+- [ ] Provisionar los cinco destinatarios aprobados fuera de Git y comprobar que `campaign_pilot_recipients` no concede acceso a `anon` ni `authenticated`.
+- [ ] Desplegar `send-approved-campaign-pilot` con `verify_jwt = true` y comprobar que una invocación sin JWT se rechaza antes de habilitar la interfaz.
+- [ ] No restablecer filas `sending`, `sent` o `failed` a `approved` sin revisar primero el resultado de ZeptoMail y obtener una autorización independiente.
 
 ## 4. Publicación y observación
 
