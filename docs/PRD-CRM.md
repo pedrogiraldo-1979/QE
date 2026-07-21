@@ -92,6 +92,9 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - ruta interna autenticada para una prueba controlada de ZeptoMail;
 - destinatario y usuario restringidos;
 - secreto conservado exclusivamente en el runtime de la Edge Function.
+- piloto real separado para exactamente cinco destinatarios aprobados;
+- vista previa cerrada, confirmación en dos pasos, reclamación atómica y bloqueo de duplicados;
+- destinatarios y tokens provisionados por entorno, nunca incluidos en Git ni aceptados desde el navegador.
 
 ## 5. Reglas de negocio vigentes
 
@@ -122,6 +125,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 | CU-01 | Formulario público | Un token válido expone únicamente el formulario asociado. |
 | CU-02 | Formulario público | Un token inválido o vencido no expone datos. |
 | CU-03 | Revisión | Una respuesta sólo puede aprobarse o rechazarse desde el estado pendiente. |
+| COM-01 | Piloto de correo | Sólo el usuario autorizado puede previsualizar y reclamar exactamente cinco destinatarios provisionados; un segundo intento no puede reenviar un registro reclamado. |
 | UX-01 | Interfaz | Acciones y filtros principales tienen nombre accesible y foco visible. |
 | UX-02 | Responsive | Los flujos críticos son utilizables en escritorio y en un viewport móvil de 390 px. |
 | OPS-01 | Release | Typecheck, pruebas, build, smoke y deployment deben aprobar antes de cerrar una fase publicable. |
@@ -258,7 +262,7 @@ La activación documental de la Fase 9 no cambia por sí misma el alcance funcio
 - funcionalidades ERP: inventario, compras, contabilidad, nómina y facturación;
 - migraciones, cambios de RLS/Auth, Edge Functions o datos sin un gate separado;
 - importaciones o limpiezas de datos no autorizadas;
-- automatización productiva de email o WhatsApp;
+- automatización masiva de email o WhatsApp más allá del piloto cerrado de cinco destinatarios;
 - analítica avanzada o telemetría sin política aprobada;
 - rediseño visual integral;
 - permisos por propietario o multi-organización no definidos por producto.

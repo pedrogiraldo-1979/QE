@@ -67,6 +67,59 @@ export type Database = {
           },
         ]
       }
+      campaign_pilot_recipients: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          id: string
+          link_id: string
+          provider_status: number | null
+          recipient_email: string
+          recipient_name: string
+          sent_at: string | null
+          sent_by: string | null
+          sequence: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          link_id: string
+          provider_status?: number | null
+          recipient_email: string
+          recipient_name: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sequence: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          id?: string
+          link_id?: string
+          provider_status?: number | null
+          recipient_email?: string
+          recipient_name?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          sequence?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_pilot_recipients_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: true
+            referencedRelation: "cu_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string | null
@@ -534,6 +587,29 @@ export type Database = {
       approve_cu_response: {
         Args: { p_response_id: string }
         Returns: undefined
+      }
+      claim_campaign_pilot_batch: {
+        Args: { p_sent_by: string }
+        Returns: {
+          claimed_at: string | null
+          created_at: string
+          id: string
+          link_id: string
+          provider_status: number | null
+          recipient_email: string
+          recipient_name: string
+          sent_at: string | null
+          sent_by: string | null
+          sequence: number
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "campaign_pilot_recipients"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       convert_prospect_to_company: {
         Args: { p_notes?: string; p_prospect_id: string }

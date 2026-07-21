@@ -666,6 +666,22 @@ Ajustes documentales aplicados:
 
 Relación con la Fase 8: este cambio se creó como un PR exclusivamente documental. Después de fusionar el PR #13, la rama se actualizó sobre `ab1a616` y resolvió los solapamientos de README, roadmap y auditoría conservando la evidencia cronológica.
 
+## 23. Piloto controlado de campaña — implementación en rama
+
+Fecha: 2026-07-21. Alcance autorizado: implementar una vista previa autenticada y un envío real limitado a cinco clientes previamente revisados, sin efectuar el envío durante desarrollo, pruebas, CI o publicación del PR.
+
+Controles implementados:
+
+- tabla `campaign_pilot_recipients` con RLS, sin políticas para clientes y sin grants para `anon`/`authenticated`;
+- destinatarios y tokens reales excluidos del repositorio y provisionados únicamente por entorno;
+- RPC de `service_role` que toma un advisory lock, exige exactamente cinco filas `approved`, vuelve a validar enlaces/correos y reclama todo el lote en una sola transacción;
+- Edge Function separada con `verify_jwt = true`, validación adicional de la única identidad autorizada y un correo individual por llamada al proveedor;
+- estados `approved`, `sending`, `sent` y `failed`; ningún estado reclamado vuelve a enviarse automáticamente;
+- interfaz `/piloto-campana` con vista previa, checkbox y frase de confirmación explícita;
+- logs limitados a conteos y estados, sin correos, tokens, UUID o payloads.
+
+Límites: el PR no contiene datos de los cinco clientes, no aplica la migración en producción, no despliega la función y no invoca ZeptoMail. La provisión, preview autenticado y envío requieren gates posteriores después del merge.
+
 ## Anexo — Activación documental de la Fase 9 (2026-07-20)
 
 Alcance: reconciliación del estado publicado y definición documental de la siguiente fase activa. No se modificaron código, configuración, dependencias, esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos.
