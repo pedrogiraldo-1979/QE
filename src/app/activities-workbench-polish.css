@@ -240,6 +240,21 @@ body.activities-workbench-active .workspace > .crm-grid {
 .add-activity-form {
   display: grid;
   gap: 14px;
+  min-width: 0;
+}
+
+.add-activity-form .form-grid,
+.add-activity-form .field-label,
+.add-activity-form .input,
+.add-activity-form .textarea,
+.add-activity-form .smart-company-results,
+.add-activity-form .smart-company-option {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.add-activity-form .form-grid {
+  width: 100%;
 }
 
 .smart-client-input {
