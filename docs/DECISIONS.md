@@ -221,6 +221,18 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Restricción: el smoke nunca envía correo ni escribe datos. El E2E valida token, precarga, respuesta y aprobación, pero no automatiza una bandeja personal ni habilita envíos masivos.
 - Evidencia/verificación: `tests/campaignEmail.test.mjs`, `scripts/campaign-smoke.mjs` y `tests/campaign.integration.mjs`.
 
+## D-024 — Habilitar un piloto real cerrado de cinco correos
+
+- Estado: Aceptada e implementada en rama
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: los contratos, smoke, E2E sintético y envío interno aprobaron; se requiere observar durante un día un lote mínimo real antes de decidir la campaña restante.
+- Decisión: crear una Edge Function y una ruta distintas de la prueba interna. La lista se provisiona en Supabase con exactamente cinco enlaces existentes, no acepta destinatarios desde el navegador y no contiene correos o tokens reales en Git. El usuario autorizado revisa la vista previa, marca una confirmación y escribe una frase antes de enviar.
+- Seguridad: RLS sin políticas de cliente, privilegios exclusivos de `service_role`, `verify_jwt = true`, comprobación adicional de UUID/email, correos individuales, validación contra `cu_links.email_to` y reclamación transaccional de todo el lote antes de contactar a ZeptoMail.
+- Idempotencia: sólo filas `approved` pueden reclamarse. Los estados `sending`, `sent` y `failed` no se reintentan automáticamente; una respuesta incierta se resuelve mediante auditoría del proveedor y autorización separada.
+- Límite: no habilita campañas masivas, destinatarios dinámicos, reintentos ni el envío durante CI/pruebas.
+- Evidencia/verificación: `tests/campaignPilot.test.mjs`, `supabase/migrations/20260721023246_add_approved_campaign_pilot.sql`, `supabase/functions/send-approved-campaign-pilot/` y `/piloto-campana`.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
