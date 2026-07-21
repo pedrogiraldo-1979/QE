@@ -86,6 +86,8 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - envío público con payload limitado;
 - revisión interna de respuestas pendientes;
 - aprobación o rechazo como decisiones terminales.
+- aprobación transaccional de empresa, contacto principal, celular, teléfono fijo y segundo contacto opcional;
+- cola explícita para reconciliar `Hoja1` y `contactos_base` después de aprobar cambios.
 
 ### Operación interna de correo
 
@@ -125,6 +127,8 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 | CU-01 | Formulario público | Un token válido expone únicamente el formulario asociado. |
 | CU-02 | Formulario público | Un token inválido o vencido no expone datos. |
 | CU-03 | Revisión | Una respuesta sólo puede aprobarse o rechazarse desde el estado pendiente. |
+| CU-04 | Aplicación | Una aprobación aplica empresa y contactos en una transacción y no duplica un segundo contacto al reintentarse. |
+| CU-05 | Maestros | Una aprobación con cambios queda pendiente de maestros hasta confirmar `Hoja1` y `contactos_base`; confirmar sin cambios no crea tarea. |
 | COM-01 | Piloto de correo | Sólo el usuario autorizado puede previsualizar y reclamar exactamente cinco destinatarios provisionados; un segundo intento no puede reenviar un registro reclamado. |
 | UX-01 | Interfaz | Acciones y filtros principales tienen nombre accesible y foco visible. |
 | UX-02 | Responsive | Los flujos críticos son utilizables en escritorio y en un viewport móvil de 390 px. |

@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## 24. Aprobación completa y reconciliación de maestros — 2026-07-21
+
+- La aprobación se amplió para aplicar razón social, NIT, dirección, contacto principal, celular, fijo y segundo contacto opcional dentro de una sola transacción.
+- La selección del contacto principal quedó determinística y prioriza el correo destinatario del enlace, `is_primary`, prioridad y antigüedad.
+- Las aprobaciones con cambios generan estado `pendiente` de maestros; `Hoja1` y `contactos_base` deben verificarse antes de marcar `sincronizado`.
+- La interfaz muestra todos los campos del segundo contacto antes de aprobar y añade la vista **Pendiente maestros**.
+- El formulario público no recibe credenciales de Google ni escribe directamente en las hojas.
+- La migración compiló y el E2E transaccional aislado verificó actualización, segundo contacto, reintento idempotente, cola, cierre y `ROLLBACK` con cero fixtures persistidos; el proyecto temporal terminó `INACTIVE`.
+- Los advisors no detectaron vulnerabilidades nuevas ni llaves foráneas nuevas sin índice.
+
 ## 22. Cobertura controlada de campaña — 2026-07-21
 
 - Se separó el contenido fijo del correo interno en un módulo puro y se añadieron contratos automáticos para remitente, único destinatario interno, asunto, token sintético y aliases del secret.

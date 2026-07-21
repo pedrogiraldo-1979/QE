@@ -109,7 +109,16 @@ test("campaña interna: token, formulario, respuesta y aprobación", async (t) =
       const payload = {
         razon_social_nueva: updatedLegalName,
         contacto_comercial_nuevo: "Contacto actualizado E2E",
+        cargo_contacto_nuevo: "Jefe de compras",
+        celular_comercial_nuevo: "3001234567",
+        telefono_fijo_comercial_nuevo: "6015550101",
         correo_comercial_nuevo: "updated-e2e@example.invalid",
+        segundo_contacto_nombre: "Contacto secundario E2E",
+        segundo_contacto_cargo: "Coordinadora de cocina",
+        segundo_contacto_area: "Cocina",
+        segundo_contacto_celular: "3007654321",
+        segundo_contacto_telefono_fijo: "6015550202",
+        segundo_contacto_correo: "secondary-e2e@example.invalid",
         observaciones_cliente: `campaign-e2e:${suffix}`,
         confirm_no_changes: false,
       };
@@ -146,6 +155,62 @@ test("campaña interna: token, formulario, respuesta y aprobación", async (t) =
         .eq("id", companyId)
         .single());
       assert.equal(company.legal_name, updatedLegalName);
+
+      const contacts = assertNoError(await admin
+        .from("contacts")
+        .select("full_name, role, email, phone, mobile_phone, office_phone, contact_type, priority, is_primary, source")
+        .eq("company_id", companyId)
+        .order("priority", { ascending: true }));
+      assert.equal(contacts.length, 2);
+      assert.deepEqual(contacts[0], {
+        full_name: "Contacto actualizado E2E",
+        role: "Jefe de compras",
+        email: "updated-e2e@example.invalid",
+        phone: "3001234567",
+        mobile_phone: "3001234567",
+        office_phone: "6015550101",
+        contact_type: "comercial_principal",
+        priority: 1,
+        is_primary: true,
+        source: "formulario_cliente",
+      });
+      assert.deepEqual(contacts[1], {
+        full_name: "Contacto secundario E2E",
+        role: "Coordinadora de cocina",
+        email: "secondary-e2e@example.invalid",
+        phone: "3007654321",
+        mobile_phone: "3007654321",
+        office_phone: "6015550202",
+        contact_type: "chef",
+        priority: 2,
+        is_primary: false,
+        source: "formulario_cliente",
+      });
+
+      assertNoError(await admin.rpc("approve_cu_response", { p_response_id: responseId }));
+      const contactsAfterRetry = assertNoError(await admin
+        .from("contacts")
+        .select("id")
+        .eq("company_id", companyId));
+      assert.equal(contactsAfterRetry.length, 2);
+
+      const syncQueue = assertNoError(await admin.rpc("get_cu_master_sync_queue"));
+      const queued = syncQueue.find((item) => item.response_id === responseId);
+      assert.equal(queued?.cliente, `Empresa campaña E2E ${suffix}`);
+      assert.equal(queued?.secondary_contacts?.length, 1);
+
+      assertNoError(await admin.rpc("complete_cu_master_sync", {
+        p_response_id: responseId,
+        p_notes: "Maestros sintéticos verificados",
+      }));
+      const completed = assertNoError(await admin
+        .from("cu_responses")
+        .select("master_sync_status, master_synced_at, master_sync_notes")
+        .eq("id", responseId)
+        .single());
+      assert.equal(completed.master_sync_status, "sincronizado");
+      assert.ok(completed.master_synced_at);
+      assert.equal(completed.master_sync_notes, "Maestros sintéticos verificados");
     });
   } finally {
     await admin.from("companies").delete().eq("id", companyId);

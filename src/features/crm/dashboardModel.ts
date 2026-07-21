@@ -30,7 +30,7 @@ export interface DataIssueGroup {
   companyId: string | null;
 }
 
-export type DataTab = "pending" | "responses";
+export type DataTab = "pending" | "responses" | "sync";
 
 export type CustomerUpdateResponse = Record<string, unknown> & {
   response_id?: string | number | null;
@@ -42,6 +42,29 @@ export type CustomerUpdateResponse = Record<string, unknown> & {
   submitted_at?: string | null;
   created_at?: string | null;
   payload?: Record<string, unknown> | null;
+};
+
+export type MasterSyncContact = Record<string, unknown> & {
+  id?: string | null;
+  full_name?: string | null;
+  role?: string | null;
+  email?: string | null;
+  mobile_phone?: string | null;
+  office_phone?: string | null;
+  contact_type?: string | null;
+};
+
+export type MasterSyncItem = Record<string, unknown> & {
+  response_id: string;
+  company_id: string;
+  reviewed_at?: string | null;
+  cliente?: string | null;
+  razon_social?: string | null;
+  nit?: string | null;
+  segmento?: string | null;
+  direccion?: string | null;
+  primary_contact?: MasterSyncContact | null;
+  secondary_contacts?: MasterSyncContact[] | null;
 };
 
 export interface CustomerUpdateChange {
@@ -215,6 +238,20 @@ export function filterCustomerResponses(responses: CustomerUpdateResponse[], nor
   });
 }
 
+export function filterMasterSyncQueue(items: MasterSyncItem[], normalizedSearch: string) {
+  if (!normalizedSearch) return items;
+  return items.filter((item) => {
+    const contacts = [item.primary_contact, ...(item.secondary_contacts || [])].filter(Boolean) as MasterSyncContact[];
+    return [
+      item.cliente,
+      item.razon_social,
+      item.nit,
+      item.segmento,
+      ...contacts.flatMap((contact) => [contact.full_name, contact.role, contact.email, contact.contact_type]),
+    ].some((value) => String(value || "").toLowerCase().includes(normalizedSearch));
+  });
+}
+
 export function getResponseId(response: CustomerUpdateResponse) {
   const value = response.response_id ?? response.id;
   return value === null || value === undefined ? "" : String(value);
@@ -238,13 +275,15 @@ export function getResponseChanges(response: CustomerUpdateResponse): CustomerUp
     { label: "NIT", current: ["nit_actual", "nit"], next: ["nit_nuevo"] },
     { label: "Contacto comercial", current: ["contacto_actual", "contacto_comercial_actual"], next: ["contacto_comercial_nuevo"] },
     { label: "Cargo contacto", current: ["cargo_contacto_actual", "rol_actual"], next: ["cargo_contacto_nuevo"] },
-    { label: "Teléfono comercial", current: ["telefono_actual", "celular_comercial_actual"], next: ["celular_comercial_nuevo"] },
+    { label: "Celular comercial", current: ["celular_comercial_actual"], next: ["celular_comercial_nuevo"] },
+    { label: "Teléfono fijo comercial", current: ["telefono_actual", "telefono_fijo_comercial_actual"], next: ["telefono_fijo_comercial_nuevo"] },
     { label: "Correo comercial", current: ["correo_actual", "correo_comercial_actual"], next: ["correo_comercial_nuevo"] },
-    { label: "Contacto de pagos", current: ["contacto_pagos_actual"], next: ["contacto_pagos_nuevo"] },
-    { label: "Cargo pagos", current: ["cargo_pagos_actual"], next: ["cargo_pagos_nuevo"] },
-    { label: "Teléfono tesorería", current: ["telefono_tesoreria_actual"], next: ["telefono_tesoreria_nuevo"] },
-    { label: "Correo tesorería", current: ["correo_tesoreria_actual"], next: ["correo_tesoreria_nuevo"] },
-    { label: "Correo facturación", current: ["correo_facturacion_actual"], next: ["correo_facturacion_nuevo"] },
+    { label: "Segundo contacto", current: [], next: ["segundo_contacto_nombre"] },
+    { label: "Cargo segundo contacto", current: [], next: ["segundo_contacto_cargo"] },
+    { label: "Área segundo contacto", current: [], next: ["segundo_contacto_area"] },
+    { label: "Celular segundo contacto", current: [], next: ["segundo_contacto_celular"] },
+    { label: "Teléfono fijo segundo contacto", current: [], next: ["segundo_contacto_telefono_fijo"] },
+    { label: "Correo segundo contacto", current: [], next: ["segundo_contacto_correo"] },
     { label: "Dirección", current: ["direccion_actual", "address"], next: ["direccion_nueva"] },
     { label: "Observaciones", current: [], next: ["observaciones_cliente"] },
   ];
@@ -304,13 +343,18 @@ export function getResultCount(
   activities: Activity[],
   dataIssues: DataIssueGroup[],
   customerResponses: CustomerUpdateResponse[],
+  masterSyncQueue: MasterSyncItem[],
   dataTab: DataTab,
   prospects: Prospect[],
 ) {
   if (viewMode === "prospecting") return prospects.length;
   if (viewMode === "contacts") return contacts.length;
   if (viewMode === "activities") return activities.length;
-  if (viewMode === "data") return dataTab === "responses" ? customerResponses.length : dataIssues.length;
+  if (viewMode === "data") {
+    if (dataTab === "responses") return customerResponses.length;
+    if (dataTab === "sync") return masterSyncQueue.length;
+    return dataIssues.length;
+  }
   return companies.length;
 }
 
