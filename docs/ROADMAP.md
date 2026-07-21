@@ -13,17 +13,18 @@
 
 Fecha de corte: 2026-07-21.
 
-- Baseline publicado en `main`: `ab1a616a39c87c7617cc9996eab25b69c8f61fa4`.
+- Baseline publicado en `main`: `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
 - Fuente viva de producto: [`PRD-CRM.md`](./PRD-CRM.md).
 - PRD de Fase 1: cerrado y conservado como documento histórico.
 - Fuente canónica de código: `src/`.
 - Stack reproducible: Node 24.14.0, pnpm 11.7.0 y lockfile versionado.
 - Superficie: diez rutas de Next.js, nueve tablas CRM con RLS, ocho RPC públicas tipadas y una función privada de autorización.
 - Autorización: allowlist privada; `admin` y `member` comparten actualmente el mismo CRUD.
-- Calidad publicada: typecheck, 22 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP y suite de integración aislada 8/8.
+- Calidad publicada: typecheck, 25 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP 10/10, gate visual autenticado, smoke de campaña no mutante y suites aisladas de integración/E2E.
 - Baseline de Supabase: seis migraciones reproducen el esquema desde cero sin usuarios ni datos.
 - Entorno temporal de pruebas: limpio y en pausa después de las validaciones aisladas.
-- Fase 8: cerrada y publicada en `main` como `ab1a616` mediante el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13).
+- Fase 8: cerrada, fusionada mediante el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) y publicada.
+- Fase 9: fase activa para cerrar definiciones funcionales, gobierno, evidencia operable y deuda técnica incremental.
 
 Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 
@@ -48,69 +49,85 @@ Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 | 5 — Contratos de datos | Se generaron tipos remotos, columnas explícitas, repositorio del dashboard y guardas de revisión. | `DATA-CONTRACTS.md`, D-019 y `AUDIT.md` sección 17. |
 | 6 — Calidad y operación | Se añadió CI, smoke, release checklist y una suite autenticada/mutante en un proyecto desechable. | D-008, D-020 y `AUDIT.md` secciones 18–19. |
 | 7 — Reproducibilidad de Supabase | El esquema se reconstruyó desde cero y coincidió con producción sin copiar identidades ni datos. | D-021 y `AUDIT.md` sección 20. |
-| 8 — Cierre visual autenticado | Se verificaron Prospección, portales y cinco bridges en escritorio y móvil; se corrigieron límites responsive y accesibles sin cambiar reglas de negocio. | [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) y `AUDIT.md` sección 21. |
+| 8 — Cierre visual autenticado y publicación | Se cerró la comparación visual, se corrigieron regresiones responsive y de accesibilidad y se publicó el alcance sin cambios de backend. | PR #13, `AUDIT.md` sección 21, 22/22 pruebas, build de diez rutas y gate visual autenticado en escritorio y móvil. |
 
 Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. Esta tabla expresa su estado vigente y sustituye los pendientes intermedios que quedaron resueltos por fases posteriores.
 
 ## Fase activa
 
-### Fase 9 — Definiciones de producto y operación (planificación)
+### Fase 9 — Cierre funcional y operativo
 
-Objetivo: convertir las decisiones abiertas de producto y operación en contratos aprobados antes de retirar bridges, ampliar funciones o modificar backend y datos.
+Objetivo: convertir las decisiones funcionales y operativas pendientes en contratos aprobados, criterios verificables y entregas incrementales, manteniendo separados producto, frontend, backend, datos y operación.
 
-Estado al corte:
+#### Etapa 1 — Contrato comercial
 
-- Fase 8 publicada y su gate visual cerrado;
-- no hay implementación funcional de Fase 9 autorizada;
-- permanecen abiertas las definiciones de workflow, campos obligatorios, permisos, eliminación/recuperación y métricas;
-- cualquier cambio de Supabase, datos, dependencias, servicios externos o rutas conserva su gate independiente.
+- aprobar workflow, estados, transiciones y tratamiento de `por_validar`;
+- definir campos obligatorios por entidad y operación;
+- acordar señales, precedencia y resolución humana para conversión y duplicados.
 
-Gate de salida documental:
+Gate: decisiones registradas en el PRD, criterios `P9-WF`, `P9-FLD` y `P9-CONV` aceptados y ausencia de mutaciones de datos.
 
-1. aprobar el workflow comercial y sus transiciones;
-2. definir campos obligatorios y reglas de validación por entidad;
-3. acordar la matriz de permisos para `admin` y `member`;
-4. definir confirmación, auditoría, retención y recuperación de eliminaciones;
-5. definir métricas con fórmula, fuente, objetivo, responsable y frecuencia;
-6. actualizar el PRD vivo, las decisiones y los criterios de aceptación.
+#### Etapa 2 — Gobierno y recuperación
 
-Cerrar este gate no autoriza por sí mismo implementación, migraciones, cambios de RLS/Auth, datos, ERP ni proveedores de telemetría.
+- aprobar la matriz de permisos `admin`/`member`;
+- definir auditoría, eliminación lógica, restauración, retención y purga;
+- decidir la semántica de múltiples respuestas, reenvíos y reapertura del formulario público.
 
-## Backlog futuro
+Gate: criterios `P9-RBAC`, `P9-AUD` y `P9-CU` aceptados; cualquier cambio de RLS, Auth, RPC, esquema o datos cuenta con un plan y una autorización independientes.
 
-El orden es propuesto. Cada bloque necesita alcance y aprobación antes de iniciar implementación.
+#### Etapa 3 — Evidencia operable
 
-### Prioridad 1 — Deuda arquitectónica verificada
+- mapear criterios del PRD a pruebas unitarias, contratos, integración, smoke o evidencia manual;
+- registrar vacíos de cobertura, responsables y gates;
+- definir métricas con fórmula, fuente, granularidad, zona horaria, frecuencia, objetivo, responsable, privacidad y retención.
 
-- reemplazar un bridge por vez con composición React propietaria;
-- comenzar por `ContactCompletionBridge` y `AddActivityEntryBridge`, por su dependencia de DOM/portal;
-- repetir typecheck, pruebas, build y gate visual tras cada sustitución;
-- centralizar repositorios adicionales sólo cuando una ruta sea intervenida;
-- evitar reorganizaciones de rutas sin una aprobación específica.
+Gate: matriz de cobertura revisada, criterios `P9-COV` y `P9-MET` aceptados y ninguna telemetría o dependencia externa introducida sin aprobación.
 
-Gate: equivalencia funcional y visual, rollback claro y ausencia de cambios de backend.
+#### Etapa 4 — Mantenibilidad incremental
 
-### Prioridad 2 — Calidad y automatización
+- priorizar `ContactCompletionBridge` y `AddActivityEntryBridge`;
+- sustituir un bridge por entrega con composición React propietaria;
+- centralizar repositorios sólo al intervenir su ruta;
+- repetir typecheck, pruebas, build, smoke y gate visual tras cada sustitución.
+
+Gate: criterios `P9-TECH` aceptados, equivalencia funcional/visual/accesible, rollback claro y ausencia de cambios de backend no autorizados.
+
+#### Gate de salida
+
+1. cerrar o rechazar explícitamente todas las decisiones pendientes de la Fase 9;
+2. actualizar reglas y alcance funcional publicado en el PRD sólo para comportamientos implementados y fusionados;
+3. completar la matriz de criterios y cobertura con evidencia reproducible;
+4. aprobar un catálogo operable de métricas sin instrumentación implícita;
+5. verificar cada sustitución técnica como entrega independiente;
+6. completar typecheck, pruebas, build, smoke, preview, revisión visual y rollback de cada cambio publicable;
+7. registrar en decisiones y auditoría los resultados, límites y deuda que se posponga.
+
+La activación de esta fase no autoriza implementar todos los frentes como una unidad ni modifica Supabase o datos por efecto del roadmap.
+
+## Backlog futuro y trabajo condicionado
+
+Los puntos siguientes no forman parte automática de la Fase 9. Cada uno necesita alcance, aprobación y gate propios.
+
+### Calidad y automatización posterior
 
 - decidir si se versiona automatización de navegador y aprobar su dependencia;
-- trazar criterios del PRD a pruebas unitarias, integración, smoke o evidencia manual;
-- cubrir progresivamente creación/edición y actividades sin usar producción para fixtures;
+- ampliar la automatización de creación, edición y actividades después de aprobar la matriz de cobertura;
 - mantener la suite mutante fuera del CI normal mientras requiera un proyecto desechable.
 
 Gate: cobertura reproducible sin secretos ni datos reales.
 
-### Prioridad 3 — Gates independientes de backend y datos
+### Gates independientes de backend y datos
 
 - reconciliar la baseline en el historial productivo antes de otra migración;
 - evaluar protección de contraseñas filtradas;
-- decidir si se migran estados legados;
-- decidir unicidad o reenvíos de respuestas públicas;
+- ejecutar, si se aprueba en Fase 9, la migración de estados legados mediante un plan reversible;
+- implementar, si se aprueba en Fase 9, la política de respuestas públicas mediante un gate aislado;
 - diseñar paginación con orden estable;
 - evaluar mejoras de integridad para altas conjuntas.
 
 Gate: plan específico, autorización expresa, respaldo/reversión y pruebas aisladas. Ningún punto de este bloque queda autorizado por este roadmap.
 
-### Prioridad 4 — Evolución comercial posterior
+### Evolución comercial posterior
 
 - mejorar calidad y deduplicación de contactos;
 - definir un flujo de importación/reimportación revisable;
