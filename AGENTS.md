@@ -18,6 +18,12 @@ Antes de proponer o implementar cambios, leer:
 
 Si la documentación contradice el comportamiento comprobado del sistema, registrar la diferencia en `docs/AUDIT.md` y pedir una decisión antes de asumir cuál versión es correcta.
 
+## Metodología de desarrollo
+
+Antes de responder o actuar sobre una tarea de desarrollo, consultar `.superpowers/skills/using-superpowers/SKILL.md` y su adaptación para Codex en `.superpowers/skills/using-superpowers/references/codex-tools.md`. Después, cargar la skill de Superpowers que corresponda al tipo de trabajo.
+
+La integración, precedencia, versión instalada y mapa de uso están documentados en `docs/DEVELOPMENT-METHODOLOGY.md`. Las instrucciones directas del usuario, las reglas del entorno y este `AGENTS.md` prevalecen sobre Superpowers; en particular, se conservan todos los gates de aprobación, límites de Supabase y verificaciones de este repositorio.
+
 ## Reglas de alcance
 
 - No cambiar Supabase, su esquema, funciones, políticas RLS, secretos ni datos sin autorización explícita.
