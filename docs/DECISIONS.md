@@ -198,6 +198,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Evidencia: las seis migraciones se aplicaron desde cero; firmas de columnas, constraints, índices, nueve funciones, nueve políticas y 47 grants coincidieron con producción; integración 8/8 y advisors sin nuevas alertas críticas.
 - Operación: la baseline no se aplicó ni se registró en producción. Antes de la siguiente migración productiva se debe ejecutar, con revisión separada, `supabase migration repair --linked --status applied 20260720000000`.
 
+## D-022 — Separar documentación histórica de documentación vigente
+
+- Estado: Aceptada e implementada documentalmente
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: el PRD de Fase 1 y el roadmap original conservaban el lenguaje, baseline y pendientes de la etapa inicial, aunque las Fases 0–7 ya estaban cerradas y la Fase 8 se encontraba en un PR separado. Actualizarlos en sitio como si siempre hubieran descrito el estado actual habría eliminado contexto histórico.
+- Decisión: conservar `docs/PRD-CRM-FASE-1.md` como documento cerrado e histórico; adoptar `docs/PRD-CRM.md` como fuente viva de producto; usar `docs/ROADMAP.md` para estado actual, fases cerradas, fase activa, backlog y fuera de alcance; mantener `docs/AUDIT.md` como evidencia cronológica y `docs/DECISIONS.md` como registro de decisiones.
+- Restricción: el contenido histórico no se reescribe para representar fases posteriores. Las correcciones se añaden como notas de estado o nuevos hallazgos fechados.
+- Consecuencia: README, `AGENTS.md` y futuros cambios deben enlazar primero al PRD vivo; un trabajo abierto en un PR no se considera publicado hasta fusionarse en `main` y superar su release.
+- Evidencia/verificación: rama documental creada inicialmente desde `main` en `862e195`; cambios limitados a Markdown. La Fase 8 se fusionó después como `ab1a616` mediante el PR #13, y la rama documental se actualizó sobre ese commit antes de su publicación.
+
 ## Plantilla para nuevas decisiones
 
 ### D-XXX — Título

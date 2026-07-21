@@ -1,3 +1,5 @@
+> **Documento cerrado e histórico.** Esta especificación conserva el alcance y las decisiones de la Fase 1 tal como fueron redactados el 2026-07-19. No debe usarse como fuente vigente ni reescribirse para reflejar fases posteriores. La fuente viva del producto es [`docs/PRD-CRM.md`](./PRD-CRM.md).
+
 # PRD — CRM Fase 1
 
 ## 1. Estado del documento

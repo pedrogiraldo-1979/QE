@@ -2,14 +2,19 @@
 
 MVP CRM for Quindío Exquisito prospecting and follow-up.
 
+Current product requirements live in [`docs/PRD-CRM.md`](docs/PRD-CRM.md), and sequencing/gates live in [`docs/ROADMAP.md`](docs/ROADMAP.md). [`docs/PRD-CRM-FASE-1.md`](docs/PRD-CRM-FASE-1.md) is preserved only as the historical specification for the initial stabilization phase.
+
 ## What this app includes
 
 - Supabase login gate using email/password.
+- Private CRM allowlist enforced in the frontend and through RLS.
 - Companies dashboard with search, segment filters, and status filters.
 - Company detail view with company data, contacts, notes, and activity history.
-- Contacts table.
-- Activity/follow-up creation with due date.
-- Status updates for companies.
+- Contact creation, directory, quality indicators, and quick editing.
+- Activity/follow-up creation, completion, and rescheduling for companies and prospects.
+- Prospect lists, metrics, review filters, contacts, conversion, and controlled cleanup.
+- Public token-based customer data update form and internal response review.
+- Authenticated internal ZeptoMail test route.
 
 ## Supabase tables expected
 
@@ -27,9 +32,9 @@ The app expects these existing public tables, all protected with RLS:
 
 The initial import should already contain:
 
-- 82 companies
-- 82 contacts
-- 82/82 contacts linked through `contacts.company_id`
+- 83 companies
+- 83 contacts
+- 83/83 contacts linked through `contacts.company_id`
 
 ## Environment variables
 
@@ -80,7 +85,7 @@ http://localhost:3000
 pnpm verify
 ```
 
-El pipeline ejecuta typecheck, las pruebas unitarias/de contrato, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
+El pipeline ejecuta typecheck, las pruebas unitarias/de contrato vigentes, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 
@@ -104,10 +109,6 @@ The ZeptoMail authorization token must remain in Supabase Edge Function secrets.
 
 Do not add the ZeptoMail token to the repository or to any `NEXT_PUBLIC_` environment variable.
 
-## Suggested next iterations
+## Product planning
 
-1. Split contacts with multiple emails into separate contact rows.
-2. Add ownership/roles before inviting other users.
-3. Add CSV re-import/update workflow from Google Sheets.
-4. Add priority fields and next action dates to `companies`.
-5. Add email/WhatsApp templates only after data quality improves.
+Use [`docs/ROADMAP.md`](docs/ROADMAP.md) for the active phase, prioritized backlog, approval gates, and explicit exclusions. Product scope and open decisions belong in [`docs/PRD-CRM.md`](docs/PRD-CRM.md); do not infer authorization for ERP, Supabase migrations, data cleanup, external services, or new environment variables from this README.

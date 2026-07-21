@@ -631,3 +631,29 @@ Hallazgos corregidos durante el gate:
 Red de regresión: typecheck aprobado, 22/22 pruebas aprobadas y build de producción aprobado para 10 rutas. Se añadieron contratos para la idempotencia del bridge, nombres accesibles y límites responsive.
 
 Cierre del entorno: se eliminaron las filas de las nueve tablas públicas, la allowlist y Auth; todos los conteos quedaron en cero y el proyecto temporal terminó `INACTIVE`. El proyecto productivo no recibió consultas mutantes ni cambios.
+
+## Anexo — Auditoría documental de vigencia (2026-07-21)
+
+Alcance: revisión documental iniciada sobre `main` en `862e195d79b0be4c895b859aa8e415d7a06ef3b9` y actualizada después sobre `ab1a616a39c87c7617cc9996eab25b69c8f61fa4`. No se modificaron código, configuración, esquema, RLS, Auth, Edge Functions ni datos desde esta rama. La Fase 8 fue publicada separadamente mediante el PR #13 y se incorporó como evidencia del baseline vigente.
+
+Contradicciones verificadas:
+
+1. `docs/PRD-CRM-FASE-1.md` seguía marcado como borrador sobre `ecc2704`, aunque sus gates de estabilización y organización ya dieron lugar a las Fases 1–7.
+2. `docs/ROADMAP.md` declaraba la Fase 0 como actual y mantenía en Fase 1 que faltaban instalación reproducible, backend real y verificación remota; esos puntos quedaron resueltos y documentados en fases posteriores.
+3. El roadmap todavía listaba como pendiente ejecutar pruebas autenticadas/mutantes, aunque la Fase 6 completó una suite aislada 8/8.
+4. Las Fases 4, 6 y 7 repetían como pendiente la comparación visual de Prospección y bridges. La Fase 8 cerró ese trabajo, quedó documentada en la sección 21 y se publicó mediante el PR #13.
+5. `README.md` indicaba un baseline inicial de 82 empresas/contactos, mientras `DATA-CONTRACTS.md`, las pruebas RLS y la auditoría remota verificaron 83 empresas y 83 contactos.
+6. README fijaba un número de pruebas que cambia por fase y describía sólo una parte de la superficie funcional vigente.
+7. `AGENTS.md` dirigía primero al PRD histórico, lo que podía hacer que futuros agentes tomaran una especificación cerrada como fuente actual.
+
+Ajustes documentales aplicados:
+
+- el PRD de Fase 1 recibió únicamente una advertencia de cierre; su contenido histórico se conservó;
+- se creó `docs/PRD-CRM.md` como fuente viva del producto, con alcance, reglas, criterios, pendientes y fuera de alcance;
+- el roadmap se reorganizó en estado actual, fases cerradas, Fase 9 activa en planificación, backlog y fuera de alcance;
+- D-022 registró la separación entre fuentes históricas y vigentes;
+- README y `AGENTS.md` pasaron a enlazar la fuente viva y se corrigieron las contradicciones verificadas;
+- ERP quedó explícitamente fuera del alcance actual;
+- ningún pendiente de Supabase o datos quedó autorizado por esta reorganización documental.
+
+Relación con la Fase 8: este cambio se creó como un PR exclusivamente documental. Después de fusionar el PR #13, la rama se actualizó sobre `ab1a616` y resolvió los solapamientos de README, roadmap y auditoría conservando la evidencia cronológica.
