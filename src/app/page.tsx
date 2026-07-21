@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  MailCheck,
   MessageSquarePlus,
   Phone,
   Plus,
@@ -625,6 +626,7 @@ export default function HomePage() {
           <NavButton icon={UsersRound} label="Contactos" active={viewMode === "contacts"} onClick={() => goToView("contacts")} />
           <NavButton icon={ActivityIcon} label="Actividades" active={viewMode === "activities"} onClick={() => goToView("activities")} />
           <NavButton icon={ClipboardCheck} label="Actualización de datos" active={viewMode === "data"} onClick={() => goToView("data")} />
+          <NavButton icon={MailCheck} label="Piloto de campaña" active={false} onClick={() => router.push("/piloto-campana")} />
         </nav>
 
         <div className="sidebar-footer">
