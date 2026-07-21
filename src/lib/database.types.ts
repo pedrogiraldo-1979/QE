@@ -1,5 +1,5 @@
-// Generated from Supabase project izbfawwmbilmsrdjaanw on 2026-07-19.
-// Regenerate from the verified remote schema; do not maintain table or RPC shapes manually.
+// Generated from the verified isolated migration replay on 2026-07-21.
+// Regenerate after production applies the migration; do not maintain table or RPC shapes manually.
 export type Json =
   | string
   | number
@@ -296,10 +296,16 @@ export type Database = {
           direccion_nueva: string | null
           id: string
           link_id: string
+          master_sync_notes: string | null
+          master_sync_status: string
+          master_synced_at: string | null
+          master_synced_by: string | null
           nit_nuevo: string | null
           observaciones_cliente: string | null
           payload: Json | null
           razon_social_nueva: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: string
           telefono_tesoreria_nuevo: string | null
           token: string
@@ -319,10 +325,16 @@ export type Database = {
           direccion_nueva?: string | null
           id?: string
           link_id: string
+          master_sync_notes?: string | null
+          master_sync_status?: string
+          master_synced_at?: string | null
+          master_synced_by?: string | null
           nit_nuevo?: string | null
           observaciones_cliente?: string | null
           payload?: Json | null
           razon_social_nueva?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           telefono_tesoreria_nuevo?: string | null
           token: string
@@ -342,10 +354,16 @@ export type Database = {
           direccion_nueva?: string | null
           id?: string
           link_id?: string
+          master_sync_notes?: string | null
+          master_sync_status?: string
+          master_synced_at?: string | null
+          master_synced_by?: string | null
           nit_nuevo?: string | null
           observaciones_cliente?: string | null
           payload?: Json | null
           razon_social_nueva?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string
           telefono_tesoreria_nuevo?: string | null
           token?: string
@@ -588,6 +606,10 @@ export type Database = {
         Args: { p_response_id: string }
         Returns: undefined
       }
+      complete_cu_master_sync: {
+        Args: { p_notes?: string; p_response_id: string }
+        Returns: undefined
+      }
       claim_campaign_pilot_batch: {
         Args: { p_sent_by: string }
         Returns: {
@@ -637,6 +659,23 @@ export type Database = {
       }
       delete_prospect: { Args: { p_prospect_id: string }; Returns: boolean }
       get_cu_form: { Args: { p_token: string }; Returns: Json }
+      get_cu_master_sync_queue: {
+        Args: never
+        Returns: {
+          company_id: string
+          company_phone: string
+          cliente: string
+          direccion: string
+          nit: string
+          payload: Json
+          primary_contact: Json
+          razon_social: string
+          response_id: string
+          reviewed_at: string
+          secondary_contacts: Json
+          segmento: string
+        }[]
+      }
       get_cu_pending_reviews: {
         Args: never
         Returns: {

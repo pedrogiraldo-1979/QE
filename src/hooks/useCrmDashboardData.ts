@@ -3,13 +3,16 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CrmSupabaseClient } from "@/lib/supabase";
 import {
+  completeMasterSync,
   fetchCrmDashboard,
+  fetchMasterSyncQueue,
   fetchPendingCustomerUpdates,
   reviewCustomerUpdate,
 } from "@/lib/data/crmDashboardRepository";
 import {
   getResponseId,
   initialData,
+  type MasterSyncItem,
   type CustomerUpdateResponse,
   type DashboardData,
 } from "@/features/crm/dashboardModel";
@@ -23,6 +26,26 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
   const [customerResponsesLoading, setCustomerResponsesLoading] = useState(false);
   const [customerResponsesError, setCustomerResponsesError] = useState<string | null>(null);
   const [processingResponseId, setProcessingResponseId] = useState<string | null>(null);
+  const [masterSyncQueue, setMasterSyncQueue] = useState<MasterSyncItem[]>([]);
+  const [masterSyncLoading, setMasterSyncLoading] = useState(false);
+  const [masterSyncError, setMasterSyncError] = useState<string | null>(null);
+  const [processingMasterSyncId, setProcessingMasterSyncId] = useState<string | null>(null);
+
+  const loadMasterSyncQueue = useCallback(async () => {
+    setMasterSyncLoading(true);
+    setMasterSyncError(null);
+    const { data: queue, error } = await fetchMasterSyncQueue(supabase);
+
+    if (error) {
+      setMasterSyncQueue([]);
+      setMasterSyncError(error.message);
+      setMasterSyncLoading(false);
+      return;
+    }
+
+    setMasterSyncQueue((queue || []) as MasterSyncItem[]);
+    setMasterSyncLoading(false);
+  }, [supabase]);
 
   const loadCustomerResponses = useCallback(async () => {
     setCustomerResponsesLoading(true);
@@ -69,8 +92,8 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
       setMessage(prospectsResult.error?.message || prospectActivitiesResult.error?.message || "No pudimos cargar prospección.");
     }
     setLoading(false);
-    void loadCustomerResponses();
-  }, [loadCustomerResponses, supabase]);
+    void Promise.all([loadCustomerResponses(), loadMasterSyncQueue()]);
+  }, [loadCustomerResponses, loadMasterSyncQueue, supabase]);
 
   useEffect(() => {
     if (enabled) void loadData();
@@ -90,13 +113,38 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
     }
 
     setCustomerResponses((current) => current.filter((item) => getResponseId(item) !== responseId));
-    setMessage(action === "approve" ? "Respuesta aprobada." : "Respuesta rechazada.");
+    if (action === "approve") {
+      await loadMasterSyncQueue();
+      setMessage("Respuesta aprobada. Supabase quedó actualizado y la reconciliación de maestros está pendiente.");
+    } else {
+      setMessage("Respuesta rechazada.");
+    }
     setProcessingResponseId(null);
+  }
+
+  async function markMasterSyncComplete(responseId: string) {
+    const confirmed = window.confirm(
+      "Confirma únicamente si Hoja1 y contactos_base ya fueron actualizados y verificados.",
+    );
+    if (!confirmed) return;
+
+    setProcessingMasterSyncId(responseId);
+    const { error } = await completeMasterSync(supabase, responseId);
+    if (error) {
+      setMessage(error.message);
+      setProcessingMasterSyncId(null);
+      return;
+    }
+
+    setMasterSyncQueue((current) => current.filter((item) => item.response_id !== responseId));
+    setMessage("Maestros confirmados como sincronizados.");
+    setProcessingMasterSyncId(null);
   }
 
   function resetData() {
     setData(initialData);
     setCustomerResponses([]);
+    setMasterSyncQueue([]);
     setCustomerResponsesError(null);
     setMessage(null);
   }
@@ -111,9 +159,15 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
     customerResponsesLoading,
     customerResponsesError,
     processingResponseId,
+    masterSyncQueue,
+    masterSyncLoading,
+    masterSyncError,
+    processingMasterSyncId,
     loadData,
     loadCustomerResponses,
+    loadMasterSyncQueue,
     reviewCustomerResponse,
+    markMasterSyncComplete,
     resetData,
   };
 }

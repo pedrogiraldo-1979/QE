@@ -41,8 +41,10 @@ La reproducción desde cero fue contrastada mediante firmas normalizadas de colu
 | `get_cu_form(p_token)` | `anon`, `authenticated` | definer | Devuelve el formulario de un enlace activo y no vencido. |
 | `submit_cu_form(p_token, p_payload)` | `anon`, `authenticated` | definer | Acepta sólo un objeto JSON de máximo 32 KB. |
 | `get_cu_pending_reviews()` | `authenticated` | invoker | Lista respuestas pendientes bajo RLS. |
-| `approve_cu_response(p_response_id)` | `authenticated` | invoker | Aplica únicamente una respuesta pendiente; reintentos posteriores no vuelven a aplicar cambios. |
+| `approve_cu_response(p_response_id)` | `authenticated` | invoker | Aplica empresa, contacto principal, ambos teléfonos y segundo contacto opcional en una transacción; reintentos no duplican cambios. |
 | `reject_cu_response(p_response_id)` | `authenticated` | invoker | Desde `20260720031715`, sólo cambia respuestas pendientes. |
+| `get_cu_master_sync_queue()` | `authenticated` | invoker | Lista aprobaciones con cambios que aún requieren reconciliar `Hoja1` y `contactos_base`. |
+| `complete_cu_master_sync(p_response_id, p_notes)` | `authenticated` | invoker | Cierra una tarea pendiente sólo después de confirmar ambos maestros. |
 | `convert_prospect_to_company(p_prospect_id, p_notes)` | `authenticated` | invoker | Bloquea el prospecto, crea y enlaza en una transacción; reintentos devuelven la empresa enlazada. |
 | `delete_prospect(p_prospect_id)` | `authenticated` | invoker | Elimina el prospecto en una transacción; las FK retiran dependencias por cascada. |
 
@@ -67,6 +69,7 @@ La protección de contraseñas filtradas continúa deshabilitada y requiere una 
 ## Riesgos y decisiones pendientes
 
 - Las ocho respuestas actuales pertenecen a un único enlace de prueba duplicado; imponer unicidad por `link_id` requeriría una decisión de producto y limpieza de datos separada.
+- La cola de maestros registra estado y trazabilidad; la escritura en Google Sheets continúa siendo un paso controlado posterior a la aprobación, no una mutación directa desde el formulario público.
 - Los 220 prospectos conservan el estado legado `por_validar`, normalizado en el frontend sin reescritura.
 - Las dos RPC públicas por token generan warnings esperados del advisor por usar `SECURITY DEFINER`; su exposición es deliberada y debe reevaluarse si cambia el flujo público.
 - Advisor de Auth: [protección de contraseñas filtradas](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).

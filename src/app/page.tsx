@@ -41,6 +41,7 @@ import { CompanyTable } from "@/components/crm/CompanyTable";
 import { ContactsTable } from "@/components/crm/ContactsTable";
 import { CustomerResponsesTable } from "@/components/crm/CustomerResponsesTable";
 import { DataIssuesTable } from "@/components/crm/DataIssuesTable";
+import { MasterSyncTable } from "@/components/crm/MasterSyncTable";
 import { ProspectsTable } from "@/components/crm/ProspectsTable";
 import {
   activityTypeLabels,
@@ -48,6 +49,7 @@ import {
   countByStatus,
   filterCustomerResponses,
   filterDataIssues,
+  filterMasterSyncQueue,
   formatActivityType,
   formatContactRole,
   getCompanyIssues,
@@ -106,9 +108,15 @@ export default function HomePage() {
     customerResponsesLoading,
     customerResponsesError,
     processingResponseId,
+    masterSyncQueue,
+    masterSyncLoading,
+    masterSyncError,
+    processingMasterSyncId,
     loadData,
     loadCustomerResponses,
+    loadMasterSyncQueue,
     reviewCustomerResponse,
+    markMasterSyncComplete,
     resetData,
   } = useCrmDashboardData(supabase, isAuthenticated);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
@@ -480,6 +488,10 @@ export default function HomePage() {
     return filterCustomerResponses(customerResponses, normalizedSearch);
   }, [customerResponses, normalizedSearch]);
 
+  const filteredMasterSyncQueue = useMemo(() => {
+    return filterMasterSyncQueue(masterSyncQueue, normalizedSearch);
+  }, [masterSyncQueue, normalizedSearch]);
+
   const selectedContacts = selectedCompany ? contactsByCompanyId.get(selectedCompany.id) || [] : [];
   const selectedActivities = selectedCompany ? activitiesByCompanyId.get(selectedCompany.id) || [] : [];
   const nextActivity = getNextActivity(selectedActivities);
@@ -720,6 +732,7 @@ export default function HomePage() {
                     filteredActivities,
                     filteredDataIssues,
                     filteredCustomerResponses,
+                    filteredMasterSyncQueue,
                     dataTab,
                     filteredProspects
                   )}
@@ -745,6 +758,17 @@ export default function HomePage() {
                   >
                     Respuestas de clientes
                     <span>{customerResponses.length}</span>
+                  </button>
+                  <button
+                    className={`subtab ${dataTab === "sync" ? "active" : ""}`}
+                    type="button"
+                    onClick={() => {
+                      setDataTab("sync");
+                      void loadMasterSyncQueue();
+                    }}
+                  >
+                    Pendiente maestros
+                    <span>{masterSyncQueue.length}</span>
                   </button>
                 </div>
               ) : null}
@@ -853,6 +877,16 @@ export default function HomePage() {
                   onApprove={(response) => void reviewCustomerResponse(response, "approve")}
                   onReject={(response) => void reviewCustomerResponse(response, "reject")}
                   onRetry={() => void loadCustomerResponses()}
+                />
+              ) : null}
+              {viewMode === "data" && dataTab === "sync" ? (
+                <MasterSyncTable
+                  items={filteredMasterSyncQueue}
+                  loading={masterSyncLoading}
+                  error={masterSyncError}
+                  processingId={processingMasterSyncId}
+                  onComplete={(responseId) => void markMasterSyncComplete(responseId)}
+                  onRetry={() => void loadMasterSyncQueue()}
                 />
               ) : null}
             </section>
