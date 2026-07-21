@@ -3,8 +3,8 @@
 ## Estado del documento
 
 - Fecha: 2026-07-21.
-- Estado: diseño funcional aprobado en conversación; propuesta pendiente de revisión documental y commit.
-- Baseline documental: `main` en `28b4bc9`, después del cierre de la Etapa 1 mediante el PR #25.
+- Estado: diseño funcional aprobado, revisado e integrado en `main` mediante el PR #26.
+- Baseline: `main` en `28b4bc9` al iniciar la integración; especificación y primer plan RBAC publicados después mediante el PR #26 (`9f42545`).
 - Criterios de Fase 9 cubiertos: `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03`.
 - Tipo de entrega: especificación documental. No autoriza implementación, migraciones ni cambios de Supabase o datos.
 

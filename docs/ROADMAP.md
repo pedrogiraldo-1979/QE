@@ -71,13 +71,17 @@ Gate: cumplido mediante la especificación aprobada, su registro en el PRD y `D-
 
 Evidencia: PR #23 publicó la especificación y PR #24 reconcilió sus metadatos. La implementación futura conserva gates independientes.
 
-#### Etapa 2 — Gobierno y recuperación
+#### Etapa 2 — Gobierno y recuperación (cerrada)
 
-- aprobar la matriz de permisos `admin`/`member`;
-- definir auditoría, eliminación lógica, restauración, retención y purga;
-- decidir la semántica de múltiples respuestas, reenvíos y reapertura del formulario público.
+Estado: cerrada documentalmente el 2026-07-21.
 
-Gate: criterios `P9-RBAC`, `P9-AUD` y `P9-CU` aceptados; cualquier cambio de RLS, Auth, RPC, esquema o datos cuenta con un plan y una autorización independientes.
+- matriz de permisos `admin`/`member` aprobada;
+- auditoría, eliminación lógica, restauración, retención y purga excepcional definidas;
+- enlace único por ciclo, reenvío controlado y ausencia de reapertura acordados.
+
+Gate: cumplido mediante la especificación aprobada y `D-027`; los criterios `P9-RBAC`, `P9-AUD` y `P9-CU` quedan aceptados sin cambios de backend ni datos.
+
+Evidencia: PR #26 publicó la especificación y el primer plan RBAC. El plan no está ejecutado; RLS, Auth, RPC, esquema, auditoría, recuperación y datos conservan autorizaciones independientes.
 
 #### Etapa 3 — Evidencia operable
 

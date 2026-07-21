@@ -238,11 +238,21 @@ El contrato:
 
 Los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptados como contrato funcional. Su implementación, persistencia y evidencia automatizada conservan gates independientes; esta aprobación no autoriza cambios de Supabase, datos ni comportamiento.
 
-### Decisiones pendientes
+### Gobierno y recuperación aprobados — Etapa 2
 
-- diferencias concretas entre `admin` y `member`;
-- entidades auditables, retención, eliminación lógica, recuperación y purga;
-- semántica de una o múltiples respuestas y posibles reaperturas del formulario público;
+La Etapa 2 quedó aprobada e integrada mediante la [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md) y se registra como `D-027` en [DECISIONS.md](./DECISIONS.md). El [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) es la primera unidad técnica propuesta y conserva un gate de ejecución independiente.
+
+El contrato:
+
+- separa el trabajo comercial de `member` y las operaciones sensibles de `admin`;
+- define auditoría mínima, retención de cinco años y acceso administrativo;
+- adopta eliminación lógica y restauración atómica por lote para las entidades aprobadas;
+- excluye la purga definitiva de la aplicación y exige un procedimiento excepcional;
+- establece un enlace por ciclo, una sola respuesta válida y estados terminales sin reapertura.
+
+Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. Aceptarlos no implementa RLS, RPC, Auth, auditoría, eliminación lógica, recuperación ni el nuevo ciclo público; cada unidad necesita plan, aprobación, reversión y pruebas aisladas.
+
+### Decisiones pendientes
 - cobertura mínima automatizada por flujo y evidencia manual aceptable;
 - catálogo inicial de métricas, objetivos, responsables y política de privacidad;
 - orden definitivo de bridges y criterio de salida de cada sustitución;
