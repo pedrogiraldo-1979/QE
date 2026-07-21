@@ -211,6 +211,16 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 ## Plantilla para nuevas decisiones
 
+## D-023 — Verificar la campaña sin contactos de clientes
+
+- Estado: Aceptada e implementada en rama
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: la prueba interna confirmó la integración de ZeptoMail, pero repetir el flujo con clientes reales no es un gate seguro ni reproducible.
+- Decisión: separar la verificación en contratos puros del correo, smoke no mutante sobre rutas/RPC/autorización y E2E mutante exclusivamente en un Supabase desechable. Los fixtures usan dominios `.invalid`, identificadores únicos y limpieza final; el runner bloquea expresamente el `project_ref` productivo.
+- Restricción: el smoke nunca envía correo ni escribe datos. El E2E valida token, precarga, respuesta y aprobación, pero no automatiza una bandeja personal ni habilita envíos masivos.
+- Evidencia/verificación: `tests/campaignEmail.test.mjs`, `scripts/campaign-smoke.mjs` y `tests/campaign.integration.mjs`.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida

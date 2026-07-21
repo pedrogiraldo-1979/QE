@@ -3,6 +3,7 @@ const baseUrl = (process.env.CRM_BASE_URL ?? "http://127.0.0.1:3000").replace(/\
 const routes = [
   "/",
   "/actualizar-datos",
+  "/actualizar-datos?token=qe-test-formulario-2026",
   "/agregar",
   "/contactos/nuevo",
   "/prospectos",
