@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## 22. Cobertura controlada de campaña — 2026-07-21
+
+- Se separó el contenido fijo del correo interno en un módulo puro y se añadieron contratos automáticos para remitente, único destinatario interno, asunto, token sintético y aliases del secret.
+- Se añadió un smoke de campaña no mutante: carga de rutas, lectura del token sintético, rechazo del token inexistente y rechazo de la Edge Function sin autenticación.
+- Se añadió un E2E para entorno Supabase desechable: fixture `.invalid`, precarga pública, envío de respuesta, revisión, aprobación y limpieza final.
+- Los runners mutantes bloquean explícitamente el proyecto productivo `izbfawwmbilmsrdjaanw`; no se añadieron secretos, destinatarios de clientes ni automatización masiva.
+- La entrega real en Gmail continúa siendo un gate interno manual; no se almacenan credenciales personales ni se automatiza el acceso a la bandeja.
+
 ## 1. Alcance y método
 
 Auditoría local, de solo lectura sobre código y configuración, realizada antes de crear estos documentos. No incluyó conexión a Supabase, inspección de datos, ejecución de flujos que mutan registros ni verificación del despliegue.

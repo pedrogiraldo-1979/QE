@@ -14,7 +14,9 @@
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",
     "test:integration": "node --test tests/supabase.integration.mjs",
+    "test:campaign:e2e": "node --test tests/campaign.integration.mjs",
     "test:smoke": "node scripts/smoke.mjs",
+    "test:campaign:smoke": "node scripts/campaign-smoke.mjs",
     "verify": "pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
