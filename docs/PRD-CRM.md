@@ -7,7 +7,7 @@
 - Estado: vigente.
 - Responsable de producto: Pedro.
 - Última revisión: 2026-07-21.
-- Baseline publicado inspeccionado: `main` en `862e195d79b0be4c895b859aa8e415d7a06ef3b9`.
+- Baseline publicado inspeccionado: `main` en `ab1a616a39c87c7617cc9996eab25b69c8f61fa4`.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
 
 Este documento describe el CRM vigente y sus límites de producto. El comportamiento sólo se considera publicado cuando el cambio correspondiente está fusionado en `main` y ha superado los gates de release. El trabajo aún abierto en un PR se registra en el roadmap, pero no amplía por sí solo el alcance publicado.

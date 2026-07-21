@@ -108,3 +108,53 @@ test("la baseline reconstruye el contrato sin sembrar identidades ni datos", asy
   assert.doesNotMatch(baseline, /insert\s+into\s+private\.crm_authorized_users/i);
   assert.doesNotMatch(authorization, /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
 });
+
+test("el bridge de contactos no realimenta su observador al decorar botones", async () => {
+  const bridge = await read("src/components/ContactCompletionBridge.tsx");
+
+  assert.match(bridge, /const actionLabel = hasIssues \? "Completar datos" : "Editar contacto";/);
+  assert.match(bridge, /if \(actionButton\.textContent !== actionLabel\) \{\s*actionButton\.textContent = actionLabel;\s*\}/);
+  assert.doesNotMatch(bridge, /actionButton\.textContent = hasIssues \?/);
+});
+
+test("el buscador de listas de prospección conserva un nombre accesible", async () => {
+  const prospectListsPage = await read("src/app/prospectos/page.tsx");
+
+  assert.match(prospectListsPage, /aria-label="Buscar lista de prospección"/);
+});
+
+test("los filtros del detalle de prospección conservan nombres accesibles", async () => {
+  const prospectDetailPage = await read("src/app/prospectos/[listId]/page.tsx");
+
+  assert.match(prospectDetailPage, /aria-label="Buscar prospecto en la lista"/);
+  assert.match(prospectDetailPage, /aria-label="Filtrar prospectos por prioridad"/);
+  assert.match(prospectDetailPage, /aria-label="Filtrar prospectos por ciudad"/);
+});
+
+test("la tabla móvil de listas conserva columnas legibles dentro de su propio scroll", async () => {
+  const prospectLayout = await read("src/app/prospect-detail-layout-simplify.css");
+
+  assert.match(prospectLayout, /\.prospect-lists-table-wrap \.prospect-lists-table \{\s*min-width: 760px !important;\s*width: 760px !important;/);
+  assert.match(prospectLayout, /overscroll-behavior-inline: contain;/);
+});
+
+test("las rutas de prospección mantienen nombre accesible al ocultar el texto de salida", async () => {
+  const routes = [
+    "src/app/prospectos/page.tsx",
+    "src/app/prospectos/[listId]/page.tsx",
+    "src/app/prospectos/nuevo/page.tsx",
+    "src/app/prospectos/limpieza/page.tsx",
+  ];
+
+  for (const route of routes) {
+    assert.match(await read(route), /<button aria-label="Salir" className="btn btn-ghost full-width"/);
+  }
+});
+
+test("el portal de actividad permite que su formulario encoja en móvil", async () => {
+  const activityStyles = await read("src/app/activities-workbench-polish.css");
+
+  assert.match(activityStyles, /\.add-activity-form \{[\s\S]*?min-width: 0;/);
+  assert.match(activityStyles, /\.add-activity-form \.form-grid,[\s\S]*?\.add-activity-form \.smart-company-option \{\s*min-width: 0;\s*max-width: 100%;/);
+  assert.match(activityStyles, /\.add-activity-form \.form-grid \{\s*width: 100%;/);
+});

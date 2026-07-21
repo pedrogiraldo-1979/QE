@@ -242,6 +242,13 @@
 
   .crm-shell:has(.nav-button.active[href="/prospectos"]) .table-wrap {
     overflow-x: auto !important;
+    overscroll-behavior-inline: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table-wrap .prospect-lists-table {
+    min-width: 760px !important;
+    width: 760px !important;
   }
 
   .crm-shell:has(.nav-button.active[href="/prospectos"]) .prospect-lists-table .row-actions .btn-secondary {
