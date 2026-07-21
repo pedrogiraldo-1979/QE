@@ -10,3 +10,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 tsconfig.tsbuildinfo
+/.codex/
+/.superpowers/
+/docs/superpowers/plans/2026-07-20-phase-9-documentation.md
+/docs/superpowers/specs/2026-07-20-phase-9-documentation-design.md
