@@ -1,230 +1,144 @@
-# Roadmap de reorganización
+# Roadmap vigente del CRM
 
 ## Principios
 
-- Conservar primero el comportamiento; mejorar la estructura en pasos pequeños.
-- Separar cambios documentales, estructurales, funcionales y de datos.
-- No borrar ni mover duplicados sin aprobación explícita.
+- Conservar primero el comportamiento y mejorar en pasos pequeños.
+- Separar documentación, frontend, backend, datos y operación en cambios trazables.
+- No considerar cerrado un trabajo hasta que su evidencia y su release estén completos.
 - No modificar Supabase o datos como efecto secundario de una reorganización.
-- Cada etapa debe tener evidencia, criterio de salida y ruta de reversión.
+- Exigir autorización independiente para acciones destructivas, dependencias y servicios externos.
+- Mantener el CRM como alcance actual; ERP permanece fuera de alcance.
 
-## Fase 0 — Documentación e inventario (actual)
+## Estado actual
 
-Objetivo: establecer una base compartida sin modificar el producto.
+Fecha de corte: 2026-07-21.
 
-Entregables:
+- Baseline publicado en `main`: `862e195d79b0be4c895b859aa8e415d7a06ef3b9`.
+- Fuente viva de producto: [`PRD-CRM.md`](./PRD-CRM.md).
+- PRD de Fase 1: cerrado y conservado como documento histórico.
+- Fuente canónica de código: `src/`.
+- Stack reproducible: Node 24.14.0, pnpm 11.7.0 y lockfile versionado.
+- Superficie: diez rutas de Next.js, nueve tablas CRM con RLS, ocho RPC públicas tipadas y una función privada de autorización.
+- Autorización: allowlist privada; `admin` y `member` comparten actualmente el mismo CRUD.
+- Calidad publicada: typecheck, 16 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP y suite de integración aislada 8/8.
+- Baseline de Supabase: seis migraciones reproducen el esquema desde cero sin usuarios ni datos.
+- Entorno temporal de pruebas: limpio y en pausa después de las validaciones aisladas.
+- Fase 8: implementada y verificada en el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13), todavía fuera de `main` mientras el PR siga sin fusionar.
 
-- `AGENTS.md` con reglas operativas;
-- PRD de Fase 1;
-- roadmap por gates;
-- registro de decisiones;
-- auditoría estructural y de riesgos.
+Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 
-Criterio de salida:
+- reconciliar el historial productivo de la baseline antes de otra migración;
+- decidir el tratamiento del estado legado `por_validar`;
+- habilitar la protección de contraseñas filtradas mediante un gate de Auth;
+- definir permisos diferentes para `admin` y `member`;
+- definir auditoría y recuperación para eliminaciones;
+- acordar la semántica de múltiples respuestas por enlace;
+- definir métricas, retención, alertas y observabilidad;
+- implementar paginación antes de superar 1.000 entidades por dominio.
 
-- documentos revisados por el responsable;
-- preguntas abiertas priorizadas;
-- aprobación o correcciones al plan técnico.
+## Fases cerradas
 
-## Fase 1 — Baseline técnico local (completado)
+| Fase | Resultado cerrado | Evidencia principal |
+| --- | --- | --- |
+| 0 — Documentación e inventario | Se crearon reglas operativas, PRD inicial, roadmap, decisiones y auditoría. | `AGENTS.md`, PRD histórico y secciones 1–10 de `AUDIT.md`. |
+| 1 — Baseline técnico | Se verificaron typecheck, build, rutas, manifests, source maps y `src/` como fuente activa. | `AUDIT.md` secciones 11–12. |
+| 2 — Estabilización | Se unificaron contratos de prospectos, se aisló Auth/rutas, se reforzaron RLS/RPC y se adoptó la allowlist. | D-007 a D-016 y `AUDIT.md` secciones 13–14. |
+| 3 — Duplicados | Se auditaron y retiraron las cinco copias raíz con aprobación y rollback trazable. | `PHASE-3-DUPLICATES.md`, D-017 y `AUDIT.md` sección 15. |
+| 4 — Modularización inicial | Se separaron modelo, hook de datos y vistas del dashboard; tres bridges simples se retiraron. | D-005, D-018 y `AUDIT.md` sección 16. |
+| 5 — Contratos de datos | Se generaron tipos remotos, columnas explícitas, repositorio del dashboard y guardas de revisión. | `DATA-CONTRACTS.md`, D-019 y `AUDIT.md` sección 17. |
+| 6 — Calidad y operación | Se añadió CI, smoke, release checklist y una suite autenticada/mutante en un proyecto desechable. | D-008, D-020 y `AUDIT.md` secciones 18–19. |
+| 7 — Reproducibilidad de Supabase | El esquema se reconstruyó desde cero y coincidió con producción sin copiar identidades ni datos. | D-021 y `AUDIT.md` sección 20. |
 
-Objetivo: comprobar qué se ejecuta realmente antes de reorganizar.
+Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. Esta tabla expresa su estado vigente y sustituye los pendientes intermedios que quedaron resueltos por fases posteriores.
 
-Trabajo completado:
+## Fase activa
 
-1. typecheck aprobado;
-2. build de producción aprobado;
-3. rutas inventariadas verificadas por HTTP local sin mutar datos;
-4. manifests y source maps inspeccionados;
-5. `src/` confirmado como fuente del build local;
-6. diferencias de dependencias y ausencia de lockfile registradas;
-7. riesgos semánticos, de integridad y aislamiento documentados.
+### Fase 8 — Cierre visual autenticado y publicación
 
-Pendiente: la instalación todavía no es reproducible, no se navegó con backend real y no se verificó el despliegue remoto.
+Objetivo: cerrar la comparación visual autenticada de Prospección, portales y los cinco bridges complejos sin cambiar reglas de negocio ni datos productivos.
 
-Gate actual: aprobar el baseline y `src/` como fuente canónica. No se elimina nada automáticamente.
+Estado al corte:
 
-## Fase 2 — Estabilización prioritaria (frontend y backend mínimo completados)
+- implementación y documentación asociada publicadas en el PR borrador #13;
+- CI de GitHub aprobado;
+- preview de Vercel en estado `READY`;
+- validación local completada con 22/22 pruebas y build de diez rutas;
+- entorno de prueba aislado limpiado y pausado;
+- producción y `main` sin este cambio hasta que exista una decisión de merge.
 
-Objetivo: resolver riesgos de integridad antes de una refactorización amplia.
+Gate de salida:
 
-Completado:
+1. revisar manualmente el preview en escritorio y móvil;
+2. confirmar que el PR #13 conserva únicamente el alcance de Fase 8;
+3. fusionar mediante el flujo normal sólo con aprobación explícita;
+4. esperar deployment de producción `READY`;
+5. ejecutar smoke no mutante y revisar hidratación/errores;
+6. registrar el cierre remoto sin mezclar trabajo de fases futuras.
 
-1. pnpm 11.7.0, Node recomendado y lockfile registrados;
-2. campos y estados frontend de prospectos unificados;
-3. pruebas puras para normalización, conversión, contactos y duplicados;
-4. bridges internos aislados mediante carga dinámica por ruta;
-5. consulta global innecesaria de `companies` eliminada;
-6. sesión/autenticación interna centralizada;
-7. typecheck, pruebas, build y smoke de scripts públicos aprobados;
-8. esquema, RLS, funciones, permisos, migraciones e índices remotos auditados;
-9. conversión y eliminación de prospectos trasladadas a RPC transaccionales e idempotentes;
-10. RPC internas retiradas de `anon` y ejecutadas como `SECURITY INVOKER`;
-11. formulario público alineado con vencimiento de token y límites de payload;
-12. índices de las nueve claves foráneas señaladas por el advisor creados.
+No forman parte de este gate la retirada de bridges, nuevas funciones de producto ni cambios de Supabase.
 
-Pendiente para cerrar seguridad y validación funcional:
+## Backlog futuro
 
-1. decidir si se migran las 220 filas con estado legado `por_validar` a `por_revisar`; el frontend ya las normaliza sin reescribir datos;
-2. habilitar protección de contraseñas filtradas desde Auth;
-3. ejecutar pruebas funcionales autenticadas y pruebas de mutación en un entorno controlado;
-4. definir auditoría y recuperación para eliminaciones antes de ampliar el uso;
-5. diferenciar permisos de `admin` y `member` solo cuando producto defina qué acciones deben reservarse.
+El orden es propuesto. Cada bloque necesita alcance y aprobación antes de iniciar implementación.
 
-Autorización completada: allowlist privada para las dos cuentas internas existentes, RLS aplicado a las nueve tablas, privilegios anónimos directos revocados y comprobación de acceso integrada en la sesión frontend.
+### Prioridad 1 — Definiciones de producto y operación
 
-Gates independientes:
+- aprobar workflow comercial y transiciones permitidas;
+- definir campos obligatorios por entidad;
+- acordar matriz de permisos `admin`/`member`;
+- definir política de eliminación, auditoría y recuperación;
+- definir métricas con fórmula, fuente, objetivo, responsable y frecuencia;
+- aprobar política de telemetría, retención y alertas antes de elegir proveedor.
 
-- cambios de frontend funcional requieren aprobación de alcance;
-- inspección o modificación de Supabase requiere autorización expresa;
-- cualquier prueba que mute datos debe usar un entorno controlado.
+Gate: decisiones registradas y criterios de aceptación actualizados en el PRD vivo.
 
-## Fase 3 — Resolución controlada de duplicados (completada)
+### Prioridad 2 — Deuda arquitectónica verificada
 
-Objetivo: retirar ambigüedad entre raíz y `src/`.
+- reemplazar un bridge por vez con composición React propietaria;
+- comenzar por `ContactCompletionBridge` y `AddActivityEntryBridge`, por su dependencia de DOM/portal;
+- repetir typecheck, pruebas, build y gate visual tras cada sustitución;
+- centralizar repositorios adicionales sólo cuando una ruta sea intervenida;
+- evitar reorganizaciones de rutas sin una aprobación específica.
 
-Candidatos identificados:
+Gate: equivalencia funcional y visual, rollback claro y ausencia de cambios de backend.
 
-- `page.tsx` / `src/app/page.tsx`;
-- `layout.tsx` / `src/app/layout.tsx`;
-- `globals.css` / `src/app/globals.css`;
-- `supabase.ts` / `src/lib/supabase.ts`;
-- `types.ts` / `src/lib/types.ts`.
+### Prioridad 3 — Calidad y automatización
 
-Plan propuesto:
+- decidir si se versiona automatización de navegador y aprobar su dependencia;
+- trazar criterios del PRD a pruebas unitarias, integración, smoke o evidencia manual;
+- cubrir progresivamente creación/edición y actividades sin usar producción para fixtures;
+- mantener la suite mutante fuera del CI normal mientras requiera un proyecto desechable.
 
-1. comparar comportamiento, historial e importaciones de cada par;
-2. confirmar configuración real de Next.js y despliegue;
-3. seleccionar la fuente canónica por decisión registrada;
-4. trasladar cualquier diferencia todavía necesaria mediante un commit separado;
-5. verificar typecheck, build y rutas;
-6. presentar el diff final;
-7. eliminar los archivos redundantes solo tras una segunda aprobación.
+Gate: cobertura reproducible sin secretos ni datos reales.
 
-Reversión: commits atómicos, sin mezcla con cambios funcionales.
+### Prioridad 4 — Gates independientes de backend y datos
 
-Estado de la auditoría:
+- reconciliar la baseline en el historial productivo antes de otra migración;
+- evaluar protección de contraseñas filtradas;
+- decidir si se migran estados legados;
+- decidir unicidad o reenvíos de respuestas públicas;
+- diseñar paginación con orden estable;
+- evaluar mejoras de integridad para altas conjuntas.
 
-- los cinco pares fueron comparados por contenido, imports, historial, TypeScript, build, source maps y despliegue;
-- no se encontró funcionalidad única en las copias raíz que deba trasladarse;
-- `src/` está confirmado como fuente canónica local y desplegada;
-- el plan exacto está en `docs/PHASE-3-DUPLICATES.md`;
-- Pedro autorizó explícitamente el retiro de los cinco archivos;
-- las cinco copias raíz fueron eliminadas juntas, sin trasladar contenido ni modificar `src/`;
-- TypeScript dejó de incluir las cuatro copias TS/TSX;
-- typecheck, 6/6 pruebas, build de 10 rutas, manifest y source maps conservaron el baseline canónico.
+Gate: plan específico, autorización expresa, respaldo/reversión y pruebas aisladas. Ningún punto de este bloque queda autorizado por este roadmap.
 
-Resultado: el gate técnico y la aprobación explícita quedaron satisfechos. La reversión consiste en revertir únicamente el commit estructural de limpieza.
+### Prioridad 5 — Evolución comercial posterior
 
-## Fase 4 — Modularización de interfaz (corte estructural completado)
+- mejorar calidad y deduplicación de contactos;
+- definir un flujo de importación/reimportación revisable;
+- incorporar prioridad y próxima acción sólo después de aprobar el contrato;
+- evaluar plantillas de comunicación cuando la calidad de datos y la operación estén listas.
 
-Objetivo: reducir acoplamiento y tamaño de páginas sin cambiar reglas de negocio.
+Gate: problema, usuario, criterio de aceptación y riesgo de datos documentados en el PRD vivo.
 
-Orden sugerido:
+## Fuera de alcance
 
-1. extraer constantes, formatters y validaciones puras;
-2. extraer hooks de lectura y mutación por dominio;
-3. dividir vistas de empresas, contactos, actividades y prospectos;
-4. reemplazar bridges basados en manipulación del DOM por composición React donde sea viable;
-5. consolidar estilos por capa y retirar parches solo con equivalencia visual comprobada.
-
-Criterios de salida:
-
-- ninguna regresión en la matriz de flujos;
-- límites claros entre UI, lógica de dominio y acceso a datos;
-- archivos principales reducidos a responsabilidades coherentes.
-
-Trabajo completado:
-
-1. tipos de vista, constantes, formatters, filtros y validaciones puras extraídos a `src/features/crm/dashboardModel.ts`;
-2. carga del dashboard y revisión de respuestas extraídas a `src/hooks/useCrmDashboardData.ts`, sin cambiar tablas ni RPC;
-3. vistas de empresas, contactos, actividades, prospectos, calidad y respuestas separadas en componentes de `src/components/crm/`;
-4. botón global Agregar, navegación a Prospección y alta de contacto desde cliente reemplazados por composición React/Next directa;
-5. `src/app/page.tsx` reducido de 2.375 a 1.498 líneas;
-6. cinco pruebas puras nuevas añadidas; baseline total elevado de 6 a 11 pruebas.
-
-Deuda controlada:
-
-- permanecen cinco bridges complejos asociados a workbenches, portales y edición rápida;
-- no se consolidaron ni retiraron parches CSS porque falta una comparación visual autenticada;
-- esos dos puntos requieren el gate visual/funcional de Fase 6, no cambios de Supabase.
-
-## Fase 5 — Contratos y capa de datos (primer corte completado)
-
-Objetivo: alinear tipos y acceso a datos con el backend real.
-
-Trabajo completado:
-
-- tipos TypeScript generados desde el proyecto remoto y cliente Supabase tipado con `Database`;
-- tipos de dominio derivados de las filas remotas, conservando sólo compatibilidad explícita de lectura;
-- dashboard y revisión de respuestas centralizados en un repositorio de datos;
-- todos los `select("*")` sustituidos por contratos de columnas compartidos;
-- límites dispersos sustituidos por límites nombrados y documentados;
-- RPC, RLS, Auth, grants, advisors y Edge Function documentados en `docs/DATA-CONTRACTS.md`;
-- argumento de revisión corregido a `p_response_id` según el contrato remoto;
-- rechazo de respuestas endurecido para permitir únicamente la transición desde `pendiente`.
-
-Deuda controlada:
-
-- paginación antes de superar 1.000 entidades por dominio;
-- repositorios adicionales para mutaciones que aún pertenecen a rutas específicas;
-- decisión separada sobre múltiples respuestas por enlace público, porque el baseline contiene ocho respuestas de prueba para un mismo enlace;
-- protección de contraseñas filtradas y eventual migración del estado `por_validar` continúan pendientes.
-
-Gate de Supabase: autorizado por Pedro al continuar la Fase 5. La única migración de esta fase reemplazó una función y no modificó filas.
-
-## Fase 6 — Calidad y operación (gate autenticado completado)
-
-Objetivo: hacer el sistema seguro de evolucionar y operar.
-
-Trabajo completado:
-
-- 16 pruebas nativas de Node para reglas puras, contratos críticos de datos y presencia de la baseline;
-- barreras contra deriva de tablas/RPC, regreso de `select("*")`, argumentos RPC incorrectos y relajación de la transición de rechazo;
-- smoke HTTP reproducible para ocho rutas y una respuesta `404`;
-- CI en GitHub Actions con instalación congelada, typecheck, pruebas, build y smoke del servidor de producción;
-- verificación de hidratación, consola, semántica básica y overflow en escritorio y móvil para el login y la superficie pública sin token;
-- variables públicas de Supabase presentes durante el build de CI, tras comprobar que inyectarlas sólo al iniciar no hidrata el bundle;
-- checklist trazable de release, observación y rollback sin datos sensibles.
-- suite de integración separada contra Supabase desechable: acceso anónimo denegado, allowlist, formularios públicos, transiciones terminales, conversión/eliminación idempotentes y cascadas;
-- verificación autenticada manual del dashboard, clientes, contactos, actividades, actualización de datos y respuestas con fixtures sintéticos;
-- nombres accesibles añadidos a búsqueda y filtros del dashboard tras el hallazgo visual.
-
-Deuda controlada:
-
-- completar la comparación visual autenticada de Prospección, portales y los cinco bridges complejos;
-- cobertura automática de navegador; no se añadió Playwright ni otra dependencia sin un gate específico;
-- telemetría de aplicación más allá de los logs de CI y Vercel, pendiente de definir retención, alertas y proveedor.
-
-Criterio cumplido por la Fase 7: el esquema se reconstruye desde las migraciones versionadas y la suite aislada vuelve a aprobar.
-
-## Fase 7 — Reproducibilidad de Supabase (completada)
-
-Objetivo: reconstruir el contrato del backend desde un proyecto vacío sin copiar datos ni identidades productivas.
-
-Trabajo completado:
-
-- baseline estructural `20260720000000_initial_crm_baseline.sql` generada con Supabase CLI y ordenada antes de las cinco incrementales;
-- nueve tablas públicas, tabla privada de autorización, RLS, FKs, índices, nueve funciones y grants explícitos reproducidos sin datos;
-- membresías específicas de entorno retiradas de la migración estructural de allowlist;
-- seis migraciones aplicadas en orden sobre un proyecto vacío;
-- firmas de columnas, constraints, índices, funciones, políticas y 47 grants idénticas a producción;
-- advisors sin regresiones críticas y suite autenticada/mutante 8/8;
-- fixtures y usuarios sintéticos eliminados; entorno temporal pausado.
-
-Deuda operativa controlada:
-
-- la baseline no se registró en el historial productivo durante esta fase; antes de la próxima migración remota debe reconciliarse su estado con `supabase migration repair` mediante un gate separado y revisado;
-- permanecen la comparación visual de Prospección/bridges, automatización de navegador y definición de telemetría.
-
-Siguiente gate recomendado: cerrar la validación visual autenticada restante sin cambios de esquema ni datos.
-
-## Orden de aprobación solicitado
-
-1. Revisar el baseline y aprobar o rechazar `src/` como fuente canónica.
-2. Decidir gestor de paquetes/runtime y autorizar un lockfile.
-3. Aprobar el contrato de estados/campos de prospectos.
-4. Autorizar por separado el aislamiento de rutas y la centralización de Auth.
-5. Autorizar por separado cualquier inspección o cambio de Supabase/datos.
-6. Autorizar por separado cualquier movimiento o eliminación de duplicados.
-7. Iniciar modularización solo después de contar con pruebas mínimas.
+- ERP: inventario, compras, contabilidad, nómina y facturación;
+- migraciones, cambios de RLS/Auth, Edge Functions o datos sin gate independiente;
+- limpiezas, importaciones o borrados no autorizados;
+- automatización productiva de email o WhatsApp;
+- telemetría o servicios externos sin política y aprobación;
+- rediseño visual integral;
+- multi-organización, ownership por fila o permisos no definidos por producto;
+- retirada masiva de bridges o CSS sin equivalencia comprobada;
+- merge automático de PR o publicación directa sobre `main`.

@@ -9,10 +9,12 @@ Este repositorio contiene el CRM MVP de Quindío Exquisito. La aplicación usa N
 Antes de proponer o implementar cambios, leer:
 
 1. `README.md`
-2. `docs/PRD-CRM-FASE-1.md`
+2. `docs/PRD-CRM.md`
 3. `docs/ROADMAP.md`
 4. `docs/DECISIONS.md`
 5. `docs/AUDIT.md`
+
+`docs/PRD-CRM-FASE-1.md` está cerrado y se consulta únicamente cuando sea necesario reconstruir el contexto histórico de la estabilización inicial. No usarlo como fuente vigente ni reescribir su contenido para representar fases posteriores.
 
 Si la documentación contradice el comportamiento comprobado del sistema, registrar la diferencia en `docs/AUDIT.md` y pedir una decisión antes de asumir cuál versión es correcta.
 
