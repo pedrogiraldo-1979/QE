@@ -225,11 +225,21 @@ Cerrar las definiciones funcionales y operativas que todavía impiden evoluciona
 | P9-TECH-02 | Deuda técnica | Cada bridge retirado demuestra equivalencia funcional, visual y accesible mediante los gates aplicables. |
 | P9-TECH-03 | Deuda técnica | No se reorganizan rutas ni se centralizan capas ajenas a la unidad intervenida sin aprobación específica. |
 
+### Contrato comercial aprobado — Etapa 1
+
+La Etapa 1 quedó aprobada e integrada mediante la [especificación del contrato comercial](./superpowers/specs/2026-07-21-phase-9-commercial-contract-design.md) y se registra como `D-026` en [DECISIONS.md](./DECISIONS.md).
+
+El contrato:
+
+- separa etapa comercial, calidad y clasificación;
+- define estados y transiciones para prospectos, empresas y actividades, incluida la lectura temporal de `por_validar`;
+- clasifica campos obligatorios, recomendados y opcionales por entidad y operación;
+- establece señales y precedencia para duplicados, revisión humana e invariantes de conversión idempotente.
+
+Los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptados como contrato funcional. Su implementación, persistencia y evidencia automatizada conservan gates independientes; esta aprobación no autoriza cambios de Supabase, datos ni comportamiento.
+
 ### Decisiones pendientes
 
-- vocabulario definitivo del workflow, transiciones y tratamiento de `por_validar`;
-- obligatoriedad de campos por entidad, operación y canal;
-- señales, umbrales y autoridad humana ante duplicados durante conversión;
 - diferencias concretas entre `admin` y `member`;
 - entidades auditables, retención, eliminación lógica, recuperación y purga;
 - semántica de una o múltiples respuestas y posibles reaperturas del formulario público;
