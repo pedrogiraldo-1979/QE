@@ -17,6 +17,7 @@ import {
   LayoutDashboard,
   LogOut,
   Mail,
+  MailCheck,
   MessageSquarePlus,
   Phone,
   Plus,
@@ -40,6 +41,7 @@ import { CompanyTable } from "@/components/crm/CompanyTable";
 import { ContactsTable } from "@/components/crm/ContactsTable";
 import { CustomerResponsesTable } from "@/components/crm/CustomerResponsesTable";
 import { DataIssuesTable } from "@/components/crm/DataIssuesTable";
+import { MasterSyncTable } from "@/components/crm/MasterSyncTable";
 import { ProspectsTable } from "@/components/crm/ProspectsTable";
 import {
   activityTypeLabels,
@@ -47,6 +49,7 @@ import {
   countByStatus,
   filterCustomerResponses,
   filterDataIssues,
+  filterMasterSyncQueue,
   formatActivityType,
   formatContactRole,
   getCompanyIssues,
@@ -105,9 +108,15 @@ export default function HomePage() {
     customerResponsesLoading,
     customerResponsesError,
     processingResponseId,
+    masterSyncQueue,
+    masterSyncLoading,
+    masterSyncError,
+    processingMasterSyncId,
     loadData,
     loadCustomerResponses,
+    loadMasterSyncQueue,
     reviewCustomerResponse,
+    markMasterSyncComplete,
     resetData,
   } = useCrmDashboardData(supabase, isAuthenticated);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
@@ -479,6 +488,10 @@ export default function HomePage() {
     return filterCustomerResponses(customerResponses, normalizedSearch);
   }, [customerResponses, normalizedSearch]);
 
+  const filteredMasterSyncQueue = useMemo(() => {
+    return filterMasterSyncQueue(masterSyncQueue, normalizedSearch);
+  }, [masterSyncQueue, normalizedSearch]);
+
   const selectedContacts = selectedCompany ? contactsByCompanyId.get(selectedCompany.id) || [] : [];
   const selectedActivities = selectedCompany ? activitiesByCompanyId.get(selectedCompany.id) || [] : [];
   const nextActivity = getNextActivity(selectedActivities);
@@ -625,6 +638,7 @@ export default function HomePage() {
           <NavButton icon={UsersRound} label="Contactos" active={viewMode === "contacts"} onClick={() => goToView("contacts")} />
           <NavButton icon={ActivityIcon} label="Actividades" active={viewMode === "activities"} onClick={() => goToView("activities")} />
           <NavButton icon={ClipboardCheck} label="Actualización de datos" active={viewMode === "data"} onClick={() => goToView("data")} />
+          <NavButton icon={MailCheck} label="Piloto de campaña" active={false} onClick={() => router.push("/piloto-campana")} />
         </nav>
 
         <div className="sidebar-footer">
@@ -718,6 +732,7 @@ export default function HomePage() {
                     filteredActivities,
                     filteredDataIssues,
                     filteredCustomerResponses,
+                    filteredMasterSyncQueue,
                     dataTab,
                     filteredProspects
                   )}
@@ -743,6 +758,17 @@ export default function HomePage() {
                   >
                     Respuestas de clientes
                     <span>{customerResponses.length}</span>
+                  </button>
+                  <button
+                    className={`subtab ${dataTab === "sync" ? "active" : ""}`}
+                    type="button"
+                    onClick={() => {
+                      setDataTab("sync");
+                      void loadMasterSyncQueue();
+                    }}
+                  >
+                    Pendiente maestros
+                    <span>{masterSyncQueue.length}</span>
                   </button>
                 </div>
               ) : null}
@@ -851,6 +877,16 @@ export default function HomePage() {
                   onApprove={(response) => void reviewCustomerResponse(response, "approve")}
                   onReject={(response) => void reviewCustomerResponse(response, "reject")}
                   onRetry={() => void loadCustomerResponses()}
+                />
+              ) : null}
+              {viewMode === "data" && dataTab === "sync" ? (
+                <MasterSyncTable
+                  items={filteredMasterSyncQueue}
+                  loading={masterSyncLoading}
+                  error={masterSyncError}
+                  processingId={processingMasterSyncId}
+                  onComplete={(responseId) => void markMasterSyncComplete(responseId)}
+                  onRetry={() => void loadMasterSyncQueue()}
                 />
               ) : null}
             </section>

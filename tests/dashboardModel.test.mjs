@@ -3,6 +3,7 @@ import test from "node:test";
 
 import {
   filterCustomerResponses,
+  filterMasterSyncQueue,
   getContactIssues,
   getNextActivity,
   getResponseChanges,
@@ -15,6 +16,33 @@ test("normaliza estados de cliente desconocidos sin alterar los canónicos", () 
   assert.equal(normalizeStatus("interesado"), "interesado");
   assert.equal(normalizeStatus("estado-inexistente"), "nuevo");
   assert.equal(normalizeStatus(null), "nuevo");
+});
+
+test("muestra el segundo contacto y permite buscar la cola de maestros", () => {
+  const response = {
+    response_id: "response-1",
+    payload: {
+      segundo_contacto_nombre: "Laura Compras",
+      segundo_contacto_celular: "3001234567",
+      segundo_contacto_telefono_fijo: "6015550101",
+    },
+  };
+
+  assert.deepEqual(getResponseChanges(response), [
+    { label: "Segundo contacto", currentValue: "", newValue: "Laura Compras" },
+    { label: "Celular segundo contacto", currentValue: "", newValue: "3001234567" },
+    { label: "Teléfono fijo segundo contacto", currentValue: "", newValue: "6015550101" },
+  ]);
+
+  const queue = [{
+    response_id: "response-1",
+    company_id: "company-1",
+    cliente: "Hotel Prueba",
+    primary_contact: { full_name: "Ana Principal" },
+    secondary_contacts: [{ full_name: "Laura Compras", email: "laura@example.invalid" }],
+  }];
+  assert.equal(filterMasterSyncQueue(queue, "laura").length, 1);
+  assert.equal(filterMasterSyncQueue(queue, "sin coincidencia").length, 0);
 });
 
 test("selecciona la próxima actividad abierta sin mutar el orden original", () => {

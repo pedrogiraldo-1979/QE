@@ -36,9 +36,11 @@ test("el contrato generado conserva las tablas y RPC verificadas", async () => {
   ];
   const functions = [
     "approve_cu_response",
+    "complete_cu_master_sync",
     "convert_prospect_to_company",
     "delete_prospect",
     "get_cu_form",
+    "get_cu_master_sync_queue",
     "get_cu_pending_reviews",
     "is_crm_authorized",
     "reject_cu_response",
@@ -51,6 +53,19 @@ test("el contrato generado conserva las tablas y RPC verificadas", async () => {
   for (const functionName of functions) {
     assert.match(databaseTypes, new RegExp(`\\b${functionName}: \\{`), `Falta la RPC ${functionName}`);
   }
+});
+
+test("la aprobación completa contactos y conserva una cola explícita para maestros", async () => {
+  const migration = await read("supabase/migrations/20260721170728_complete_customer_response_approval_and_master_sync.sql");
+
+  assert.match(migration, /for update;/i);
+  assert.match(migration, /telefono_fijo_comercial_nuevo/);
+  assert.match(migration, /segundo_contacto_nombre/);
+  assert.match(migration, /contact_type[\s\S]+comercial_secundario/);
+  assert.match(migration, /master_sync_status = case when v_confirm_no_changes then 'no_requerida' else 'pendiente' end/);
+  assert.match(migration, /create or replace function public\.get_cu_master_sync_queue\(\)/i);
+  assert.match(migration, /create or replace function public\.complete_cu_master_sync/i);
+  assert.match(migration, /revoke execute on function public\.complete_cu_master_sync\(uuid, text\) from public, anon, authenticated;/i);
 });
 
 test("las consultas del frontend no vuelven a usar select('*')", async () => {

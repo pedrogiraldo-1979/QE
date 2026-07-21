@@ -14,6 +14,8 @@ Current product requirements live in [`docs/PRD-CRM.md`](docs/PRD-CRM.md), and s
 - Activity/follow-up creation, completion, and rescheduling for companies and prospects.
 - Prospect lists, metrics, review filters, contacts, conversion, and controlled cleanup.
 - Public token-based customer data update form and internal response review.
+- Atomic customer-response approval for company, primary contact, both phone fields, and an optional second contact.
+- Explicit reconciliation queue for `Hoja1` and `contactos_base`; approvals never claim the spreadsheets are synchronized prematurely.
 - Authenticated internal ZeptoMail test route.
 - Authenticated five-recipient campaign pilot with a closed allowlist and duplicate-send protection.
 
@@ -37,6 +39,10 @@ The initial import should already contain:
 - 83 companies
 - 83 contacts
 - 83/83 contacts linked through `contacts.company_id`
+
+## Customer update reconciliation
+
+Approving a pending customer response updates Supabase in one database transaction. A response with actual changes then appears under **Actualización de datos → Pendiente maestros** until `Hoja1` and `contactos_base` have been updated and verified. A “no changes” confirmation closes without creating a reconciliation task.
 
 ## Environment variables
 

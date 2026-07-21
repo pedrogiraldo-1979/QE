@@ -233,6 +233,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Límite: no habilita campañas masivas, destinatarios dinámicos, reintentos ni el envío durante CI/pruebas.
 - Evidencia/verificación: `tests/campaignPilot.test.mjs`, `supabase/migrations/20260721023246_add_approved_campaign_pilot.sql`, `supabase/functions/send-approved-campaign-pilot/` y `/piloto-campana`.
 
+## D-025 — Separar aprobación transaccional y sincronización de maestros
+
+- Estado: Aceptada e implementada en rama
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: la aprobación anterior actualizaba sólo parte del contacto principal, ignoraba el teléfono fijo y el segundo contacto, y no distinguía Supabase actualizado de hojas maestras actualizadas.
+- Decisión: aplicar en una sola RPC la empresa, el contacto principal, celular, fijo y un segundo contacto opcional. Las respuestas con cambios quedan en `pendiente` de maestros hasta reconciliar y verificar `Hoja1` y `contactos_base`; una confirmación sin cambios no genera tarea.
+- Seguridad: las RPC son `SECURITY INVOKER`, sólo `authenticated`, respetan la allowlist mediante RLS y bloquean la respuesta antes de mutar. No se conecta el formulario público directamente a Google Sheets.
+- Idempotencia: sólo se aplican respuestas `pendiente`; un reintento no vuelve a mutar ni crea otro segundo contacto.
+- Evidencia/verificación: `20260721170728_complete_customer_response_approval_and_master_sync.sql`, pruebas de contrato, E2E aislado y vista **Pendiente maestros**.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
