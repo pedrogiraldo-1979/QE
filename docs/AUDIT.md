@@ -665,3 +665,29 @@ Ajustes documentales aplicados:
 - ningún pendiente de Supabase o datos quedó autorizado por esta reorganización documental.
 
 Relación con la Fase 8: este cambio se creó como un PR exclusivamente documental. Después de fusionar el PR #13, la rama se actualizó sobre `ab1a616` y resolvió los solapamientos de README, roadmap y auditoría conservando la evidencia cronológica.
+
+## Anexo — Activación documental de la Fase 9 (2026-07-20)
+
+Alcance: reconciliación del estado publicado y definición documental de la siguiente fase activa. No se modificaron código, configuración, dependencias, esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos.
+
+Evidencia remota verificada:
+
+- el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) fue fusionado en `main` como `ab1a616a39c87c7617cc9996eab25b69c8f61fa4` y cerró la Fase 8;
+- el cambio publicó las correcciones responsive y de accesibilidad, seis contratos de regresión y la documentación asociada, con 22/22 pruebas y build de diez rutas;
+- el PR documental posterior produjo el baseline `09ade91d9ac575aee2c22d913a76b4d9166e8122`;
+- el PR #15 avanzó después el baseline publicado a `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490` con pruebas controladas de campaña, sin envío a clientes ni mutaciones productivas;
+- por tanto, la descripción anterior de la Fase 8 como activa y pendiente de merge quedó obsoleta al fusionarse ambos PR.
+
+Activación de la Fase 9:
+
+- `docs/PRD-CRM.md` define objetivo, nueve frentes de alcance, exclusiones, 25 criterios `P9-*`, decisiones pendientes, dependencias y riesgos;
+- `docs/ROADMAP.md` incorpora la Fase 8 a las fases cerradas y organiza la Fase 9 activa en contrato comercial, gobierno y recuperación, evidencia operable y mantenibilidad incremental;
+- las decisiones pendientes no se presentan como comportamiento publicado ni como autorización para cambiar backend o datos;
+- ERP permanece fuera del alcance actual;
+- cualquier migración, cambio de RLS/Auth/RPC, Edge Function, mutación o limpieza de datos conserva un gate separado con autorización, reversión y pruebas aisladas.
+
+Separación operativa:
+
+- esta rama no ejecutó ni volvió a publicar la Fase 8;
+- no se realizó deployment, merge, migración ni operación remota como parte de la reorganización;
+- el trabajo se limita a actualizar las fuentes documentales vigentes y registrar la diferencia entre el corte histórico y el estado remoto comprobado.

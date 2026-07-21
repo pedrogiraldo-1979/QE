@@ -7,7 +7,8 @@
 - Estado: vigente.
 - Responsable de producto: Pedro.
 - Última revisión: 2026-07-21.
-- Baseline publicado inspeccionado: `main` en `ab1a616a39c87c7617cc9996eab25b69c8f61fa4`.
+- Baseline publicado inspeccionado: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
+- Fase activa: Fase 9 — Cierre funcional y operativo.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
 
 Este documento describe el CRM vigente y sus límites de producto. El comportamiento sólo se considera publicado cuando el cambio correspondiente está fusionado en `main` y ha superado los gates de release. El trabajo aún abierto en un PR se registra en el roadmap, pero no amplía por sí solo el alcance publicado.
@@ -159,32 +160,100 @@ La cobertura y evidencia de estos criterios se registran en [`AUDIT.md`](./AUDIT
 - rollback trazable mediante revert y deployment estable anterior;
 - pruebas mutantes sólo en un proyecto desechable confirmado.
 
-## 8. Métricas candidatas
+## 8. Fase 9 — Cierre funcional y operativo
 
-Estas métricas aún requieren definición de fuente, fórmula, frecuencia, responsable, objetivo y retención antes de instrumentarse:
+### Objetivo
 
-- empresas con al menos un contacto utilizable;
-- prospectos con contacto identificado y email válido;
-- actividades abiertas, vencidas y completadas por periodo;
-- tiempo desde alta de prospecto hasta primera actividad;
-- tiempo hasta conversión;
-- formularios enviados, revisados y pendientes;
-- errores por flujo crítico y tiempo de recuperación.
+Cerrar las definiciones funcionales y operativas que todavía impiden evolucionar el CRM con reglas consistentes, evidencia trazable y recuperación segura. La fase debe convertir decisiones abiertas en contratos aprobados, criterios verificables y entregas incrementales; no autoriza por sí sola cambios de backend, datos o servicios externos.
 
-No se debe añadir telemetría de aplicación ni un proveedor externo sin aprobar primero privacidad, retención, alertas y variables necesarias.
+### Alcance
 
-## 9. Decisiones de producto pendientes
+1. **Cierre funcional del workflow comercial.** Definir estados canónicos de empresas, prospectos y actividades; transiciones permitidas; responsables; condiciones de entrada y salida; excepciones; y tratamiento del estado legado `por_validar`.
+2. **Definición de campos obligatorios.** Establecer por entidad y operación qué campos son requeridos, recomendados u opcionales, incluyendo creación, edición, conversión, importación futura y formulario público.
+3. **Conversión de prospectos y resolución de duplicados.** Aprobar señales de coincidencia, umbrales, precedencia, resultados ante conflicto, revisión humana e invariantes de idempotencia, sin limpiar ni reescribir datos como efecto secundario.
+4. **Roles y permisos `admin`/`member`.** Definir una matriz por acción y dominio, separando capacidades funcionales de la implementación posterior en frontend, RLS, RPC y operación de membresías.
+5. **Auditoría, eliminación lógica y recuperación.** Determinar eventos auditables, retención mínima, entidades sujetas a borrado lógico, restauración, purga definitiva y responsabilidades operativas.
+6. **Política de múltiples respuestas del formulario.** Decidir si un enlace admite una respuesta, reenvíos o reapertura; cómo se conserva el historial; y qué estados son terminales para revisión y enlace.
+7. **Matriz de criterios de aceptación y cobertura.** Relacionar cada criterio vigente y nuevo con pruebas unitarias, de contrato, integración, smoke o evidencia manual, haciendo visibles los vacíos y su gate de cierre.
+8. **Definición operable de métricas.** Especificar fórmula, fuente, granularidad, zona horaria, frecuencia, responsable, objetivo, privacidad y retención antes de instrumentar empresas con contacto utilizable, calidad de prospectos, actividades, primera gestión, conversión, formularios y errores críticos.
+9. **Reducción incremental de deuda técnica y bridges.** Sustituir un bridge por vez con composición React propietaria, comenzando por `ContactCompletionBridge` y `AddActivityEntryBridge`, y centralizar repositorios sólo cuando se intervenga su ruta y exista equivalencia comprobada.
 
-- workflow comercial oficial y transiciones permitidas;
-- campos obligatorios por entidad;
-- criterio definitivo para coincidencias y duplicados durante conversión;
-- matriz de permisos para `admin` y `member`;
-- auditoría, retención y recuperación de eliminaciones;
-- semántica de múltiples respuestas para un mismo enlace público;
-- objetivos cuantitativos y responsables de las métricas;
-- política de paginación antes de superar 1.000 entidades por dominio.
+### Fuera de alcance de la fase
 
-## 10. Fuera de alcance actual
+- funcionalidades ERP, incluidas inventario, compras, contabilidad, nómina y facturación;
+- una migración, cambio de RLS/Auth/RPC, Edge Function o mutación de datos sin su gate independiente;
+- limpieza masiva de duplicados, reescritura automática de estados legados o purga definitiva de registros;
+- incorporación inmediata de proveedores de telemetría, email, WhatsApp u otros servicios externos;
+- rediseño visual integral, reorganización amplia de rutas o sustitución simultánea de varios bridges;
+- permisos por propietario, multi-organización o automatizaciones comerciales no definidos por producto.
+
+### Criterios de aceptación
+
+| ID | Frente | Criterio |
+| --- | --- | --- |
+| P9-WF-01 | Workflow | Existe un catálogo aprobado de estados canónicos y transiciones permitidas por entidad. |
+| P9-WF-02 | Workflow | Cada transición identifica actor autorizado, precondiciones, resultado y tratamiento de error. |
+| P9-WF-03 | Workflow | El estado legado `por_validar` tiene una decisión explícita de lectura, migración o retiro. |
+| P9-FLD-01 | Campos | Cada entidad cuenta con una matriz de campos requeridos, recomendados y opcionales por operación. |
+| P9-FLD-02 | Campos | Los criterios de validación y los mensajes esperados están definidos antes de cambiar formularios o datos. |
+| P9-CONV-01 | Conversión | Las señales y la precedencia para detectar una empresa coincidente están aprobadas y son explicables. |
+| P9-CONV-02 | Conversión | Cada tipo de coincidencia o conflicto conduce a crear, enlazar, bloquear o solicitar revisión humana. |
+| P9-CONV-03 | Conversión | La conversión repetida conserva idempotencia y no modifica coincidencias ambiguas sin confirmación. |
+| P9-RBAC-01 | Permisos | Existe una matriz `admin`/`member` para lectura, creación, actualización, eliminación, recuperación y administración. |
+| P9-RBAC-02 | Permisos | Toda diferencia de permisos tiene una regla de producto y una estrategia de prueba antes de implementarse. |
+| P9-RBAC-03 | Permisos | Cualquier cambio de RLS, RPC o membresías se ejecuta mediante un gate de backend separado y reversible. |
+| P9-AUD-01 | Auditoría | Se definen eventos, actor, fecha, entidad, cambio mínimo registrable, retención y acceso al historial. |
+| P9-AUD-02 | Eliminación | Las entidades aprobadas usan eliminación lógica por defecto y distinguen registro activo, eliminado y recuperado. |
+| P9-AUD-03 | Recuperación | Existe un flujo autorizado de restauración y una política separada para purga irreversible. |
+| P9-CU-01 | Formulario | Se aprueba si un enlace permite una respuesta, reenvíos controlados o reapertura. |
+| P9-CU-02 | Formulario | El historial de respuestas y la relación con el estado del enlace quedan definidos sin exponer datos adicionales. |
+| P9-CU-03 | Formulario | Aprobación, rechazo, reapertura y expiración tienen transiciones terminales o reversibles explícitas. |
+| P9-COV-01 | Cobertura | Cada criterio del PRD se mapea a prueba unitaria, contrato, integración, smoke o evidencia manual. |
+| P9-COV-02 | Cobertura | Todo vacío de cobertura registra riesgo, responsable, evidencia requerida y gate de cierre. |
+| P9-MET-01 | Métricas | Cada métrica aprobada tiene nombre, fórmula, fuente, granularidad y zona horaria inequívocos. |
+| P9-MET-02 | Métricas | Cada métrica tiene responsable, frecuencia, objetivo o umbral y acción esperada. |
+| P9-MET-03 | Métricas | Privacidad, retención, acceso y alertas se aprueban antes de añadir instrumentación o proveedores. |
+| P9-TECH-01 | Deuda técnica | Existe un inventario priorizado de bridges y dependencias DOM/portal con rollback por unidad. |
+| P9-TECH-02 | Deuda técnica | Cada bridge retirado demuestra equivalencia funcional, visual y accesible mediante los gates aplicables. |
+| P9-TECH-03 | Deuda técnica | No se reorganizan rutas ni se centralizan capas ajenas a la unidad intervenida sin aprobación específica. |
+
+### Decisiones pendientes
+
+- vocabulario definitivo del workflow, transiciones y tratamiento de `por_validar`;
+- obligatoriedad de campos por entidad, operación y canal;
+- señales, umbrales y autoridad humana ante duplicados durante conversión;
+- diferencias concretas entre `admin` y `member`;
+- entidades auditables, retención, eliminación lógica, recuperación y purga;
+- semántica de una o múltiples respuestas y posibles reaperturas del formulario público;
+- cobertura mínima automatizada por flujo y evidencia manual aceptable;
+- catálogo inicial de métricas, objetivos, responsables y política de privacidad;
+- orden definitivo de bridges y criterio de salida de cada sustitución;
+- política de paginación con orden estable antes de superar 1.000 entidades por dominio.
+
+### Dependencias
+
+- aprobación de las decisiones de producto antes de diseñar implementación;
+- contratos generados y esquema remoto contrastado antes de asumir columnas, RPC o políticas;
+- gate independiente para cualquier cambio de Supabase, RLS, Auth, Edge Functions o datos;
+- reconciliación de la baseline en el historial productivo antes de desplegar otra migración;
+- proyecto desechable confirmado para pruebas autenticadas o mutantes;
+- matriz de criterios y cobertura actualizada antes de cerrar cada frente;
+- release checklist, preview y rollback trazable para toda entrega publicable.
+
+### Riesgos y mitigaciones
+
+| Riesgo | Mitigación |
+| --- | --- |
+| La fase agrupa demasiados frentes y pierde trazabilidad. | Ejecutar un frente por gate, con decisión, criterio, evidencia y rollback propios. |
+| Una definición funcional implica cambios de backend no autorizados. | Separar aprobación de producto, diseño técnico y gate de Supabase. |
+| La resolución de duplicados altera datos correctos. | Exigir señales explicables, revisión humana para ambigüedad y pruebas aisladas. |
+| El borrado lógico convive de forma inconsistente con eliminaciones actuales. | Definir alcance por entidad, compatibilidad, recuperación y transición antes de migrar. |
+| Las métricas incentivan comportamiento incorrecto o exponen datos. | Aprobar fórmula, contexto, responsable, privacidad y acción antes de instrumentar. |
+| El retiro de bridges introduce regresiones visuales o funcionales. | Sustituir uno por vez y repetir typecheck, pruebas, build, smoke y gate visual. |
+
+La activación documental de la Fase 9 no cambia por sí misma el alcance funcional publicado descrito en las secciones 4 y 5. Cada comportamiento nuevo se incorporará allí únicamente después de implementarse, verificarse y fusionarse.
+
+## 9. Fuera de alcance actual
 
 - funcionalidades ERP: inventario, compras, contabilidad, nómina y facturación;
 - migraciones, cambios de RLS/Auth, Edge Functions o datos sin un gate separado;
@@ -194,7 +263,7 @@ No se debe añadir telemetría de aplicación ni un proveedor externo sin aproba
 - rediseño visual integral;
 - permisos por propietario o multi-organización no definidos por producto.
 
-## 11. Mantenimiento de esta fuente viva
+## 10. Mantenimiento de esta fuente viva
 
 - Actualizar este PRD cuando cambie el alcance o una regla de negocio publicada.
 - Registrar decisiones nuevas o sustituidas en [`DECISIONS.md`](./DECISIONS.md).
