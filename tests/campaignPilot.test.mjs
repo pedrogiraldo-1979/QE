@@ -83,13 +83,18 @@ test("el repositorio no contiene destinatarios ni tokens reales del piloto", () 
   assert.ok(!/recipientEmail:\s*["'][^"']+@/i.test(moduleSource));
 });
 
-test("la pantalla del piloto reutiliza y observa la sesión persistida del CRM", () => {
+test("la pantalla del piloto reutiliza la sesión y permite reautenticarse en la misma ruta", () => {
   const pageSource = readFileSync(
     new URL("../src/app/piloto-campana/page.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(pageSource, /supabase\.auth\.getSession\(\)/);
-  assert.match(pageSource, /supabase\.auth\.onAuthStateChange/);
-  assert.match(pageSource, /subscription\.subscription\.unsubscribe\(\)/);
-  assert.ok(!pageSource.includes("supabase.auth.getUser()"));
+  assert.match(pageSource, /useCrmSession\(\)/);
+  assert.match(pageSource, /signIn\(AUTHORIZED_EMAIL, loginPassword\)/);
+  assert.match(pageSource, /Entrar al piloto/);
+});
+
+test("el CRM ofrece acceso al piloto mediante navegación interna", () => {
+  const homeSource = readFileSync(new URL("../src/app/page.tsx", import.meta.url), "utf8");
+  assert.match(homeSource, /label="Piloto de campaña"/);
+  assert.match(homeSource, /router\.push\("\/piloto-campana"\)/);
 });

@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
+import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, ExternalLink, MailCheck, ShieldCheck, TriangleAlert } from "lucide-react";
-import { getSupabaseClient } from "@/lib/supabase";
+import { useCrmSession } from "@/hooks/useCrmSession";
 
 const AUTHORIZED_EMAIL = "pedro.giraldo@gmail.com";
 const CONFIRMATION_TEXT = "ENVIAR PILOTO";
@@ -22,9 +21,10 @@ type PilotRecipient = {
 };
 
 export default function CampaignPilotPage() {
-  const supabase = getSupabaseClient();
-  const [sessionReady, setSessionReady] = useState(false);
-  const [authorized, setAuthorized] = useState(false);
+  const { supabase, sessionReady, isAuthenticated, signIn } = useCrmSession();
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [recipients, setRecipients] = useState<PilotRecipient[]>([]);
@@ -54,29 +54,17 @@ export default function CampaignPilotPage() {
   }, [supabase]);
 
   useEffect(() => {
-    let active = true;
+    if (sessionReady && isAuthenticated) void loadPreview();
+  }, [isAuthenticated, loadPreview, sessionReady]);
 
-    function verifySession(session: Session | null) {
-      if (!active) return;
-      const canUsePilot = session?.user.email?.toLowerCase() === AUTHORIZED_EMAIL;
-      setAuthorized(canUsePilot);
-      setSessionReady(true);
-      if (canUsePilot) void loadPreview();
-    }
-
-    void supabase.auth.getSession().then(({ data }) => {
-      verifySession(data.session);
-    });
-
-    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
-      verifySession(session);
-    });
-
-    return () => {
-      active = false;
-      subscription.subscription.unsubscribe();
-    };
-  }, [loadPreview, supabase]);
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSigningIn(true);
+    setLoginError("");
+    const error = await signIn(AUTHORIZED_EMAIL, loginPassword);
+    if (error) setLoginError(error.message);
+    setSigningIn(false);
+  }
 
   const canSend = useMemo(
     () =>
@@ -116,11 +104,14 @@ export default function CampaignPilotPage() {
   if (!sessionReady) {
     return <CenteredState title="Validando sesión" description="Estamos comprobando que tu usuario esté autorizado." />;
   }
-  if (!authorized) {
+  if (!isAuthenticated) {
     return (
-      <CenteredState
-        title="Acceso restringido"
-        description={`Inicia sesión en el CRM con ${AUTHORIZED_EMAIL} antes de abrir esta página.`}
+      <PilotLogin
+        password={loginPassword}
+        error={loginError}
+        signingIn={signingIn}
+        onPasswordChange={setLoginPassword}
+        onSubmit={handleSignIn}
       />
     );
   }
@@ -233,6 +224,54 @@ export default function CampaignPilotPage() {
             {sending ? "Enviando piloto…" : "Enviar 5 correos reales"}
           </button>
         </div>
+      </section>
+    </main>
+  );
+}
+
+function PilotLogin({
+  password,
+  error,
+  signingIn,
+  onPasswordChange,
+  onSubmit,
+}: {
+  password: string;
+  error: string;
+  signingIn: boolean;
+  onPasswordChange: (value: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+}) {
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-[#f7f4ee] px-4 text-[#243126]">
+      <section className="w-full max-w-md rounded-[1.75rem] border border-[#d8d2c7] bg-white p-8 shadow-sm">
+        <p className="text-center text-sm font-bold uppercase tracking-[0.24em] text-[#1f6b3a]">Quindío Exquisito</p>
+        <h1 className="mt-3 text-center text-3xl font-black">Acceso al piloto</h1>
+        <p className="mt-3 text-center text-sm leading-6 text-[#687368]">
+          Esta pantalla valida la misma cuenta autorizada del CRM.
+        </p>
+        <form className="mt-6 space-y-4" onSubmit={onSubmit}>
+          <label className="block text-sm font-black">
+            Correo
+            <input className="mt-2 w-full rounded-xl border border-[#d8d2c7] bg-[#f4f7f2] px-4 py-3" value={AUTHORIZED_EMAIL} readOnly />
+          </label>
+          <label className="block text-sm font-black">
+            Contraseña
+            <input
+              className="mt-2 w-full rounded-xl border border-[#d8d2c7] px-4 py-3 outline-none focus:border-[#1f6b3a]"
+              type="password"
+              value={password}
+              onChange={(event) => onPasswordChange(event.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </label>
+          {error ? <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{error}</p> : null}
+          <button className="w-full rounded-xl bg-[#1f6b3a] px-5 py-3 text-sm font-black text-white disabled:opacity-50" type="submit" disabled={signingIn}>
+            {signingIn ? "Validando…" : "Entrar al piloto"}
+          </button>
+        </form>
+        <Link className="mt-4 block text-center text-sm font-bold text-[#1f6b3a]" href="/">Volver al CRM</Link>
       </section>
     </main>
   );
