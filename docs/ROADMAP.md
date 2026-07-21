@@ -59,13 +59,17 @@ Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISION
 
 Objetivo: convertir las decisiones funcionales y operativas pendientes en contratos aprobados, criterios verificables y entregas incrementales, manteniendo separados producto, frontend, backend, datos y operación.
 
-#### Etapa 1 — Contrato comercial
+#### Etapa 1 — Contrato comercial (cerrada)
 
-- aprobar workflow, estados, transiciones y tratamiento de `por_validar`;
-- definir campos obligatorios por entidad y operación;
-- acordar señales, precedencia y resolución humana para conversión y duplicados.
+Estado: cerrada documentalmente el 2026-07-21.
 
-Gate: decisiones registradas en el PRD, criterios `P9-WF`, `P9-FLD` y `P9-CONV` aceptados y ausencia de mutaciones de datos.
+- workflow, estados, transiciones y tratamiento de `por_validar` aprobados;
+- campos obligatorios definidos por entidad y operación;
+- señales, precedencia y resolución humana para conversión y duplicados acordadas.
+
+Gate: cumplido mediante la especificación aprobada, su registro en el PRD y `D-026`; los criterios `P9-WF`, `P9-FLD` y `P9-CONV` quedan aceptados sin mutaciones de datos.
+
+Evidencia: PR #23 publicó la especificación y PR #24 reconcilió sus metadatos. La implementación futura conserva gates independientes.
 
 #### Etapa 2 — Gobierno y recuperación
 

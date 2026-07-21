@@ -244,6 +244,18 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Idempotencia: sólo se aplican respuestas `pendiente`; un reintento no vuelve a mutar ni crea otro segundo contacto.
 - Evidencia/verificación: `20260721170728_complete_customer_response_approval_and_master_sync.sql`, pruebas de contrato, E2E aislado y vista **Pendiente maestros**.
 
+## D-026 — Aprobar el contrato comercial de la Etapa 1
+
+- Estado: Aceptada
+- Fecha: 2026-07-21
+- Responsable: Pedro
+- Contexto: la Fase 9 requería separar el avance comercial de la calidad y clasificación del dato, definir campos mínimos y resolver conversiones sin duplicados ni sobrescrituras implícitas.
+- Decisión: adoptar el contrato funcional de la Etapa 1 para prospectos, empresas, contactos y actividades. El contrato define estados y transiciones, interpreta temporalmente `por_validar` como etapa `nuevo` con calidad `requiere_revision`, clasifica campos por operación y exige revisión humana ante coincidencias.
+- Conversión: el NIT exacto prevalece; las coincidencias probables, débiles o ambiguas siguen resultados explícitos; una conversión es atómica e idempotente y no sobrescribe, fusiona ni elimina información como efecto secundario.
+- Consecuencias: los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptados como contrato funcional. La implementación debe separarse en unidades de modelo, interfaz, backend y compatibilidad con evidencia reproducible.
+- Límite: esta decisión no autoriza migraciones, cambios de esquema, RLS, Auth, RPC, Edge Functions, limpieza de datos ni retiro de la compatibilidad de `por_validar`.
+- Evidencia/verificación: [especificación del contrato comercial](./superpowers/specs/2026-07-21-phase-9-commercial-contract-design.md), PR #23 y reconciliación de metadatos del PR #24.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida

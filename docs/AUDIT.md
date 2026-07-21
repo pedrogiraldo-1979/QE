@@ -1,5 +1,14 @@
 # Auditoría inicial del repositorio
 
+## 25. Cierre documental de la Fase 9, Etapa 1 — 2026-07-21
+
+- El PR #23 publicó la especificación aprobada del contrato comercial y el PR #24 reconcilió su estado y baseline después del merge.
+- `docs/PRD-CRM.md` registra como aprobados el workflow, los campos por operación y las reglas de duplicados y conversión; esos tres puntos dejan de figurar como decisiones pendientes.
+- `docs/DECISIONS.md` incorpora `D-026` y `docs/ROADMAP.md` marca la Etapa 1 como cerrada documentalmente.
+- Los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptados como contrato funcional, no como comportamiento implementado ni como cobertura automatizada completa.
+- El cierre no modificó código, configuración, dependencias, Supabase, esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos.
+- Cualquier implementación, migración o retiro de compatibilidad conserva un gate separado con autorización, reversión y pruebas aisladas.
+
 ## 24. Aprobación completa y reconciliación de maestros — 2026-07-21
 
 - La aprobación se amplió para aplicar razón social, NIT, dirección, contacto principal, celular, fijo y segundo contacto opcional dentro de una sola transacción.
