@@ -1,5 +1,14 @@
 # Auditoría inicial del repositorio
 
+## 26. Cierre documental de la Fase 9, Etapa 2 — 2026-07-21
+
+- El PR #26 publicó la especificación aprobada de gobierno y recuperación junto con el primer plan independiente de RBAC.
+- La especificación se reconcilió con su estado integrado en `main`; `docs/PRD-CRM.md` registra el contrato aprobado, `docs/DECISIONS.md` incorpora `D-027` y `docs/ROADMAP.md` marca la Etapa 2 como cerrada documentalmente.
+- Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional, no como comportamiento implementado ni como cobertura automatizada completa.
+- Las decisiones retiradas del bloque pendiente son la separación `admin`/`member`, el contrato de auditoría y recuperación, y la semántica de enlaces y respuestas públicas.
+- El cierre no modificó código, configuración, dependencias, Supabase, esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos.
+- El plan RBAC permanece sin ejecutar. Auditoría, membresías, recuperación y ciclo público necesitan planes propios; toda implementación o migración conserva aprobación, reversión y pruebas aisladas.
+
 ## 25. Cierre documental de la Fase 9, Etapa 1 — 2026-07-21
 
 - El PR #23 publicó la especificación aprobada del contrato comercial y el PR #24 reconcilió su estado y baseline después del merge.
