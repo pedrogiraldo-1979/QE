@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { CheckCircle2, ExternalLink, MailCheck, ShieldCheck, TriangleAlert } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -54,15 +55,26 @@ export default function CampaignPilotPage() {
 
   useEffect(() => {
     let active = true;
-    void supabase.auth.getUser().then(({ data }) => {
+
+    function verifySession(session: Session | null) {
       if (!active) return;
-      const canUsePilot = data.user?.email?.toLowerCase() === AUTHORIZED_EMAIL;
+      const canUsePilot = session?.user.email?.toLowerCase() === AUTHORIZED_EMAIL;
       setAuthorized(canUsePilot);
       setSessionReady(true);
       if (canUsePilot) void loadPreview();
+    }
+
+    void supabase.auth.getSession().then(({ data }) => {
+      verifySession(data.session);
     });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      verifySession(session);
+    });
+
     return () => {
       active = false;
+      subscription.subscription.unsubscribe();
     };
   }, [loadPreview, supabase]);
 
