@@ -80,7 +80,7 @@ http://localhost:3000
 pnpm verify
 ```
 
-El pipeline ejecuta typecheck, 16 pruebas unitarias/de contrato, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
+El pipeline ejecuta typecheck, las pruebas unitarias/de contrato, build de producción y un smoke HTTP de nueve verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 

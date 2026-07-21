@@ -235,7 +235,7 @@ export default function NewProspectPage() {
           </Link>
         </nav>
         <div className="sidebar-footer">
-          <button className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
+          <button aria-label="Salir" className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
             <LogOut size={17} />
             <span>Salir</span>
           </button>

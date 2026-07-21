@@ -219,6 +219,29 @@ Deuda operativa controlada:
 
 Siguiente gate recomendado: cerrar la validación visual autenticada restante sin cambios de esquema ni datos.
 
+## Fase 8 — Cierre visual autenticado (completada)
+
+Objetivo: completar la comparación visual de Prospección, portales y los cinco bridges complejos con fixtures sintéticos.
+
+Trabajo completado:
+
+- cinco bridges complejos verificados: Inicio, Actividades, layout heredado de Clientes, edición rápida de Contactos y alta de Actividad;
+- listado y detalle de Prospección verificados con estados, filtros y métricas sintéticas;
+- escritorio 1280×720 y móvil 390×844 sin overlays, errores de consola ni overflow global al cierre;
+- ciclo de mutaciones del bridge de Contactos corregido con decoración idempotente;
+- nombres accesibles completados en buscadores, filtros y salida móvil de Prospección;
+- tabla móvil de listas y formulario móvil de Actividad ajustados sin cambiar lógica de negocio;
+- seis pruebas de regresión nuevas; suite elevada de 16 a 22 pruebas;
+- entorno temporal limpiado a cero filas e identidades y pausado después de la prueba.
+
+Deuda controlada:
+
+- cobertura automática de navegador aún no está versionada; el gate usó un navegador efímero sin añadir dependencias;
+- los cinco bridges permanecen como deuda arquitectónica aunque su comportamiento actual ya está verificado;
+- telemetría de aplicación más allá de CI y Vercel continúa pendiente de decisión.
+
+Siguiente gate recomendado: decidir si la Fase 9 retira gradualmente los bridges verificados o prioriza telemetría y observabilidad antes de nuevas funciones de producto.
+
 ## Orden de aprobación solicitado
 
 1. Revisar el baseline y aprobar o rechazar `src/` como fuente canónica.

@@ -604,3 +604,30 @@ Validación desde cero:
 - después de la prueba, las nueve tablas, la allowlist y Auth quedaron en cero; el proyecto temporal terminó en estado `INACTIVE`.
 
 Límite operativo: `20260720000000` no se registró en el historial de producción. Antes de desplegar otra migración remota se necesita un gate separado para ejecutar `supabase migration repair --linked --status applied 20260720000000`, sin ejecutar el SQL de la baseline sobre producción.
+
+## 21. Gate visual autenticado restante — Fase 8 completada
+
+Fecha: 2026-07-20. Alcance autorizado: validación visual autenticada con fixtures exclusivamente sintéticos en el proyecto Supabase temporal; sin cambios funcionales, de esquema o de datos productivos.
+
+Evidencia completada:
+
+- escritorio 1280×720 y móvil 390×844 con sesión sintética autorizada;
+- `HomeCommercialWorkbench` y `ActivitiesOperationalWorkbench` visibles con los conteos esperados; la rejilla heredada de Actividades permaneció oculta;
+- `LegacyViewLayoutPolish` activo en Clientes, sin overlay, overflow horizontal ni controles sin nombre;
+- `ContactCompletionBridge` decoró el directorio y abrió/cerró su formulario en escritorio y móvil sin guardar datos;
+- `AddActivityEntryBridge` mostró clientes y prospectos como destinos y abrió su formulario en escritorio y móvil sin enviarlo;
+- listado de Prospección con 1 lista, 4 prospectos, 3 activos, 2 con contacto y 1 email válido;
+- detalle con los cuatro estados sintéticos, filtros y panel de datos; ninguna acción mutante fue activada;
+- consola y errores de página vacíos al cierre, sin error overlay ni overflow global.
+
+Hallazgos corregidos durante el gate:
+
+- la decoración de `ContactCompletionBridge` se hizo idempotente para evitar que su `MutationObserver` realimentara el cambio de texto del botón;
+- buscadores y filtros de Prospección recibieron nombres accesibles explícitos;
+- los botones de salida de las rutas de Prospección conservan `aria-label` cuando el texto se oculta en móvil;
+- la tabla móvil de listas conserva columnas legibles mediante scroll horizontal interno;
+- el formulario de actividad puede encogerse dentro del panel móvil y dejó de ampliar el documento de 390 a 463 px.
+
+Red de regresión: typecheck aprobado, 22/22 pruebas aprobadas y build de producción aprobado para 10 rutas. Se añadieron contratos para la idempotencia del bridge, nombres accesibles y límites responsive.
+
+Cierre del entorno: se eliminaron las filas de las nueve tablas públicas, la allowlist y Auth; todos los conteos quedaron en cero y el proyecto temporal terminó `INACTIVE`. El proyecto productivo no recibió consultas mutantes ni cambios.

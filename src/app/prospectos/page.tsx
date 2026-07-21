@@ -205,7 +205,7 @@ export default function ProspectListsPage() {
           </Link>
         </nav>
         <div className="sidebar-footer">
-          <button className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
+          <button aria-label="Salir" className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
             <LogOut size={17} />
             <span>Salir</span>
           </button>
@@ -252,7 +252,12 @@ export default function ProspectListsPage() {
             <div className="filters-row filters-row-simple">
               <label className="search-box">
                 <Search size={17} />
-                <input placeholder="Buscar por lista, segmento, ciudad o fuente" value={search} onChange={(event) => setSearch(event.target.value)} />
+                <input
+                  aria-label="Buscar lista de prospección"
+                  placeholder="Buscar por lista, segmento, ciudad o fuente"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
               </label>
             </div>
             <div className="table-wrap prospect-lists-table-wrap">

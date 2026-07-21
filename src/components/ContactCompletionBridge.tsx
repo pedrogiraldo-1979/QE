@@ -324,7 +324,10 @@ function decorateContactRows(contacts: EditableContact[]) {
     actionButton.type = "button";
     actionButton.dataset.contactQuickEdit = "true";
     actionButton.className = `btn ${hasIssues ? "btn-primary" : "btn-secondary"} compact contact-quick-edit-action`;
-    actionButton.textContent = hasIssues ? "Completar datos" : "Editar contacto";
+    const actionLabel = hasIssues ? "Completar datos" : "Editar contacto";
+    if (actionButton.textContent !== actionLabel) {
+      actionButton.textContent = actionLabel;
+    }
   }
 }
 

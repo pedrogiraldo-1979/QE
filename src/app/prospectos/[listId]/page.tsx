@@ -599,7 +599,7 @@ export default function ProspectListDetailPage() {
           </Link>
         </nav>
         <div className="sidebar-footer">
-          <button className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
+          <button aria-label="Salir" className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
             <LogOut size={17} />
             <span>Salir</span>
           </button>
@@ -675,18 +675,23 @@ export default function ProspectListDetailPage() {
             <div className="filters-row filters-row-workbench">
               <label className="search-box">
                 <Search size={17} />
-                <input placeholder="Buscar por nombre, NIT, teléfono o contacto" value={search} onChange={(event) => setSearch(event.target.value)} />
+                <input
+                  aria-label="Buscar prospecto en la lista"
+                  placeholder="Buscar por nombre, NIT, teléfono o contacto"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
               </label>
               <label className="select-shell">
                 <Tag size={16} />
-                <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
+                <select aria-label="Filtrar prospectos por prioridad" value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value)}>
                   <option value="todos">Prioridad</option>
                   {priorities.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
                 </select>
               </label>
               <label className="select-shell">
                 <LayoutDashboard size={16} />
-                <select value={cityFilter} onChange={(event) => setCityFilter(event.target.value)}>
+                <select aria-label="Filtrar prospectos por ciudad" value={cityFilter} onChange={(event) => setCityFilter(event.target.value)}>
                   <option value="todos">Ciudad</option>
                   {cities.map((city) => <option key={city} value={city}>{city}</option>)}
                 </select>
