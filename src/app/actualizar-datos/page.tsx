@@ -10,8 +10,17 @@ type CustomerFormData = {
   razon_social?: string;
   nit?: string;
   contacto_actual?: string;
-  telefono_actual?: string;
+  cargo_contacto_actual?: string;
+  celular_actual?: string;
+  telefono_fijo_actual?: string;
   correo_actual?: string;
+  segundo_contacto_nombre?: string;
+  segundo_contacto_cargo?: string;
+  segundo_contacto_area?: string;
+  segundo_contacto_celular?: string;
+  segundo_contacto_telefono_fijo?: string;
+  segundo_contacto_correo?: string;
+  telefono_empresa?: string;
   direccion_actual?: string;
   segmento?: string;
 };
@@ -96,8 +105,16 @@ function ActualizarDatosContent() {
         razon_social_nueva: current.razon_social || "",
         nit_nuevo: current.nit || "",
         contacto_comercial_nuevo: current.contacto_actual || "",
-        telefono_fijo_comercial_nuevo: current.telefono_actual || "",
+        cargo_contacto_nuevo: current.cargo_contacto_actual || "",
+        celular_comercial_nuevo: current.celular_actual || "",
+        telefono_fijo_comercial_nuevo: current.telefono_fijo_actual || "",
         correo_comercial_nuevo: current.correo_actual || "",
+        segundo_contacto_nombre: current.segundo_contacto_nombre || "",
+        segundo_contacto_cargo: current.segundo_contacto_cargo || "",
+        segundo_contacto_area: current.segundo_contacto_area || "",
+        segundo_contacto_celular: current.segundo_contacto_celular || "",
+        segundo_contacto_telefono_fijo: current.segundo_contacto_telefono_fijo || "",
+        segundo_contacto_correo: current.segundo_contacto_correo || "",
         direccion_nueva: current.direccion_actual || "",
       });
       setLoading(false);
@@ -148,12 +165,7 @@ function ActualizarDatosContent() {
   }
 
   if (submitted) {
-    return (
-      <Centered
-        title="Datos recibidos"
-        description="Gracias. Quindío Exquisito recibió tu actualización y la revisará internamente."
-      />
-    );
+    return <Centered title="Datos recibidos" description="Gracias. Quindío Exquisito recibió tu actualización y la revisará internamente." />;
   }
 
   return (
@@ -162,26 +174,22 @@ function ActualizarDatosContent() {
         <aside className="rounded-[1.75rem] border border-[#d8d2c7] bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-6">
           <p className="text-xs font-black uppercase tracking-[0.24em] text-[#1f6b3a]">Quindío Exquisito</p>
           <h1 className="mt-3 text-2xl font-black tracking-tight sm:text-3xl">Actualización de datos</h1>
-          <p className="mt-3 text-sm leading-6 text-[#687368]">
-            Revisa la información registrada. Si todo sigue igual, marca la confirmación y envía. Si hay cambios, actualiza solo los campos necesarios.
-          </p>
+          <p className="mt-3 text-sm leading-6 text-[#687368]">Revisa la información registrada. Si todo sigue igual, marca la confirmación y envía. Si hay cambios, actualiza solo los campos necesarios.</p>
 
           <div className="mt-5 rounded-2xl bg-[#f4f7f2] p-4 text-sm">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-[#687368]">Cliente</p>
             <h2 className="mt-1 text-xl font-black">{customer?.nombre_cliente || "Cliente"}</h2>
-            {customer?.segmento ? (
-              <span className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-[#1f6b3a]">
-                {customer.segmento}
-              </span>
-            ) : null}
+            {customer?.segmento ? <span className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-[#1f6b3a]">{customer.segmento}</span> : null}
           </div>
 
           <div className="mt-4 space-y-3 text-sm">
             <CurrentValue label="Razón social actual" value={customer?.razon_social} />
             <CurrentValue label="NIT actual" value={customer?.nit} />
-            <CurrentValue label="Contacto actual" value={customer?.contacto_actual} />
-            <CurrentValue label="Teléfono actual" value={customer?.telefono_actual} />
-            <CurrentValue label="Correo actual" value={customer?.correo_actual} />
+            <CurrentValue label="Contacto comercial actual" value={customer?.contacto_actual} />
+            <CurrentValue label="Celular comercial actual" value={customer?.celular_actual} />
+            <CurrentValue label="Teléfono fijo comercial actual" value={customer?.telefono_fijo_actual} />
+            <CurrentValue label="Correo comercial actual" value={customer?.correo_actual} />
+            <CurrentValue label="Teléfono general de la empresa" value={customer?.telefono_empresa} />
             <CurrentValue label="Dirección actual" value={customer?.direccion_actual} />
           </div>
         </aside>
@@ -191,24 +199,15 @@ function ActualizarDatosContent() {
 
           <form className="space-y-6 pb-24 sm:pb-0" onSubmit={handleSubmit}>
             <label className="flex cursor-pointer gap-3 rounded-2xl border-2 border-[#1f6b3a] bg-[#f4f7f2] p-4 text-sm font-bold transition hover:bg-[#eef4eb]">
-              <input
-                className="mt-1 h-5 w-5 accent-[#1f6b3a]"
-                type="checkbox"
-                checked={confirmNoChanges}
-                onChange={(event) => setConfirmNoChanges(event.target.checked)}
-              />
+              <input className="mt-1 h-5 w-5 accent-[#1f6b3a]" type="checkbox" checked={confirmNoChanges} onChange={(event) => setConfirmNoChanges(event.target.checked)} />
               <span>
                 <span className="block text-base">Confirmo que mis datos siguen iguales</span>
-                <span className="mt-1 block font-normal text-[#687368]">
-                  Marca esta opción si no hay cambios en la información registrada.
-                </span>
+                <span className="mt-1 block font-normal text-[#687368]">Marca esta opción si no hay cambios en la información registrada.</span>
               </span>
             </label>
 
             {confirmNoChanges ? (
-              <section className="rounded-2xl border border-[#d8d2c7] bg-[#fffaf1] p-4 text-sm leading-6 text-[#5f4a1f]">
-                Solo enviaremos la confirmación de que los datos siguen vigentes. Puedes agregar una observación antes de enviar.
-              </section>
+              <section className="rounded-2xl border border-[#d8d2c7] bg-[#fffaf1] p-4 text-sm leading-6 text-[#5f4a1f]">Solo enviaremos la confirmación de que los datos siguen vigentes. Puedes agregar una observación antes de enviar.</section>
             ) : (
               <>
                 <FormSection title="Datos generales" description="Información legal y de ubicación del cliente.">
@@ -238,20 +237,11 @@ function ActualizarDatosContent() {
 
             <label className="block text-sm font-bold">
               Observaciones
-              <textarea
-                className="mt-2 min-h-28 w-full rounded-2xl border border-[#d8d2c7] bg-white px-4 py-3 font-normal outline-none transition focus:border-[#1f6b3a] focus:ring-4 focus:ring-[#1f6b3a]/10"
-                value={form.observaciones_cliente}
-                onChange={(event) => updateField("observaciones_cliente", event.target.value)}
-                placeholder="Indica cualquier cambio adicional o aclaración."
-              />
+              <textarea className="mt-2 min-h-28 w-full rounded-2xl border border-[#d8d2c7] bg-white px-4 py-3 font-normal outline-none transition focus:border-[#1f6b3a] focus:ring-4 focus:ring-[#1f6b3a]/10" value={form.observaciones_cliente} onChange={(event) => updateField("observaciones_cliente", event.target.value)} placeholder="Indica cualquier cambio adicional o aclaración." />
             </label>
 
             <div className="fixed inset-x-0 bottom-0 border-t border-[#d8d2c7] bg-white/95 p-4 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
-              <button
-                className="w-full rounded-2xl bg-[#1f6b3a] px-5 py-4 text-sm font-black text-white transition hover:bg-[#195a31] disabled:cursor-not-allowed disabled:opacity-60"
-                type="submit"
-                disabled={submitting}
-              >
+              <button className="w-full rounded-2xl bg-[#1f6b3a] px-5 py-4 text-sm font-black text-white transition hover:bg-[#195a31] disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={submitting}>
                 {submitting ? "Enviando..." : confirmNoChanges ? "Confirmar datos" : "Enviar actualización"}
               </button>
             </div>
@@ -274,28 +264,11 @@ function FormSection({ title, description, children }: { title: string; descript
   );
 }
 
-function TextField({
-  label,
-  value,
-  onChange,
-  type = "text",
-  className = "",
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  type?: string;
-  className?: string;
-}) {
+function TextField({ label, value, onChange, type = "text", className = "" }: { label: string; value: string; onChange: (value: string) => void; type?: string; className?: string }) {
   return (
     <label className={`block text-sm font-bold ${className}`}>
       {label}
-      <input
-        className="mt-2 w-full rounded-2xl border border-[#d8d2c7] bg-white px-4 py-3 font-normal outline-none transition focus:border-[#1f6b3a] focus:ring-4 focus:ring-[#1f6b3a]/10"
-        type={type}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
+      <input className="mt-2 w-full rounded-2xl border border-[#d8d2c7] bg-white px-4 py-3 font-normal outline-none transition focus:border-[#1f6b3a] focus:ring-4 focus:ring-[#1f6b3a]/10" type={type} value={value} onChange={(event) => onChange(event.target.value)} />
     </label>
   );
 }
