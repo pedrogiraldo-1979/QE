@@ -5,8 +5,9 @@ export const PILOT_CONTROL = Object.freeze({
   fromName: "Quindío Exquisito | Ventas",
   subject: "Quindío Exquisito - actualización de datos",
   formBaseUrl: "https://qe-chi.vercel.app/actualizar-datos",
-  confirmation: "SEND_APPROVED_PILOT",
-  recipientCount: 5,
+  confirmation: "SEND_APPROVED_BATCH",
+  batchKey: "wave-2026-07-23-18",
+  recipientCount: 18,
 });
 
 export const ZEPTOMAIL_SECRET_NAMES = Object.freeze([
@@ -41,7 +42,7 @@ export function isSingleEmail(value) {
 
 export function validatePilotBatch(recipients, now = new Date()) {
   if (recipients.length !== PILOT_CONTROL.recipientCount) {
-    return `El piloto requiere exactamente ${PILOT_CONTROL.recipientCount} destinatarios.`;
+    return `El lote requiere exactamente ${PILOT_CONTROL.recipientCount} destinatarios.`;
   }
 
   const sequences = new Set();
@@ -53,7 +54,7 @@ export function validatePilotBatch(recipients, now = new Date()) {
       return "Un destinatario no coincide con el correo aprobado del enlace.";
     }
     if (emails.has(email) || sequences.has(recipient.sequence)) {
-      return "El piloto contiene destinatarios o posiciones duplicadas.";
+      return "El lote contiene destinatarios o posiciones duplicadas.";
     }
     if (
       recipient.status !== "approved" ||
@@ -61,7 +62,7 @@ export function validatePilotBatch(recipients, now = new Date()) {
       recipient.respondedAt ||
       (recipient.expiresAt && new Date(recipient.expiresAt) <= now)
     ) {
-      return "Un destinatario dejó de estar disponible para el piloto.";
+      return "Un destinatario dejó de estar disponible para el lote.";
     }
     emails.add(email);
     sequences.add(recipient.sequence);
