@@ -5,8 +5,8 @@ import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react
 import { useCrmSession } from "@/hooks/useCrmSession";
 
 const AUTHORIZED_EMAIL = "pedro.giraldo@gmail.com";
-const EXPECTED_COUNT = 23;
-const CONFIRMATION_TEXT = "ENVIAR LOTE 23";
+const EXPECTED_COUNT = 18;
+const CONFIRMATION_TEXT = "ENVIAR LOTE 18";
 
 type Recipient = {
   id: string;
@@ -35,9 +35,7 @@ export default function CampaignBatchPage() {
   const loadPreview = useCallback(async (preserveResult = false) => {
     setLoading(true);
     if (!preserveResult) setResult(null);
-    const { data, error } = await supabase.functions.invoke("send-approved-campaign-pilot", {
-      body: { action: "preview" },
-    });
+    const { data, error } = await supabase.functions.invoke("send-approved-campaign-pilot", { body: { action: "preview" } });
     if (error) {
       setResult({ ok: false, text: error.message || "No se pudo cargar el lote." });
       setLoading(false);
@@ -69,9 +67,7 @@ export default function CampaignBatchPage() {
   const canSend = useMemo(() =>
     recipients.length === EXPECTED_COUNT &&
     recipients.every((recipient) => recipient.status === "approved") &&
-    confirmed &&
-    confirmationText.trim() === CONFIRMATION_TEXT &&
-    !sending,
+    confirmed && confirmationText.trim() === CONFIRMATION_TEXT && !sending,
   [confirmationText, confirmed, recipients, sending]);
 
   async function sendBatch() {
@@ -94,63 +90,11 @@ export default function CampaignBatchPage() {
   }
 
   if (!sessionReady) return <Centered title="Validando sesión" description="Estamos comprobando que tu usuario esté autorizado." />;
-
   if (!isAuthenticated) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f7f4ee] px-4 text-[#243126]">
-        <section className="w-full max-w-md rounded-[1.75rem] border border-[#d8d2c7] bg-white p-8 shadow-sm">
-          <p className="text-center text-sm font-bold uppercase tracking-[0.24em] text-[#1f6b3a]">Quindío Exquisito</p>
-          <h1 className="mt-3 text-center text-3xl font-black">Acceso al envío</h1>
-          <form className="mt-6 space-y-4" onSubmit={handleSignIn}>
-            <label className="block text-sm font-black">Correo<input className="mt-2 w-full rounded-xl border border-[#d8d2c7] bg-[#f4f7f2] px-4 py-3" value={AUTHORIZED_EMAIL} readOnly /></label>
-            <label className="block text-sm font-black">Contraseña<input className="mt-2 w-full rounded-xl border border-[#d8d2c7] px-4 py-3" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>
-            {loginError ? <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{loginError}</p> : null}
-            <button className="w-full rounded-xl bg-[#1f6b3a] px-5 py-3 text-sm font-black text-white disabled:opacity-50" disabled={signingIn}>{signingIn ? "Validando…" : "Entrar"}</button>
-          </form>
-        </section>
-      </main>
-    );
+    return <main className="flex min-h-screen items-center justify-center bg-[#f7f4ee] px-4 text-[#243126]"><section className="w-full max-w-md rounded-[1.75rem] border border-[#d8d2c7] bg-white p-8 shadow-sm"><p className="text-center text-sm font-bold uppercase tracking-[0.24em] text-[#1f6b3a]">Quindío Exquisito</p><h1 className="mt-3 text-center text-3xl font-black">Acceso al envío</h1><form className="mt-6 space-y-4" onSubmit={handleSignIn}><label className="block text-sm font-black">Correo<input className="mt-2 w-full rounded-xl border border-[#d8d2c7] bg-[#f4f7f2] px-4 py-3" value={AUTHORIZED_EMAIL} readOnly /></label><label className="block text-sm font-black">Contraseña<input className="mt-2 w-full rounded-xl border border-[#d8d2c7] px-4 py-3" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required /></label>{loginError ? <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-700">{loginError}</p> : null}<button className="w-full rounded-xl bg-[#1f6b3a] px-5 py-3 text-sm font-black text-white disabled:opacity-50" disabled={signingIn}>{signingIn ? "Validando…" : "Entrar"}</button></form></section></main>;
   }
 
-  return (
-    <main className="min-h-screen bg-[#f7f4ee] px-4 py-8 text-[#243126]">
-      <section className="mx-auto max-w-5xl rounded-[1.75rem] border border-[#d8d2c7] bg-white p-6 shadow-sm sm:p-8">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-[#1f6b3a]">Quindío Exquisito</p>
-        <h1 className="mt-2 text-3xl font-black">Lote aprobado de actualización de datos</h1>
-        <p className="mt-3 text-sm leading-6 text-[#687368]">Vista previa cerrada para 23 correos. Los cinco destinatarios del piloto anterior permanecen separados y no pueden reenviarse.</p>
-
-        <div className="mt-6 overflow-hidden rounded-2xl border border-[#d8d2c7]">
-          <div className="grid grid-cols-[48px_1fr_auto] gap-3 bg-[#f4f1ea] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#687368]"><span>#</span><span>Destinatario</span><span>Estado</span></div>
-          {loading ? <p className="p-5 text-sm text-[#687368]">Cargando lista aprobada…</p> : null}
-          {recipients.map((recipient) => (
-            <article className="grid grid-cols-[48px_1fr_auto] gap-3 border-t border-[#e7e1d7] px-4 py-4 text-sm" key={recipient.id}>
-              <strong>{recipient.sequence}</strong>
-              <div className="min-w-0">
-                <p className="font-black">{recipient.companyName}</p>
-                <p className="mt-1 text-[#687368]">{recipient.recipientName}</p>
-                <p className="break-all text-[#687368]">{recipient.recipientEmail}</p>
-                <a className="mt-2 inline-block font-bold text-[#1f6b3a] underline" href={recipient.formUrl} target="_blank" rel="noreferrer">Revisar formulario</a>
-              </div>
-              <span className="h-fit rounded-full bg-[#f4f7f2] px-3 py-1 text-xs font-bold">{recipient.status}</span>
-            </article>
-          ))}
-        </div>
-
-        <div className="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <h2 className="font-black text-amber-900">Confirmación de envío real</h2>
-          <label className="flex gap-3 text-sm font-bold text-amber-950"><input className="mt-0.5 h-5 w-5" type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />Confirmo que revisé los 23 destinatarios y autorizo este lote.</label>
-          <label className="block text-sm font-black text-amber-950">Escribe {CONFIRMATION_TEXT}<input className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-4 py-3" value={confirmationText} onChange={(event) => setConfirmationText(event.target.value)} /></label>
-        </div>
-
-        {result ? <p className={`mt-5 rounded-2xl p-4 text-sm font-bold ${result.ok ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>{result.text}</p> : null}
-
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
-          <Link className="rounded-xl px-4 py-3 text-center text-sm font-bold text-[#1f6b3a]" href="/">Volver al CRM</Link>
-          <button className="rounded-xl bg-[#1f6b3a] px-5 py-3 text-sm font-black text-white disabled:opacity-50" type="button" disabled={!canSend} onClick={() => void sendBatch()}>{sending ? "Enviando lote…" : "Enviar 23 correos reales"}</button>
-        </div>
-      </section>
-    </main>
-  );
+  return <main className="min-h-screen bg-[#f7f4ee] px-4 py-8 text-[#243126]"><section className="mx-auto max-w-5xl rounded-[1.75rem] border border-[#d8d2c7] bg-white p-6 shadow-sm sm:p-8"><p className="text-xs font-black uppercase tracking-[0.2em] text-[#1f6b3a]">Quindío Exquisito</p><h1 className="mt-2 text-3xl font-black">Lote aprobado de actualización de datos</h1><p className="mt-3 text-sm leading-6 text-[#687368]">Vista previa cerrada para 18 correos del lote wave-2026-07-23-18. Los lotes anteriores permanecen separados y no pueden reenviarse.</p><div className="mt-6 overflow-hidden rounded-2xl border border-[#d8d2c7]"><div className="grid grid-cols-[48px_1fr_auto] gap-3 bg-[#f4f1ea] px-4 py-3 text-xs font-black uppercase tracking-wider text-[#687368]"><span>#</span><span>Destinatario</span><span>Estado</span></div>{loading ? <p className="p-5 text-sm text-[#687368]">Cargando lista aprobada…</p> : null}{recipients.map((recipient) => <article className="grid grid-cols-[48px_1fr_auto] gap-3 border-t border-[#e7e1d7] px-4 py-4 text-sm" key={recipient.id}><strong>{recipient.sequence}</strong><div className="min-w-0"><p className="font-black">{recipient.companyName}</p><p className="mt-1 text-[#687368]">{recipient.recipientName}</p><p className="break-all text-[#687368]">{recipient.recipientEmail}</p><a className="mt-2 inline-block font-bold text-[#1f6b3a] underline" href={recipient.formUrl} target="_blank" rel="noreferrer">Revisar formulario</a></div><span className="h-fit rounded-full bg-[#f4f7f2] px-3 py-1 text-xs font-bold">{recipient.status}</span></article>)}</div><div className="mt-6 space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-5"><h2 className="font-black text-amber-900">Confirmación de envío real</h2><label className="flex gap-3 text-sm font-bold text-amber-950"><input className="mt-0.5 h-5 w-5" type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} />Confirmo que revisé los 18 destinatarios y autorizo este lote.</label><label className="block text-sm font-black text-amber-950">Escribe {CONFIRMATION_TEXT}<input className="mt-2 w-full rounded-xl border border-amber-300 bg-white px-4 py-3" value={confirmationText} onChange={(event) => setConfirmationText(event.target.value)} /></label></div>{result ? <p className={`mt-5 rounded-2xl p-4 text-sm font-bold ${result.ok ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700"}`}>{result.text}</p> : null}<div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between"><Link className="rounded-xl px-4 py-3 text-center text-sm font-bold text-[#1f6b3a]" href="/">Volver al CRM</Link><button className="rounded-xl bg-[#1f6b3a] px-5 py-3 text-sm font-black text-white disabled:opacity-50" type="button" disabled={!canSend} onClick={() => void sendBatch()}>{sending ? "Enviando lote…" : "Enviar 18 correos reales"}</button></div></section></main>;
 }
 
 function Centered({ title, description }: { title: string; description: string }) {
