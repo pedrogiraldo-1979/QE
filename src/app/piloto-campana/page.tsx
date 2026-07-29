@@ -1,5 +1,6 @@
 "use client";
 
+// Deployment marker: wave-2026-07-29-13
 import Link from "next/link";
 import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useCrmSession } from "@/hooks/useCrmSession";
