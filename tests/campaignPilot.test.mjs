@@ -27,7 +27,7 @@ function recipient(overrides = {}) {
 }
 
 function validBatch() {
-  return Array.from({ length: 5 }, (_, index) => recipient({
+  return Array.from({ length: 13 }, (_, index) => recipient({
     sequence: index + 1,
     recipientEmail: `compras${index + 1}@example.com`,
     linkEmail: `compras${index + 1}@example.com`,
@@ -35,11 +35,11 @@ function validBatch() {
   }));
 }
 
-test("el piloto exige exactamente cinco destinatarios únicos, aprobados y activos", () => {
+test("el lote vigente exige exactamente 13 destinatarios únicos, aprobados y activos", () => {
   assert.equal(validatePilotBatch(validBatch()), "");
-  assert.match(validatePilotBatch(validBatch().slice(0, 4)), /exactamente 5/);
+  assert.match(validatePilotBatch(validBatch().slice(0, 12)), /exactamente 13/);
   assert.match(validatePilotBatch(validBatch().map((item, index) => (
-    index === 4 ? { ...item, recipientEmail: "compras1@example.com", linkEmail: "compras1@example.com" } : item
+    index === 12 ? { ...item, recipientEmail: "compras1@example.com", linkEmail: "compras1@example.com" } : item
   ))), /duplicad/);
   assert.match(validatePilotBatch(validBatch().map((item, index) => (
     index === 2 ? { ...item, status: "sent" } : item
@@ -89,8 +89,8 @@ test("la pantalla del piloto reutiliza la sesión y permite reautenticarse en la
     "utf8",
   );
   assert.match(pageSource, /useCrmSession\(\)/);
-  assert.match(pageSource, /signIn\(AUTHORIZED_EMAIL, loginPassword\)/);
-  assert.match(pageSource, /Entrar al piloto/);
+  assert.match(pageSource, /signIn\(AUTHORIZED_EMAIL, password\)/);
+  assert.match(pageSource, />Entrar</);
 });
 
 test("el CRM ofrece acceso al piloto mediante navegación interna", () => {
