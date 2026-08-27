@@ -37,4 +37,3 @@ test("prospecting UI exposes campaign data and filtering", async () => {
   assert.match(listPage, /label="En campaña"/);
   assert.match(databaseTypes, /campaign: string \| null/);
 });
-

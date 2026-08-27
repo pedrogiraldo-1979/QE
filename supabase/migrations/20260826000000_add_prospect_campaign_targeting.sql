@@ -193,4 +193,3 @@ where not exists (
       or (updated.public_email is null and existing.role = updated.contact_role)
     )
 );
-
