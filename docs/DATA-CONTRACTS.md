@@ -1,6 +1,6 @@
 # Contratos de datos y Supabase
 
-Fecha de verificación: 2026-07-19. Proyecto: `QE2026` (`izbfawwmbilmsrdjaanw`).
+Fecha de verificación del contrato base: 2026-07-19. Última verificación incremental: 2026-08-26. Proyecto: `QE2026` (`izbfawwmbilmsrdjaanw`).
 
 ## Fuente canónica
 
@@ -23,13 +23,15 @@ Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HE
 | `cu_links` | 83 | habilitado | CRUD `authenticated` bajo allowlist |
 | `cu_responses` | 8 | habilitado | CRUD `authenticated` bajo allowlist |
 | `prospect_lists` | 3 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospects` | 220 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospect_contacts` | 0 | habilitado | CRUD `authenticated` bajo allowlist |
+| `prospects` | 225 | habilitado | CRUD `authenticated` bajo allowlist |
+| `prospect_contacts` | 31 | habilitado | CRUD `authenticated` bajo allowlist |
 | `prospect_activities` | 80 | habilitado | CRUD `authenticated` bajo allowlist |
 
 `anon` no tiene privilegios directos sobre estas tablas. Cada política pública exige `private.is_crm_authorized()` tanto en `USING` como en `WITH CHECK`. La tabla `private.crm_authorized_users` no está expuesta a la Data API y contiene dos membresías activas.
 
 Las tablas nuevas ya no deben asumirse expuestas automáticamente: toda migración futura debe declarar `GRANT` explícito y RLS antes de ser consumida desde el frontend.
+
+Desde `20260827015743_add_prospect_campaign_targeting`, `prospects.campaign` conserva una etiqueta operativa opcional independiente de `segment` y `list_id`. La campaña `Colegios Norte 153+ / antes del peaje` contiene 31 prospectos y 31 canales institucionales públicos; la migración no modifica RLS ni privilegios existentes.
 
 La reproducción desde cero fue contrastada mediante firmas normalizadas de columnas, constraints, índices, funciones, políticas y grants. El resultado coincidió con el proyecto productivo sin leer ni copiar filas productivas.
 

@@ -52,6 +52,7 @@ type ProspectForm = {
   legal_name: string;
   nit: string;
   segment: string;
+  campaign: string;
   city: string;
   website: string;
   phone: string;
@@ -118,6 +119,7 @@ const emptyProspectForm: ProspectForm = {
   legal_name: "",
   nit: "",
   segment: "",
+  campaign: "",
   city: "",
   website: "",
   phone: "",
@@ -154,6 +156,7 @@ export default function ProspectListDetailPage() {
   const [statusFilter, setStatusFilter] = useState<ReviewTabKey>("todos");
   const [priorityFilter, setPriorityFilter] = useState("todos");
   const [cityFilter, setCityFilter] = useState("todos");
+  const [campaignFilter, setCampaignFilter] = useState("todos");
   const [newProspect, setNewProspect] = useState<ProspectForm>(emptyProspectForm);
   const [editProspect, setEditProspect] = useState<ProspectForm>(emptyProspectForm);
   const [newContact, setNewContact] = useState<ContactForm>(emptyContactForm);
@@ -201,6 +204,7 @@ export default function ProspectListDetailPage() {
       legal_name: selectedProspect.legal_name || "",
       nit: selectedProspect.nit || "",
       segment: selectedProspect.segment || "",
+      campaign: selectedProspect.campaign || "",
       city: selectedProspect.city || "",
       website: selectedProspect.website || "",
       phone: selectedProspect.phone || "",
@@ -290,6 +294,7 @@ export default function ProspectListDetailPage() {
         legal_name: nullIfBlank(newProspect.legal_name),
         nit: nullIfBlank(newProspect.nit),
         segment: nullIfBlank(newProspect.segment),
+        campaign: nullIfBlank(newProspect.campaign),
         city: nullIfBlank(newProspect.city),
         website: nullIfBlank(newProspect.website),
         phone: nullIfBlank(newProspect.phone),
@@ -325,6 +330,7 @@ export default function ProspectListDetailPage() {
       legal_name: nullIfBlank(editProspect.legal_name),
       nit: nullIfBlank(editProspect.nit),
       segment: nullIfBlank(editProspect.segment),
+      campaign: nullIfBlank(editProspect.campaign),
       city: nullIfBlank(editProspect.city),
       website: nullIfBlank(editProspect.website),
       phone: nullIfBlank(editProspect.phone),
@@ -485,6 +491,7 @@ export default function ProspectListDetailPage() {
   const normalizedSearch = search.trim().toLowerCase();
   const cities = useMemo(() => Array.from(new Set(prospects.map((prospect) => prospect.city).filter(Boolean) as string[])).sort(), [prospects]);
   const priorities = useMemo(() => Array.from(new Set(prospects.map((prospect) => prospect.priority).filter(Boolean) as string[])).sort(), [prospects]);
+  const campaigns = useMemo(() => Array.from(new Set(prospects.map((prospect) => prospect.campaign).filter(Boolean) as string[])).sort(), [prospects]);
 
   const filteredProspects = useMemo(() => {
     return prospects.filter((prospect) => {
@@ -498,6 +505,7 @@ export default function ProspectListDetailPage() {
           prospect.phone,
           prospect.city,
           prospect.segment,
+          prospect.campaign,
           prospect.address,
           ...prospectContacts.flatMap((contact) => [contact.full_name, contact.email, contact.phone, contact.role]),
         ]
@@ -506,10 +514,11 @@ export default function ProspectListDetailPage() {
       const matchesStatus = matchesReviewTab(prospect, prospectContacts, statusFilter);
       const matchesPriority = priorityFilter === "todos" || prospect.priority === priorityFilter;
       const matchesCity = cityFilter === "todos" || prospect.city === cityFilter;
+      const matchesCampaign = campaignFilter === "todos" || prospect.campaign === campaignFilter;
 
-      return matchesSearch && matchesStatus && matchesPriority && matchesCity;
+      return matchesSearch && matchesStatus && matchesPriority && matchesCity && matchesCampaign;
     });
-  }, [cityFilter, contactsByProspectId, normalizedSearch, priorityFilter, prospects, statusFilter]);
+  }, [campaignFilter, cityFilter, contactsByProspectId, normalizedSearch, priorityFilter, prospects, statusFilter]);
 
   const withContacts = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).length).length;
   const withValidEmail = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).some((contact) => isValidEmail(contact.email))).length;
@@ -517,6 +526,7 @@ export default function ProspectListDetailPage() {
   const excluded = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "cliente_actual_excluir").length;
   const porRevisar = prospects.filter((prospect) => normalizeProspectStatus(prospect.status) === "por_revisar").length;
   const sinContacto = prospects.filter((prospect) => (contactsByProspectId.get(prospect.id) || []).length === 0).length;
+  const inCampaign = prospects.filter((prospect) => Boolean(prospect.campaign)).length;
 
   const reviewTabs: { key: ReviewTabKey; label: string; helper: string; count: number }[] = [
     { key: "todos", label: "Todos", helper: "lista completa", count: prospects.length },
@@ -627,6 +637,7 @@ export default function ProspectListDetailPage() {
 
         <section className="metrics-grid" aria-label="Indicadores de lista">
           <MetricCard icon={Building2} label="Prospectos" value={prospects.length} helper="empresas en lista" />
+          <MetricCard icon={Target} label="En campaña" value={inCampaign} helper="segmento geográfico activo" />
           <MetricCard icon={CheckCircle2} label="OK prospecto" value={okProspects} helper="aptos para trabajar" />
           <MetricCard icon={UsersRound} label="Con contacto" value={withContacts} helper="al menos una persona" />
           <MetricCard icon={Mail} label="Email válido" value={withValidEmail} helper="no exporta todavía" />
@@ -696,8 +707,15 @@ export default function ProspectListDetailPage() {
                   {cities.map((city) => <option key={city} value={city}>{city}</option>)}
                 </select>
               </label>
-              {(search || priorityFilter !== "todos" || cityFilter !== "todos" || statusFilter !== "todos") ? (
-                <button className="btn btn-secondary compact" type="button" onClick={() => { setSearch(""); setPriorityFilter("todos"); setCityFilter("todos"); setStatusFilter("todos"); }}>
+              <label className="select-shell">
+                <Target size={16} />
+                <select aria-label="Filtrar prospectos por campaña" value={campaignFilter} onChange={(event) => setCampaignFilter(event.target.value)}>
+                  <option value="todos">Campaña</option>
+                  {campaigns.map((campaign) => <option key={campaign} value={campaign}>{campaign}</option>)}
+                </select>
+              </label>
+              {(search || priorityFilter !== "todos" || cityFilter !== "todos" || campaignFilter !== "todos" || statusFilter !== "todos") ? (
+                <button className="btn btn-secondary compact" type="button" onClick={() => { setSearch(""); setPriorityFilter("todos"); setCityFilter("todos"); setCampaignFilter("todos"); setStatusFilter("todos"); }}>
                   Limpiar
                 </button>
               ) : null}
@@ -724,6 +742,7 @@ export default function ProspectListDetailPage() {
                         <td>
                           <strong>{getProspectName(prospect)}</strong>
                           <span>{prospect.nit || prospect.legal_name || "Datos legales pendientes"}</span>
+                          {prospect.campaign ? <span className="badge tone-blue">{prospect.campaign}</span> : null}
                         </td>
                         <td><StatusBadge status={prospect.status} /></td>
                         <td>{prospect.priority || "B"}</td>
@@ -764,6 +783,7 @@ export default function ProspectListDetailPage() {
                       <span className="badge tone-blue">Prospecto</span>
                       <StatusBadge status={selectedProspect.status} />
                       <span className="badge">Prioridad {selectedProspect.priority || "B"}</span>
+                      {selectedProspect.campaign ? <span className="badge tone-blue">{selectedProspect.campaign}</span> : null}
                     </div>
                     <h2>{getProspectName(selectedProspect)}</h2>
                     <p>{selectedProspect.segment || list?.segment || "Segmento pendiente"}</p>
@@ -876,6 +896,7 @@ function ProspectFormFields({
         <Field label="Razón social" value={form.legal_name} onChange={(value) => setForm((current) => ({ ...current, legal_name: value }))} />
         <Field label="NIT" value={form.nit} onChange={(value) => setForm((current) => ({ ...current, nit: value }))} />
         <Field label="Segmento" value={form.segment} onChange={(value) => setForm((current) => ({ ...current, segment: value }))} />
+        <Field label="Campaña" value={form.campaign} onChange={(value) => setForm((current) => ({ ...current, campaign: value }))} />
         <Field label="Ciudad" value={form.city} onChange={(value) => setForm((current) => ({ ...current, city: value }))} />
         <Field label="Teléfono" value={form.phone} onChange={(value) => setForm((current) => ({ ...current, phone: value }))} />
         <Field label="Website" value={form.website} onChange={(value) => setForm((current) => ({ ...current, website: value }))} />

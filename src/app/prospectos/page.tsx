@@ -27,6 +27,7 @@ interface ProspectListStats {
   totalProspects: number;
   totalWithContact: number;
   totalWithValidEmail: number;
+  totalInCampaign: number;
 }
 
 const statusLabels: Record<string, string> = {
@@ -105,13 +106,14 @@ export default function ProspectListsPage() {
     const map = new Map<string, ProspectListStats>();
     prospects.forEach((prospect) => {
       if (!prospect.list_id) return;
-      const current = map.get(prospect.list_id) || { totalProspects: 0, totalWithContact: 0, totalWithValidEmail: 0 };
+      const current = map.get(prospect.list_id) || { totalProspects: 0, totalWithContact: 0, totalWithValidEmail: 0, totalInCampaign: 0 };
       const prospectContacts = contactsByProspectId.get(prospect.id) || [];
 
       map.set(prospect.list_id, {
         totalProspects: current.totalProspects + 1,
         totalWithContact: current.totalWithContact + (prospectContacts.length ? 1 : 0),
         totalWithValidEmail: current.totalWithValidEmail + (prospectContacts.some((contact) => isValidEmail(contact.email)) ? 1 : 0),
+        totalInCampaign: current.totalInCampaign + (prospect.campaign ? 1 : 0),
       });
     });
 
@@ -130,6 +132,7 @@ export default function ProspectListsPage() {
 
   const totalWithValidEmail = Array.from(statsByListId.values()).reduce((sum, item) => sum + item.totalWithValidEmail, 0);
   const totalWithContact = Array.from(statsByListId.values()).reduce((sum, item) => sum + item.totalWithContact, 0);
+  const totalInCampaign = Array.from(statsByListId.values()).reduce((sum, item) => sum + item.totalInCampaign, 0);
   const activeProspects = prospects.filter((prospect) => !["cliente_actual_excluir", "descartado", "convertido_cliente", "convertido"].includes(normalizeProspectStatus(prospect.status))).length;
 
   if (!sessionReady) {
@@ -233,6 +236,7 @@ export default function ProspectListsPage() {
         <section className="metrics-grid" aria-label="Indicadores de prospección">
           <MetricCard icon={Target} label="Listas" value={lists.length} helper="fuentes de prospección" />
           <MetricCard icon={Building2} label="Prospectos" value={prospects.length} helper="empresas cargadas" />
+          <MetricCard icon={Target} label="En campaña" value={totalInCampaign} helper="objetivos segmentados" />
           <MetricCard icon={LayoutDashboard} label="Activos" value={activeProspects} helper="sin excluir o convertir" />
           <MetricCard icon={UsersRound} label="Con contacto" value={totalWithContact} helper="al menos una persona" />
           <MetricCard icon={Mail} label="Con email válido" value={totalWithValidEmail} helper="aptos para revisar después" />
@@ -277,7 +281,7 @@ export default function ProspectListsPage() {
                 </thead>
                 <tbody>
                   {filteredLists.map((list) => {
-                    const stats = statsByListId.get(list.id) || { totalProspects: 0, totalWithContact: 0, totalWithValidEmail: 0 };
+                    const stats = statsByListId.get(list.id) || { totalProspects: 0, totalWithContact: 0, totalWithValidEmail: 0, totalInCampaign: 0 };
                     return (
                       <tr key={list.id}>
                         <td>
@@ -301,6 +305,7 @@ export default function ProspectListsPage() {
                         <td>
                           <strong>{stats.totalWithContact} con contacto</strong>
                           <span>{stats.totalWithValidEmail} con email válido</span>
+                          {stats.totalInCampaign ? <span>{stats.totalInCampaign} en campaña</span> : null}
                         </td>
                         <td>{formatDate(list.created_at)}</td>
                         <td>{list.source || "-"}</td>
