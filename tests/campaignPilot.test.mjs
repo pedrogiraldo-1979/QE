@@ -90,7 +90,7 @@ test("la pantalla del piloto reutiliza la sesión y permite reautenticarse en la
   );
   assert.match(pageSource, /useCrmSession\(\)/);
   assert.match(pageSource, /signIn\(AUTHORIZED_EMAIL, password\)/);
-  assert.match(pageSource, />Entrar</);
+  assert.match(pageSource, /signingIn \? "Validando…" : "Entrar"/);
 });
 
 test("el CRM ofrece acceso al piloto mediante navegación interna", () => {
