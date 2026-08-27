@@ -710,6 +710,31 @@ Controles implementados:
 
 Límites: el PR no contiene datos de los cinco clientes, no aplica la migración en producción, no despliega la función y no invoca ZeptoMail. La provisión, preview autenticado y envío requieren gates posteriores después del merge.
 
+## 24. Campaña Colegios Norte 153+ — actualización controlada
+
+Fecha: 2026-08-26. Alcance autorizado: validar colegios desde la Calle 153 hasta antes del peaje de la Autopista Norte, cruzarlos con clientes actuales, actualizar prospectos sin borrar datos y reflejar la campaña en el módulo de prospección.
+
+Evidencia previa y dry-run:
+
+- la lista maestra contenía 80 prospectos de colegios; 26 cumplían el criterio y cinco colegios públicos verificados eran incorporaciones nuevas;
+- `COLEGIO NUEVA YORK` y `COLEGIO GIMNASIO DEL NORTE` se detectaron como clientes actuales y no recibieron la etiqueta de campaña;
+- coincidencias textuales con el Hotel Andino y el Hotel La Fontana se descartaron como falsos positivos;
+- no se propusieron eliminaciones, traslados de lista, conversiones a cliente ni sobrescrituras masivas de estados.
+
+Mutación autorizada y resultado productivo:
+
+- migración aditiva e idempotente registrada en Supabase como `20260827015743_add_prospect_campaign_targeting`;
+- 31 prospectos etiquetados con `Colegios Norte 153+ / antes del peaje`: 26 existentes y cinco nuevos en `por_revisar`;
+- 31 canales institucionales públicos añadidos; 20 tienen correo público y todos conservan nota de validación humana antes de contactar;
+- 31/31 tienen dirección y teléfono, 27/31 tienen sitio web; no existen duplicados dentro de la campaña;
+- los totales posteriores son 225 prospectos y 31 contactos de prospecto.
+
+Verificación técnica:
+
+- tipos TypeScript regenerados contra producción y contrato explícito de columnas actualizado con `campaign`;
+- pruebas específicas de migración, exclusiones y UI aprobadas; typecheck aprobado y build de producción aprobado con Webpack;
+- los asesores posteriores no atribuyen alertas nuevas a `prospects.campaign`; las advertencias de seguridad y rendimiento reportadas pertenecen a superficies preexistentes y quedan fuera de esta mutación no destructiva.
+
 ## Anexo — Activación documental de la Fase 9 (2026-07-20)
 
 Alcance: reconciliación del estado publicado y definición documental de la siguiente fase activa. No se modificaron código, configuración, dependencias, esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos.

@@ -269,6 +269,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Límite: esta decisión no autoriza cambios de RLS, Auth, RPC, esquema, Edge Functions, migraciones, datos, purgas ni ejecución del plan RBAC.
 - Evidencia/verificación: [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md), [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) y PR #26.
 
+## D-028 — Identificar campañas sin reemplazar la segmentación de prospectos
+
+- Estado: Aceptada
+- Fecha: 2026-08-26
+- Responsable: Pedro
+- Contexto: la campaña de colegios del norte requiere distinguir un conjunto operativo por geografía sin mover prospectos de su lista maestra, sobrescribir su segmento ni convertir coincidencias dudosas en clientes.
+- Decisión: añadir `prospects.campaign` como etiqueta operativa opcional y usar `Colegios Norte 153+ / antes del peaje` para los 31 colegios validados. El Colegio Colombo Hebreo entra como excepción explícita sobre el límite de la Calle 153. Los colegios después del peaje, del corredor Suba–Cota y los clientes actuales quedan fuera.
+- Integridad: la carga es aditiva e idempotente; conserva los 26 prospectos existentes, incorpora cinco registros nuevos en `por_revisar`, completa sólo campos públicos vacíos y agrega un contacto institucional por colegio sin declarar responsables no confirmados.
+- Consecuencias: la interfaz puede buscar, filtrar, editar y resumir la campaña separadamente. La lista maestra y los estados heredados no se reescriben de forma masiva.
+- Evidencia/verificación: migración `20260826000000_add_prospect_campaign_targeting.sql`, 31 prospectos y 31 contactos de canal público verificados en `QE2026`, sin duplicados de campaña ni cruces con `COLEGIO NUEVA YORK` o `COLEGIO GIMNASIO DEL NORTE`.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida

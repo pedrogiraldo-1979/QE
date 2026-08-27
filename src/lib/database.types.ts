@@ -522,6 +522,7 @@ export type Database = {
       prospects: {
         Row: {
           address: string | null
+          campaign: string | null
           city: string | null
           company_name: string
           confidence_score: number | null
@@ -542,6 +543,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          campaign?: string | null
           city?: string | null
           company_name: string
           confidence_score?: number | null
@@ -562,6 +564,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          campaign?: string | null
           city?: string | null
           company_name?: string
           confidence_score?: number | null
