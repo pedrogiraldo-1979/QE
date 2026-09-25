@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { parseCrmSessionContext } from "@/features/crm/authorizationModel";
 import { validateRecoveryPassword } from "@/features/crm/passwordRecovery";
 import { getSupabaseClient } from "@/lib/supabase";
 
@@ -26,13 +25,13 @@ export default function SetPasswordPage() {
         setPhase("invalid");
         return;
       }
-      const access = await supabase.rpc("get_crm_session_context");
+      const access = await supabase.rpc("is_crm_authorized");
       if (verificationId.current !== currentId) return;
       if (access.error) {
         setPhase("verification-error");
         return;
       }
-      if (parseCrmSessionContext(access.data)?.authorized !== true) {
+      if (access.data !== true) {
         try {
           await supabase.auth.signOut({ scope: "local" });
         } catch {
