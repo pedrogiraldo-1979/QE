@@ -770,3 +770,11 @@ Separación operativa:
 - esta rama no ejecutó ni volvió a publicar la Fase 8;
 - no se realizó deployment, merge, migración ni operación remota como parte de la reorganización;
 - el trabajo se limita a actualizar las fuentes documentales vigentes y registrar la diferencia entre el corte histórico y el estado remoto comprobado.
+
+## Anexo — Recuperación de contraseña CRM en rama (2026-09-25)
+
+La rama `codex/crm-password-recovery` añade una solicitud pública de enlace y una página de cambio de clave. La solicitud usa la respuesta genérica de Supabase para no revelar si existe una cuenta; la página de cambio exige sesión y autorización CRM antes de actualizar la contraseña. Ninguna cuenta, dato, política, esquema o configuración remota fue modificado durante esta implementación.
+
+Verificación local: typecheck aprobado, 48/48 pruebas aprobadas, build de 13 rutas con las variables públicas versionadas de Supabase y smoke HTTP 13/13. En navegador local se comprobó el enlace desde el login, el formulario de solicitud y el estado de enlace ausente o vencido; no se envió ningún correo ni se cambió una contraseña. La revisión visual móvil y los estados autenticados de cambio siguen sin evidencia de navegador.
+
+Gate pendiente antes de ofrecerlo a usuarios: publicar un preview, autorizar su URL exacta de retorno en Supabase Auth mediante aprobación independiente y hacer una prueba interactiva controlada de envío, enlace y cambio de clave. El código de esta rama no se considera comportamiento publicado hasta superar ese gate y fusionarse por separado.

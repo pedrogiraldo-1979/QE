@@ -45,3 +45,9 @@ test("el cambio exige sesión y autorización CRM antes de actualizar", async ()
   assert.match(source, /auth\.signOut\(\{ scope: "local" \}\)/);
   assert.doesNotMatch(source, /service_role|console\.log|location\.hash|pedro\.giraldo@/);
 });
+
+test("el smoke HTTP cubre ambas rutas públicas de recuperación", async () => {
+  const source = await readFile("scripts/smoke.mjs", "utf8");
+  assert.match(source, /"\/recuperar-clave"/);
+  assert.match(source, /"\/restablecer-clave"/);
+});
