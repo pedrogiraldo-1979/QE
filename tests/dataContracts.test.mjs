@@ -35,6 +35,11 @@ test("el contrato generado conserva las tablas y RPC verificadas", async () => {
     "prospects",
   ];
   const functions = [
+    "admin_approve_cu_response",
+    "admin_complete_cu_master_sync",
+    "admin_get_cu_master_sync_queue",
+    "admin_get_cu_pending_reviews",
+    "admin_reject_cu_response",
     "approve_cu_response",
     "complete_cu_master_sync",
     "convert_prospect_to_company",
@@ -42,6 +47,7 @@ test("el contrato generado conserva las tablas y RPC verificadas", async () => {
     "get_cu_form",
     "get_cu_master_sync_queue",
     "get_cu_pending_reviews",
+    "get_crm_session_context",
     "is_crm_authorized",
     "reject_cu_response",
     "submit_cu_form",
@@ -93,6 +99,39 @@ test("la migración mantiene terminal el rechazo y restringe su ejecución", asy
   assert.match(migration, /status = 'pendiente'/);
   assert.match(migration, /revoke execute[^;]+from public, anon, authenticated;/i);
   assert.match(migration, /grant execute[^;]+to authenticated;/i);
+});
+
+test("RBAC separa trabajo comercial y operaciones administrativas", async () => {
+  const migrations = (await readdir(path.join(repositoryRoot, "supabase", "migrations")))
+    .filter((name) => name.endsWith("_phase_9_rbac_foundation.sql"));
+  assert.equal(migrations.length, 1);
+  const migration = await read(`supabase/migrations/${migrations[0]}`);
+
+  assert.match(migration, /create or replace function private\.crm_role\(\)/i);
+  assert.match(migration, /create or replace function private\.is_crm_admin\(\)/i);
+  assert.match(migration, /create or replace function public\.get_crm_session_context\(\)/i);
+  assert.match(migration, /create policy crm_active_update/i);
+  assert.match(migration, /create policy crm_admin_update/i);
+  assert.match(migration, /revoke delete on table[\s\S]+from authenticated/i);
+  assert.match(migration, /revoke execute on function public\.delete_prospect\(uuid\) from authenticated/i);
+  assert.match(migration, /create or replace function public\.admin_approve_cu_response/i);
+  assert.match(migration, /perform private\.require_crm_admin\(\)/i);
+});
+
+test("el frontend usa RPC administrativas y no carga sus colas para member", async () => {
+  const repository = await read("src/lib/data/crmDashboardRepository.ts");
+  const hook = await read("src/hooks/useCrmDashboardData.ts");
+  const page = await read("src/app/page.tsx");
+
+  assert.match(repository, /admin_get_cu_pending_reviews/);
+  assert.match(repository, /admin_get_cu_master_sync_queue/);
+  assert.match(repository, /admin_approve_cu_response/);
+  assert.match(repository, /admin_reject_cu_response/);
+  assert.match(repository, /admin_complete_cu_master_sync/);
+  assert.match(hook, /adminEnabled: boolean/);
+  assert.match(page, /useCrmDashboardData\(supabase, isAuthenticated, isAdmin\)/);
+  assert.match(page, /isAdmin && dataTab === "responses"/);
+  assert.match(page, /isAdmin && dataTab === "sync"/);
 });
 
 test("la baseline reconstruye el contrato sin sembrar identidades ni datos", async () => {

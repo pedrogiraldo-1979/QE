@@ -11,14 +11,14 @@ Miembros iniciales:
 | `pedro.giraldo@gmail.com` | `admin` | activo |
 | `ventas@quindioexquisito.com` | `member` | activo |
 
-Los roles quedan registrados para una futura separación de permisos. Actualmente `admin` y `member` tienen el mismo CRUD sobre el CRM.
+`member` puede leer, crear y actualizar las entidades comerciales (`companies`, `contacts`, actividades y prospección), además de convertir prospectos. `admin` conserva esas capacidades y administra enlaces de actualización, respuestas de clientes y conciliación de maestros. Ningún rol cliente puede borrar físicamente registros.
 
 ## Flujo de autorización
 
 1. Supabase Auth valida email y contraseña.
-2. `public.is_crm_authorized()` consulta la función privada para la identidad actual.
+2. `public.get_crm_session_context()` obtiene autorización y rol desde la allowlist privada para la identidad actual; `public.is_crm_authorized()` se conserva como comprobación booleana compatible.
 3. El frontend rechaza y cierra sesiones no autorizadas.
-4. Independientemente del frontend, RLS vuelve a comprobar la membresía en cada consulta o mutación.
+4. Independientemente del frontend, RLS y los wrappers `admin_*` vuelven a comprobar la membresía y el rol en cada consulta o mutación sensible.
 5. `anon` no tiene privilegios directos sobre las tablas CRM.
 
 ## Agregar un miembro
@@ -56,8 +56,14 @@ set role = 'admin', updated_at = now()
 where user_id = 'UUID_DEL_USUARIO';
 ```
 
-Un cambio de rol no modifica capacidades hasta que existan políticas diferenciadas aprobadas.
+El cambio afecta las nuevas solicitudes y sesiones que se revaliden. Para retirar acceso, revocar las sesiones activas en Auth además de desactivar la membresía.
 
 ## Recuperación administrativa
 
 Si todos los administradores quedaran fuera, usar el SQL Editor de Supabase con una cuenta autorizada del proyecto para reactivar o insertar el UUID correcto. No crear RPC públicas para administrar la allowlist y nunca usar una clave `service_role` en el navegador.
+
+## Límites vigentes
+
+- La visibilidad de la interfaz es sólo una ayuda: RLS y las RPC protegidas son la autoridad.
+- `cu_links`, las respuestas de clientes y la cola de maestros son exclusivas de `admin`.
+- Auditoría, eliminación lógica, restauración, administración autocontenida de membresías y el nuevo ciclo público de enlaces permanecen diferidos a planes independientes.

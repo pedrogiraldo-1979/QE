@@ -25,6 +25,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Revisar al menos un viewport de escritorio y uno móvil; comprobar overflow y nombres/etiquetas de controles.
 - [ ] Si el cambio afecta una superficie autenticada, validarla contra un entorno de datos controlado antes de aprobar el release.
 - [ ] Ejecutar `pnpm test:integration` sólo con variables `QE_TEST_*` de un proyecto desechable; repetir el `project_ref` en `QE_TEST_SUPABASE_PROJECT_REF` y `QE_TEST_CONFIRM_DISPOSABLE_PROJECT` antes de iniciar.
+- [ ] Tras una prueba mutante, eliminar los fixtures y membresías/cuentas sintéticas creadas, comprobar sus conteos en cero y pausar o eliminar el proyecto desechable.
 - [ ] Para cambios de campaña, ejecutar `pnpm test:campaign:smoke` sin autenticación y `pnpm test:campaign:e2e` únicamente en el proyecto desechable confirmado.
 - [ ] Confirmar que las pruebas de campaña usan direcciones `.invalid` para fixtures y que ningún paso automatizado invoca un envío a clientes.
 - [ ] Para el piloto real, verificar en modo preview que existan exactamente cinco filas `approved`, con correos únicos, enlaces activos y cero respuestas previas; no usar el send durante pruebas.
@@ -36,6 +37,7 @@ Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT
 - [ ] No ejecutar RPC mutantes, inserts, updates o deletes contra producción como prueba.
 - [ ] Aplicar migraciones sólo con autorización y en orden trazable.
 - [ ] Verificar RLS, grants y advisors después de cualquier cambio de backend.
+- [ ] Para RBAC, revisar los avisos `SECURITY DEFINER`: los formularios públicos por token y los wrappers `admin_*` sólo son aceptables si conservan grants mínimos y validación explícita de rol en backend.
 - [ ] Comparar conteos antes/después cuando la migración declara que no modifica filas.
 - [ ] Preparar SQL de reversión cuando sea seguro; una reversión destructiva de datos requiere aprobación separada.
 - [ ] Provisionar los cinco destinatarios aprobados fuera de Git y comprobar que `campaign_pilot_recipients` no concede acceso a `anon` ni `authenticated`.

@@ -1,6 +1,6 @@
 # Contratos de datos y Supabase
 
-Fecha de verificación del contrato base: 2026-07-19. Última verificación incremental: 2026-08-26. Proyecto: `QE2026` (`izbfawwmbilmsrdjaanw`).
+Fecha de verificación del contrato base: 2026-07-19. Última evidencia RBAC: 2026-09-24 en el proyecto desechable `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`). La producción no se modificó durante esa validación.
 
 ## Fuente canónica
 
@@ -9,7 +9,7 @@ Fecha de verificación del contrato base: 2026-07-19. Última verificación incr
 - `src/lib/data/queryColumns.ts` define las columnas que el frontend solicita; no se usa `select("*")`.
 - `src/lib/data/queryLimits.ts` distingue selectores de referencia de feeds resumidos.
 - Los tipos deben regenerarse desde Supabase después de cada migración y revisarse en el mismo commit; no se editan formas de tablas o RPC manualmente.
-- `supabase/migrations/20260720000000_initial_crm_baseline.sql` es la fuente estructural para proyectos vacíos. No contiene usuarios, membresías ni filas; las cinco migraciones posteriores conservan la evolución incremental.
+- `supabase/migrations/20260720000000_initial_crm_baseline.sql` es la fuente estructural para proyectos vacíos. No contiene usuarios, membresías ni filas; las migraciones posteriores conservan la evolución incremental.
 
 Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HEALTHY`.
 
@@ -17,17 +17,17 @@ Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HE
 
 | Tabla | Filas verificadas | RLS | Acceso cliente |
 | --- | ---: | --- | --- |
-| `companies` | 83 | habilitado | CRUD `authenticated` bajo allowlist |
-| `contacts` | 83 | habilitado | CRUD `authenticated` bajo allowlist |
-| `activities` | 2 | habilitado | CRUD `authenticated` bajo allowlist |
-| `cu_links` | 83 | habilitado | CRUD `authenticated` bajo allowlist |
-| `cu_responses` | 8 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospect_lists` | 3 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospects` | 225 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospect_contacts` | 31 | habilitado | CRUD `authenticated` bajo allowlist |
-| `prospect_activities` | 80 | habilitado | CRUD `authenticated` bajo allowlist |
+| `companies` | 83 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `contacts` | 83 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `activities` | 2 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `cu_links` | 83 | habilitado | sólo `admin`; sin borrado cliente |
+| `cu_responses` | 8 | habilitado | sólo lectura `admin`; las respuestas públicas usan RPC |
+| `prospect_lists` | 3 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `prospects` | 225 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `prospect_contacts` | 31 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
+| `prospect_activities` | 80 | habilitado | lectura, creación y actualización para roles CRM activos; sin borrado cliente |
 
-`anon` no tiene privilegios directos sobre estas tablas. Cada política pública exige `private.is_crm_authorized()` tanto en `USING` como en `WITH CHECK`. La tabla `private.crm_authorized_users` no está expuesta a la Data API y contiene dos membresías activas.
+`anon` no tiene privilegios directos sobre estas tablas. Las políticas comerciales exigen membresía CRM activa; las políticas de enlaces y respuestas exigen además rol `admin`. La tabla `private.crm_authorized_users` no está expuesta a la Data API.
 
 Las tablas nuevas ya no deben asumirse expuestas automáticamente: toda migración futura debe declarar `GRANT` explícito y RLS antes de ser consumida desde el frontend.
 
@@ -40,21 +40,23 @@ La reproducción desde cero fue contrastada mediante firmas normalizadas de colu
 | RPC | Rol | Seguridad | Contrato operativo |
 | --- | --- | --- | --- |
 | `is_crm_authorized()` | `authenticated` | invoker | Devuelve únicamente la autorización de la sesión actual. |
+| `get_crm_session_context()` | `authenticated` | invoker | Devuelve autorización y rol vigentes sin confiar en `user_metadata`. |
 | `get_cu_form(p_token)` | `anon`, `authenticated` | definer | Devuelve el formulario de un enlace activo y no vencido. |
 | `submit_cu_form(p_token, p_payload)` | `anon`, `authenticated` | definer | Acepta sólo un objeto JSON de máximo 32 KB. |
-| `get_cu_pending_reviews()` | `authenticated` | invoker | Lista respuestas pendientes bajo RLS. |
-| `approve_cu_response(p_response_id)` | `authenticated` | invoker | Aplica empresa, contacto principal, ambos teléfonos y segundo contacto opcional en una transacción; reintentos no duplican cambios. |
-| `reject_cu_response(p_response_id)` | `authenticated` | invoker | Desde `20260720031715`, sólo cambia respuestas pendientes. |
-| `get_cu_master_sync_queue()` | `authenticated` | invoker | Lista aprobaciones con cambios que aún requieren reconciliar `Hoja1` y `contactos_base`. |
-| `complete_cu_master_sync(p_response_id, p_notes)` | `authenticated` | invoker | Cierra una tarea pendiente sólo después de confirmar ambos maestros. |
+| `admin_get_cu_pending_reviews()` | `authenticated` | definer protegido | Lista respuestas pendientes sólo para `admin`. |
+| `admin_approve_cu_response(p_response_id)` | `authenticated` | definer protegido | Aprueba una respuesta pendiente sólo para `admin`. |
+| `admin_reject_cu_response(p_response_id)` | `authenticated` | definer protegido | Rechaza una respuesta pendiente sólo para `admin`. |
+| `admin_get_cu_master_sync_queue()` | `authenticated` | definer protegido | Lista conciliaciones pendientes sólo para `admin`. |
+| `admin_complete_cu_master_sync(p_response_id, p_notes)` | `authenticated` | definer protegido | Cierra una conciliación sólo para `admin`. |
 | `convert_prospect_to_company(p_prospect_id, p_notes)` | `authenticated` | invoker | Bloquea el prospecto, crea y enlaza en una transacción; reintentos devuelven la empresa enlazada. |
-| `delete_prospect(p_prospect_id)` | `authenticated` | invoker | Elimina el prospecto en una transacción; las FK retiran dependencias por cascada. |
+| `get_cu_pending_reviews()`, `approve_cu_response(...)`, `reject_cu_response(...)`, `get_cu_master_sync_queue()`, `complete_cu_master_sync(...)` | sin acceso cliente | invoker | Se conservan internamente, pero su ejecución directa fue revocada. |
+| `delete_prospect(p_prospect_id)` | sin acceso cliente | invoker | La eliminación física fue retirada de la interfaz y su ejecución fue revocada. |
 
 Todas las funciones verificadas fijan `search_path = ''`. El argumento de las dos RPC de revisión es `p_response_id`; el nombre anterior usado por el frontend, `response_id`, no pertenecía al contrato remoto.
 
 ## Auth y autorización
 
-Supabase Auth verifica identidad. La autorización de negocio reside en `private.crm_authorized_users`; no usa `user_metadata`. El frontend consulta `public.is_crm_authorized()` y RLS repite la comprobación en el backend. Los roles `admin` y `member` aún comparten el mismo CRUD hasta que producto defina una separación.
+Supabase Auth verifica identidad. La autorización de negocio reside en `private.crm_authorized_users`; no usa `user_metadata`. El frontend consulta `public.get_crm_session_context()` y el backend repite la comprobación mediante RLS y wrappers administrativos. `member` conserva el trabajo comercial y la conversión; `admin` añade administración de enlaces, respuestas y conciliación. Ningún rol cliente tiene borrado físico.
 
 La protección de contraseñas filtradas continúa deshabilitada y requiere una decisión/configuración independiente en Auth.
 
@@ -74,5 +76,6 @@ La protección de contraseñas filtradas continúa deshabilitada y requiere una 
 - La cola de maestros registra estado y trazabilidad; la escritura en Google Sheets continúa siendo un paso controlado posterior a la aprobación, no una mutación directa desde el formulario público.
 - Los 220 prospectos conservan el estado legado `por_validar`, normalizado en el frontend sin reescritura.
 - Las dos RPC públicas por token generan warnings esperados del advisor por usar `SECURITY DEFINER`; su exposición es deliberada y debe reevaluarse si cambia el flujo público.
+- Los cinco wrappers `admin_*` también generan un aviso del advisor por ser `SECURITY DEFINER` ejecutable por `authenticated`; cada uno exige `private.require_crm_admin()` y la prueba aislada confirmó la denegación para `member`.
 - Advisor de Auth: [protección de contraseñas filtradas](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection).
 - Advisor de RLS: [tabla privada sin políticas](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy), informativo porque no existen grants de cliente sobre la tabla.

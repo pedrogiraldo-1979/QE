@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { ArrowLeft, FileQuestion, LogOut, RefreshCw, Search, ShieldCheck, Trash2 } from "lucide-react";
+import { ArrowLeft, FileQuestion, LogOut, RefreshCw, Search, ShieldCheck } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
 import { PROSPECT_COLUMNS, PROSPECT_CONTACT_COLUMNS, PROSPECT_LIST_COLUMNS } from "@/lib/data/queryColumns";
 import type { Prospect, ProspectContact, ProspectList } from "@/lib/types";
@@ -20,7 +20,6 @@ export default function ProspectCleanupPage() {
   const [contacts, setContacts] = useState<ProspectContact[]>([]);
   const [search, setSearch] = useState("");
   const [listFilter, setListFilter] = useState("todos");
-  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) void loadData();
@@ -71,32 +70,6 @@ export default function ProspectCleanupPage() {
     setLists([]);
   }
 
-  async function deleteProspect(prospect: Prospect) {
-    const name = getProspectDisplayName(prospect);
-    const contactCount = getContactCount(prospect.id);
-    const confirmed = window.confirm(
-      `¿Eliminar el prospecto "${name}"?\n\nEsto borrará el prospecto y ${contactCount} contacto(s) prospecto asociados. No borra clientes CRM ni contactos CRM reales.`
-    );
-
-    if (!confirmed) return;
-
-    setDeletingId(prospect.id);
-    setMessage(null);
-
-    const { error: prospectError } = await supabase.rpc("delete_prospect", { p_prospect_id: prospect.id });
-
-    if (prospectError) {
-      setMessage(prospectError.message);
-      setDeletingId(null);
-      return;
-    }
-
-    setContacts((current) => current.filter((contact) => contact.prospect_id !== prospect.id));
-    setProspects((current) => current.filter((item) => item.id !== prospect.id));
-    setDeletingId(null);
-    setMessage(`Prospecto eliminado: ${name}.`);
-  }
-
   const listById = useMemo(() => new Map(lists.map((list) => [list.id, list])), [lists]);
   const normalizedSearch = search.trim().toLowerCase();
 
@@ -141,7 +114,7 @@ export default function ProspectCleanupPage() {
               <h1>Limpieza de prospectos</h1>
             </div>
           </div>
-          <p className="login-copy">Ingresa para eliminar prospectos de prueba de forma manual y controlada.</p>
+          <p className="login-copy">Ingresa para revisar prospectos de prueba de forma manual y controlada.</p>
           <form className="form-stack" onSubmit={handleSignIn}>
             <label className="field-label">
               Email
@@ -190,7 +163,7 @@ export default function ProspectCleanupPage() {
         <header className="topbar">
           <div>
             <p className="eyebrow">Prospección</p>
-            <h1>Limpieza manual de prospectos</h1>
+            <h1>Revisión manual de prospectos</h1>
           </div>
           <div className="topbar-actions">
             <Link className="btn btn-secondary" href="/prospectos">Volver a listas</Link>
@@ -207,7 +180,7 @@ export default function ProspectCleanupPage() {
           <div className="panel-toolbar">
             <div>
               <p className="panel-kicker">Solo uso manual</p>
-              <h2>Eliminar prospectos de prueba</h2>
+              <h2>Prospectos de prueba</h2>
             </div>
             <span className="result-count">{filteredProspects.length}</span>
           </div>
@@ -233,7 +206,6 @@ export default function ProspectCleanupPage() {
                   <th>Lista</th>
                   <th>Estado</th>
                   <th>Contactos</th>
-                  <th>Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,12 +220,6 @@ export default function ProspectCleanupPage() {
                       <td>{list?.name || "Sin lista"}</td>
                       <td>{prospect.status || "Sin estado"}</td>
                       <td>{getContactCount(prospect.id)}</td>
-                      <td>
-                        <button className="btn btn-secondary compact" type="button" disabled={deletingId === prospect.id} onClick={() => void deleteProspect(prospect)}>
-                          <Trash2 size={14} />
-                          {deletingId === prospect.id ? "Eliminando" : "Eliminar"}
-                        </button>
-                      </td>
                     </tr>
                   );
                 })}

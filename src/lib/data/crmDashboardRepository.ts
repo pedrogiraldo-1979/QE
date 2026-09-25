@@ -18,11 +18,11 @@ export function fetchCrmDashboard(client: CrmSupabaseClient) {
 }
 
 export function fetchPendingCustomerUpdates(client: CrmSupabaseClient) {
-  return client.rpc("get_cu_pending_reviews");
+  return client.rpc("admin_get_cu_pending_reviews");
 }
 
 export function fetchMasterSyncQueue(client: CrmSupabaseClient) {
-  return client.rpc("get_cu_master_sync_queue");
+  return client.rpc("admin_get_cu_master_sync_queue");
 }
 
 export function reviewCustomerUpdate(
@@ -30,12 +30,12 @@ export function reviewCustomerUpdate(
   action: "approve" | "reject",
   responseId: string,
 ) {
-  const rpcName = action === "approve" ? "approve_cu_response" : "reject_cu_response";
+  const rpcName = action === "approve" ? "admin_approve_cu_response" : "admin_reject_cu_response";
   return client.rpc(rpcName, { p_response_id: responseId });
 }
 
 export function completeMasterSync(client: CrmSupabaseClient, responseId: string) {
-  return client.rpc("complete_cu_master_sync", {
+  return client.rpc("admin_complete_cu_master_sync", {
     p_response_id: responseId,
     p_notes: "Hoja1 y contactos_base reconciliados",
   });
