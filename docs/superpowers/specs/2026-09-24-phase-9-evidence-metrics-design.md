@@ -3,7 +3,7 @@
 ## Estado del documento
 
 - Fecha: 2026-09-24.
-- Estado: propuesta funcional alineada con el alcance aprobado; pendiente de revisión del documento y de su plan de implementación.
+- Estado: diseño funcional aprobado e implementado documentalmente; pendiente de revisión y merge del PR.
 - Baseline: `main` en `14c77ca` después de fusionar el PR #29 de la base RBAC.
 - Criterios de Fase 9 cubiertos: `P9-COV-01..02` y `P9-MET-01..03`.
 - Tipo de entrega: especificación documental. No autoriza instrumentación, proveedores, cambios de código, migraciones, RLS, Auth, RPC, Edge Functions, secretos ni datos.
