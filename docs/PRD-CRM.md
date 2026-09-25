@@ -252,9 +252,20 @@ El contrato:
 
 Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. La base RBAC cuenta con evidencia aislada, pero su publicación y cualquier cambio compartido siguen requiriendo release y reversión aprobados. Auditoría, eliminación lógica, recuperación y el nuevo ciclo público permanecen sin implementar y necesitan unidades separadas.
 
+### Evidencia operable y métricas aprobadas — Etapa 3
+
+La Etapa 3 queda cerrada como contrato documental mediante la [matriz de cobertura](./PHASE-9-COVERAGE.md), el [catálogo de métricas](./PHASE-9-METRICS.md) y `D-029`.
+
+El contrato:
+
+- relaciona los 25 criterios `P9-*` con evidencia, vacío, responsable y gate de cierre;
+- define siete métricas agregadas con fórmula, fuente propuesta, granularidad, zona horaria, frecuencia, objetivo, acción, privacidad y retención;
+- mantiene todas las métricas en estado `no_instrumentada` y distingue evidencia documental, aislada y publicada;
+- conserva el release RBAC como gate independiente antes de declararlo activo en un entorno compartido.
+
+Los criterios `P9-COV-01..02` y `P9-MET-01..03` quedan cubiertos documentalmente. Ningún registro de esta etapa autoriza telemetría, lecturas operativas de datos, almacenamiento, dashboards, alertas, proveedores, cambios de código o cambios de Supabase.
+
 ### Decisiones pendientes
-- cobertura mínima automatizada por flujo y evidencia manual aceptable;
-- catálogo inicial de métricas, objetivos, responsables y política de privacidad;
 - orden definitivo de bridges y criterio de salida de cada sustitución;
 - política de paginación con orden estable antes de superar 1.000 entidades por dominio.
 
