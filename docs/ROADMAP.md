@@ -85,11 +85,15 @@ Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBA
 
 #### Etapa 3 — Evidencia operable
 
-- mapear criterios del PRD a pruebas unitarias, contratos, integración, smoke o evidencia manual;
-- registrar vacíos de cobertura, responsables y gates;
-- definir métricas con fórmula, fuente, granularidad, zona horaria, frecuencia, objetivo, responsable, privacidad y retención.
+Estado: cerrada documentalmente el 2026-09-24.
 
-Gate: matriz de cobertura revisada, criterios `P9-COV` y `P9-MET` aceptados y ninguna telemetría o dependencia externa introducida sin aprobación.
+- la [matriz de cobertura](./PHASE-9-COVERAGE.md) vincula los 25 criterios `P9-*` con evidencia, vacío, responsable y gate;
+- el [catálogo de métricas](./PHASE-9-METRICS.md) define siete métricas agregadas, con estado `no_instrumentada`;
+- `D-029` registra el contrato y mantiene el release RBAC como trabajo independiente.
+
+Gate: cumplido como documentación mediante la matriz, el catálogo y `D-029`; los criterios `P9-COV` y `P9-MET` no habilitan instrumentación ni proveedores.
+
+Seguimiento condicionado: instrumentación, dashboards, retención almacenada, alertas o proveedores requieren una decisión, revisión de privacidad, plan y autorización propios.
 
 #### Etapa 4 — Mantenibilidad incremental
 

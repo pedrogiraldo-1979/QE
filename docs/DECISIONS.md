@@ -280,6 +280,17 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Consecuencias: la interfaz puede buscar, filtrar, editar y resumir la campaña separadamente. La lista maestra y los estados heredados no se reescriben de forma masiva.
 - Evidencia/verificación: migración `20260826000000_add_prospect_campaign_targeting.sql`, 31 prospectos y 31 contactos de canal público verificados en `QE2026`, sin duplicados de campaña ni cruces con `COLEGIO NUEVA YORK` o `COLEGIO GIMNASIO DEL NORTE`.
 
+## D-029 — Aprobar evidencia operable y catálogo de métricas
+
+- Estado: Aceptada
+- Fecha: 2026-09-24
+- Responsable: Pedro
+- Contexto: la Fase 9 disponía de decisiones, pruebas y gates distribuidos, pero no de una matriz única que mostrara los vacíos por criterio ni de definiciones operables de métricas antes de instrumentar.
+- Decisión: adoptar la [matriz de cobertura P9](./PHASE-9-COVERAGE.md) y el [catálogo de siete métricas agregadas](./PHASE-9-METRICS.md), todas en estado `no_instrumentada`.
+- Restricción: no autoriza captura, almacenamiento, consultas operativas, dashboards, alertas, proveedores, variables de entorno, cambios de código ni Supabase.
+- Consecuencia: los vacíos y gates quedan visibles por criterio; toda instrumentación requiere una decisión y entrega posteriores. El release RBAC conserva su gate independiente.
+- Evidencia/verificación: [diseño de evidencia y métricas](./superpowers/specs/2026-09-24-phase-9-evidence-metrics-design.md), revisión documental de los 25 criterios `P9-*`, validación de integridad y `git diff --check`.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
