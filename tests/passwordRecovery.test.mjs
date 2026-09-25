@@ -26,3 +26,11 @@ test("el acceso principal enlaza la recuperación", async () => {
   const source = await readFile("src/app/page.tsx", "utf8");
   assert.match(source, /href="\/recuperar-clave"/);
 });
+
+test("la solicitud de recuperación usa Supabase sin revelar cuentas", async () => {
+  const source = await readFile("src/app/recuperar-clave/page.tsx", "utf8");
+  assert.match(source, /resetPasswordForEmail\(/);
+  assert.match(source, /recoveryRedirectUrl\(window\.location\.origin\)/);
+  assert.match(source, /RECOVERY_REQUEST_CONFIRMATION/);
+  assert.doesNotMatch(source, /service_role|console\.log|pedro\.giraldo@/);
+});
