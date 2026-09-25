@@ -11,6 +11,8 @@ const requiredEnvironment = [
   "QE_TEST_CONFIRM_DISPOSABLE_PROJECT",
   "QE_TEST_ADMIN_EMAIL",
   "QE_TEST_ADMIN_PASSWORD",
+  "QE_TEST_MEMBER_EMAIL",
+  "QE_TEST_MEMBER_PASSWORD",
   "QE_TEST_OUTSIDER_EMAIL",
   "QE_TEST_OUTSIDER_PASSWORD",
 ];
@@ -62,6 +64,7 @@ function assertNoError(result) {
 test("flujos críticos contra Supabase aislado", async (t) => {
   const anon = client();
   const admin = await signIn(process.env.QE_TEST_ADMIN_EMAIL, process.env.QE_TEST_ADMIN_PASSWORD);
+  const member = await signIn(process.env.QE_TEST_MEMBER_EMAIL, process.env.QE_TEST_MEMBER_PASSWORD);
   const outsider = await signIn(process.env.QE_TEST_OUTSIDER_EMAIL, process.env.QE_TEST_OUTSIDER_PASSWORD);
   const suffix = randomUUID();
   const ids = {
@@ -74,8 +77,7 @@ test("flujos críticos contra Supabase aislado", async (t) => {
     prospectActivity: randomUUID(),
   };
   const token = `phase6-${suffix}`;
-  let convertedCompanyId = null;
-
+  let approvedResponseId = null;
   try {
     await t.test("anon no puede leer tablas directamente", async () => {
       const result = await anon.from("companies").select("id").limit(1);
@@ -89,6 +91,21 @@ test("flujos críticos contra Supabase aislado", async (t) => {
 
       const result = await outsider.from("companies").select("id");
       assert.deepEqual(assertNoError(result), []);
+    });
+
+    await t.test("expone el rol vigente sin confiar en metadata", async () => {
+      assert.deepEqual(assertNoError(await admin.rpc("get_crm_session_context")), {
+        authorized: true,
+        role: "admin",
+      });
+      assert.deepEqual(assertNoError(await member.rpc("get_crm_session_context")), {
+        authorized: true,
+        role: "member",
+      });
+      assert.deepEqual(assertNoError(await outsider.rpc("get_crm_session_context")), {
+        authorized: false,
+        role: null,
+      });
     });
 
     await t.test("admin autorizado crea el fixture de ejecución", async () => {
@@ -167,6 +184,33 @@ test("flujos críticos contra Supabase aislado", async (t) => {
       assert.equal(oversized.error?.code, "22001");
     });
 
+    await t.test("member conserva trabajo comercial y no accede a operaciones administrativas", async () => {
+      assertNoError(await member
+        .from("companies")
+        .update({ notes: "Seguimiento actualizado por member" })
+        .eq("id", ids.company));
+
+      const pendingReviews = await member.rpc("admin_get_cu_pending_reviews");
+      assert.equal(pendingReviews.error?.code, "42501");
+
+      const masterSyncQueue = await member.rpc("admin_get_cu_master_sync_queue");
+      assert.equal(masterSyncQueue.error?.code, "42501");
+
+      const linkInsert = await member.from("cu_links").insert({
+        company_id: ids.company,
+        token: `member-denied-${suffix}`,
+        is_active: true,
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      });
+      assert.equal(linkInsert.error?.code, "42501");
+
+      const hardDelete = await member.from("companies").delete().eq("id", ids.company);
+      assert.equal(hardDelete.error?.code, "42501");
+
+      const legacyReview = await member.rpc("approve_cu_response", { p_response_id: randomUUID() });
+      assert.equal(legacyReview.error?.code, "42501");
+    });
+
     await t.test("rechazo y aprobación son transiciones terminales", async () => {
       const originalLegalName = `Empresa integración ${suffix} SAS`;
       const rejectedName = `No debe aplicarse ${suffix}`;
@@ -175,8 +219,8 @@ test("flujos críticos contra Supabase aislado", async (t) => {
         p_payload: { razon_social_nueva: rejectedName },
       }));
 
-      assertNoError(await admin.rpc("reject_cu_response", { p_response_id: rejectedResponseId }));
-      assertNoError(await admin.rpc("approve_cu_response", { p_response_id: rejectedResponseId }));
+      assertNoError(await admin.rpc("admin_reject_cu_response", { p_response_id: rejectedResponseId }));
+      assertNoError(await admin.rpc("admin_approve_cu_response", { p_response_id: rejectedResponseId }));
 
       const rejected = assertNoError(await admin
         .from("cu_responses")
@@ -193,13 +237,13 @@ test("flujos críticos contra Supabase aislado", async (t) => {
       assert.equal(unchanged.legal_name, originalLegalName);
 
       const approvedName = `Empresa aprobada ${suffix} SAS`;
-      const approvedResponseId = assertNoError(await anon.rpc("submit_cu_form", {
+      approvedResponseId = assertNoError(await anon.rpc("submit_cu_form", {
         p_token: token,
         p_payload: { razon_social_nueva: approvedName },
       }));
 
-      assertNoError(await admin.rpc("approve_cu_response", { p_response_id: approvedResponseId }));
-      assertNoError(await admin.rpc("reject_cu_response", { p_response_id: approvedResponseId }));
+      assertNoError(await admin.rpc("admin_approve_cu_response", { p_response_id: approvedResponseId }));
+      assertNoError(await admin.rpc("admin_reject_cu_response", { p_response_id: approvedResponseId }));
 
       const approved = assertNoError(await admin
         .from("cu_responses")
@@ -216,17 +260,41 @@ test("flujos críticos contra Supabase aislado", async (t) => {
       assert.equal(changed.legal_name, approvedName);
     });
 
+    await t.test("admin consulta y completa la conciliación de maestros", async () => {
+      assert.ok(approvedResponseId);
+
+      const queue = assertNoError(await admin.rpc("admin_get_cu_master_sync_queue"));
+      assert.ok(queue.some((item) => item.response_id === approvedResponseId));
+
+      const memberCompletion = await member.rpc("admin_complete_cu_master_sync", {
+        p_response_id: approvedResponseId,
+        p_notes: "No autorizado",
+      });
+      assert.equal(memberCompletion.error?.code, "42501");
+
+      assertNoError(await admin.rpc("admin_complete_cu_master_sync", {
+        p_response_id: approvedResponseId,
+        p_notes: "Conciliación sintética verificada",
+      }));
+
+      const completed = assertNoError(await admin
+        .from("cu_responses")
+        .select("master_sync_status")
+        .eq("id", approvedResponseId)
+        .single());
+      assert.equal(completed.master_sync_status, "sincronizado");
+    });
+
     await t.test("conversión es idempotente", async () => {
-      const first = assertNoError(await admin.rpc("convert_prospect_to_company", {
+      const first = assertNoError(await member.rpc("convert_prospect_to_company", {
         p_prospect_id: ids.convertProspect,
         p_notes: "Integración Fase 6",
       }));
-      const second = assertNoError(await admin.rpc("convert_prospect_to_company", {
+      const second = assertNoError(await member.rpc("convert_prospect_to_company", {
         p_prospect_id: ids.convertProspect,
         p_notes: "Reintento integración Fase 6",
       }));
 
-      convertedCompanyId = first.id;
       assert.equal(second.id, first.id);
 
       const matches = assertNoError(await admin
@@ -236,32 +304,15 @@ test("flujos críticos contra Supabase aislado", async (t) => {
       assert.equal(matches.length, 1);
     });
 
-    await t.test("borrado de prospecto es idempotente y en cascada", async () => {
-      assert.equal(assertNoError(await admin.rpc("delete_prospect", {
-        p_prospect_id: ids.deleteProspect,
-      })), true);
-      assert.equal(assertNoError(await admin.rpc("delete_prospect", {
-        p_prospect_id: ids.deleteProspect,
-      })), false);
-
-      const contacts = assertNoError(await admin
-        .from("prospect_contacts")
-        .select("id")
-        .eq("prospect_id", ids.deleteProspect));
-      const activities = assertNoError(await admin
-        .from("prospect_activities")
-        .select("id")
-        .eq("prospect_id", ids.deleteProspect));
-      assert.deepEqual(contacts, []);
-      assert.deepEqual(activities, []);
+    await t.test("ningún rol puede ejecutar borrado físico", async () => {
+      const adminDelete = await admin.rpc("delete_prospect", { p_prospect_id: ids.deleteProspect });
+      const memberDelete = await member.rpc("delete_prospect", { p_prospect_id: ids.deleteProspect });
+      assert.equal(adminDelete.error?.code, "42501");
+      assert.equal(memberDelete.error?.code, "42501");
     });
   } finally {
-    await admin.rpc("delete_prospect", { p_prospect_id: ids.convertProspect });
-    await admin.from("prospect_lists").delete().eq("id", ids.list);
-    await admin.from("companies").delete().eq("id", ids.company);
-    if (convertedCompanyId) {
-      await admin.from("companies").delete().eq("id", convertedCompanyId);
-    }
-    await Promise.all([admin.auth.signOut(), outsider.auth.signOut()]);
+    // RBAC revoca todo DELETE para clientes: la limpieza de fixtures corresponde
+    // al orquestador privilegiado del proyecto desechable tras finalizar la suite.
+    await Promise.all([admin.auth.signOut(), member.auth.signOut(), outsider.auth.signOut()]);
   }
 });

@@ -18,7 +18,7 @@ import {
 } from "@/features/crm/dashboardModel";
 import type { Activity, Company, Contact, Prospect, ProspectActivity } from "@/lib/types";
 
-export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolean) {
+export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolean, adminEnabled: boolean) {
   const [data, setData] = useState<DashboardData>(initialData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,6 +32,12 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
   const [processingMasterSyncId, setProcessingMasterSyncId] = useState<string | null>(null);
 
   const loadMasterSyncQueue = useCallback(async () => {
+    if (!adminEnabled) {
+      setMasterSyncQueue([]);
+      setMasterSyncError(null);
+      setMasterSyncLoading(false);
+      return;
+    }
     setMasterSyncLoading(true);
     setMasterSyncError(null);
     const { data: queue, error } = await fetchMasterSyncQueue(supabase);
@@ -45,9 +51,15 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
 
     setMasterSyncQueue((queue || []) as MasterSyncItem[]);
     setMasterSyncLoading(false);
-  }, [supabase]);
+  }, [adminEnabled, supabase]);
 
   const loadCustomerResponses = useCallback(async () => {
+    if (!adminEnabled) {
+      setCustomerResponses([]);
+      setCustomerResponsesError(null);
+      setCustomerResponsesLoading(false);
+      return;
+    }
     setCustomerResponsesLoading(true);
     setCustomerResponsesError(null);
     const { data: responses, error } = await fetchPendingCustomerUpdates(supabase);
@@ -61,7 +73,7 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
 
     setCustomerResponses(((responses || []) as CustomerUpdateResponse[]).filter((response) => Boolean(getResponseId(response))));
     setCustomerResponsesLoading(false);
-  }, [supabase]);
+  }, [adminEnabled, supabase]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -92,8 +104,17 @@ export function useCrmDashboardData(supabase: CrmSupabaseClient, enabled: boolea
       setMessage(prospectsResult.error?.message || prospectActivitiesResult.error?.message || "No pudimos cargar prospección.");
     }
     setLoading(false);
-    void Promise.all([loadCustomerResponses(), loadMasterSyncQueue()]);
-  }, [loadCustomerResponses, loadMasterSyncQueue, supabase]);
+    if (adminEnabled) {
+      void Promise.all([loadCustomerResponses(), loadMasterSyncQueue()]);
+    } else {
+      setCustomerResponses([]);
+      setCustomerResponsesError(null);
+      setCustomerResponsesLoading(false);
+      setMasterSyncQueue([]);
+      setMasterSyncError(null);
+      setMasterSyncLoading(false);
+    }
+  }, [adminEnabled, loadCustomerResponses, loadMasterSyncQueue, supabase]);
 
   useEffect(() => {
     if (enabled) void loadData();

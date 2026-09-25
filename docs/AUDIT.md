@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
+
+- Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.
+- La suite mutante pasó 11/11: sesión anónima denegada, identidad externa sin filas, contexto de rol, trabajo comercial de `member`, denegación de enlaces/revisión/borrado, transiciones administrativas terminales, cola y conciliación de maestros, conversión idempotente y bloqueo de borrado físico para ambos roles.
+- `src/lib/database.types.ts` se regeneró desde el proyecto temporal tras comprobar la migración y conserva los contratos `admin_*` y `get_crm_session_context`.
+- Los fixtures creados durante la prueba se eliminaron por marcas sintéticas; la comprobación final devolvió cero empresas, contactos, enlaces, respuestas, listas y prospectos de prueba. Las tres cuentas sintéticas y sus membresías también se eliminaron; el proyecto temporal terminó pausado.
+- Los avisos de advisor se revisaron: los formularios públicos por token y los wrappers `admin_*` son `SECURITY DEFINER` intencionales. Los wrappers verifican el rol en backend; la protección de contraseñas filtradas y las tablas privadas sin política pública continúan como avisos conocidos.
+- El SQL de reversión de RBAC se ensayó en el mismo proyecto temporal y la migración se reaplicó sin errores; el procedimiento queda en [`PHASE-9-RBAC-ROLLBACK.md`](./PHASE-9-RBAC-ROLLBACK.md).
+- Esta evidencia cubre sólo la base RBAC. Auditoría de negocio, eliminación lógica/restauración, administración de membresías y el nuevo ciclo público de enlaces siguen fuera de esta entrega.
+
 ## 26. Cierre documental de la Fase 9, Etapa 2 — 2026-07-21
 
 - El PR #26 publicó la especificación aprobada de gobierno y recuperación junto con el primer plan independiente de RBAC.

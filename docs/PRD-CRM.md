@@ -240,7 +240,7 @@ Los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptado
 
 ### Gobierno y recuperación aprobados — Etapa 2
 
-La Etapa 2 quedó aprobada e integrada mediante la [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md) y se registra como `D-027` en [DECISIONS.md](./DECISIONS.md). El [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) es la primera unidad técnica propuesta y conserva un gate de ejecución independiente.
+La Etapa 2 quedó aprobada e integrada mediante la [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md) y se registra como `D-027` en [DECISIONS.md](./DECISIONS.md). La base del [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) fue validada en un proyecto desechable el 2026-09-24 y conserva un gate de release independiente antes de cualquier entorno compartido.
 
 El contrato:
 
@@ -250,7 +250,7 @@ El contrato:
 - excluye la purga definitiva de la aplicación y exige un procedimiento excepcional;
 - establece un enlace por ciclo, una sola respuesta válida y estados terminales sin reapertura.
 
-Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. Aceptarlos no implementa RLS, RPC, Auth, auditoría, eliminación lógica, recuperación ni el nuevo ciclo público; cada unidad necesita plan, aprobación, reversión y pruebas aisladas.
+Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. La base RBAC cuenta con evidencia aislada, pero su publicación y cualquier cambio compartido siguen requiriendo release y reversión aprobados. Auditoría, eliminación lógica, recuperación y el nuevo ciclo público permanecen sin implementar y necesitan unidades separadas.
 
 ### Decisiones pendientes
 - cobertura mínima automatizada por flujo y evidencia manual aceptable;

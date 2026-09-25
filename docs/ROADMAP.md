@@ -81,7 +81,7 @@ Estado: cerrada documentalmente el 2026-07-21.
 
 Gate: cumplido mediante la especificación aprobada y `D-027`; los criterios `P9-RBAC`, `P9-AUD` y `P9-CU` quedan aceptados sin cambios de backend ni datos.
 
-Evidencia: PR #26 publicó la especificación y el primer plan RBAC. El plan no está ejecutado; RLS, Auth, RPC, esquema, auditoría, recuperación y datos conservan autorizaciones independientes.
+Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBAC se implementó y validó en un proyecto Supabase desechable el 2026-09-24; su publicación en un entorno compartido conserva un gate de release independiente. Auditoría, recuperación, administración de membresías, nuevo ciclo público y datos conservan planes y autorizaciones propios.
 
 #### Etapa 3 — Evidencia operable
 

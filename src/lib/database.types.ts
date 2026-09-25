@@ -1,5 +1,3 @@
-// Generated from the verified isolated migration replay on 2026-07-21.
-// Regenerate after production applies the migration; do not maintain table or RPC shapes manually.
 export type Json =
   | string
   | number
@@ -605,12 +603,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      approve_cu_response: {
+      admin_approve_cu_response: {
         Args: { p_response_id: string }
         Returns: undefined
       }
-      complete_cu_master_sync: {
+      admin_complete_cu_master_sync: {
         Args: { p_notes?: string; p_response_id: string }
+        Returns: undefined
+      }
+      admin_get_cu_master_sync_queue: {
+        Args: never
+        Returns: {
+          cliente: string
+          company_id: string
+          company_phone: string
+          direccion: string
+          nit: string
+          payload: Json
+          primary_contact: Json
+          razon_social: string
+          response_id: string
+          reviewed_at: string
+          secondary_contacts: Json
+          segmento: string
+        }[]
+      }
+      admin_get_cu_pending_reviews: {
+        Args: never
+        Returns: {
+          cliente: string
+          company_id: string
+          correo_actual: string
+          created_at: string
+          direccion_actual: string
+          nit_actual: string
+          payload: Json
+          razon_social_actual: string
+          response_id: string
+          status: string
+          telefono_actual: string
+        }[]
+      }
+      admin_reject_cu_response: {
+        Args: { p_response_id: string }
+        Returns: undefined
+      }
+      approve_cu_response: {
+        Args: { p_response_id: string }
         Returns: undefined
       }
       claim_campaign_pilot_batch: {
@@ -635,6 +674,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      complete_cu_master_sync: {
+        Args: { p_notes?: string; p_response_id: string }
+        Returns: undefined
       }
       convert_prospect_to_company: {
         Args: { p_notes?: string; p_prospect_id: string }
@@ -661,13 +704,14 @@ export type Database = {
         }
       }
       delete_prospect: { Args: { p_prospect_id: string }; Returns: boolean }
+      get_crm_session_context: { Args: never; Returns: Json }
       get_cu_form: { Args: { p_token: string }; Returns: Json }
       get_cu_master_sync_queue: {
         Args: never
         Returns: {
+          cliente: string
           company_id: string
           company_phone: string
-          cliente: string
           direccion: string
           nit: string
           payload: Json
@@ -722,12 +766,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -751,11 +795,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -776,11 +820,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -801,11 +845,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -818,11 +862,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

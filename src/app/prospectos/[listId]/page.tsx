@@ -22,7 +22,6 @@ import {
   ShieldCheck,
   Tag,
   Target,
-  Trash2,
   UserRound,
   UsersRound,
   X,
@@ -375,32 +374,6 @@ export default function ProspectListDetailPage() {
     setMessage(`Estado actualizado: ${statusLabels[status] || status}.`);
   }
 
-  async function deleteSelectedProspect() {
-    if (!selectedProspect) return;
-
-    const prospectName = getProspectName(selectedProspect);
-    const confirmed = window.confirm(
-      `¿Eliminar el prospecto ${prospectName}? Esta acción borra solo la empresa prospecto y sus contactos prospecto. No toca clientes CRM ni contactos CRM reales.`
-    );
-
-    if (!confirmed) return;
-
-    const prospectId = selectedProspect.id;
-    const { error } = await supabase.rpc("delete_prospect", { p_prospect_id: prospectId });
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    const remainingProspects = prospects.filter((prospect) => prospect.id !== prospectId);
-    setProspects(remainingProspects);
-    setContacts((current) => current.filter((contact) => contact.prospect_id !== prospectId));
-    setSelectedProspectId(remainingProspects[0]?.id || null);
-    setEditingContactId(null);
-    setMessage(`Prospecto eliminado: ${prospectName}.`);
-  }
-
   async function addContact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedProspect || !newContact.full_name.trim()) return;
@@ -470,22 +443,6 @@ export default function ProspectListDetailPage() {
     setEditingContactId(null);
     setEditContact(emptyContactForm);
     setMessage("Contacto prospecto actualizado.");
-  }
-
-  async function deleteContact(contact: ProspectContact) {
-    const confirmed = window.confirm(`¿Eliminar el contacto prospecto ${contact.full_name || "sin nombre"}? Esta acción solo borra el contacto prospecto, no clientes CRM.`);
-    if (!confirmed) return;
-
-    const { error } = await supabase.from("prospect_contacts").delete().eq("id", contact.id);
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    setContacts((current) => current.filter((item) => item.id !== contact.id));
-    if (editingContactId === contact.id) setEditingContactId(null);
-    setMessage("Contacto prospecto eliminado.");
   }
 
   const normalizedSearch = search.trim().toLowerCase();
@@ -796,17 +753,6 @@ export default function ProspectListDetailPage() {
                   </label>
                 </div>
 
-                <section className="detail-section">
-                  <div className="section-title-row">
-                    <h3>Acciones del prospecto</h3>
-                  </div>
-                  <button className="btn btn-secondary full-width" type="button" onClick={() => void deleteSelectedProspect()}>
-                    <Trash2 size={17} />
-                    Eliminar prospecto
-                  </button>
-                  <p className="helper-text">Borra solo esta empresa prospecto y sus contactos prospecto. No toca clientes CRM.</p>
-                </section>
-
                 <QualityPanel matches={selectedDuplicateMatches} readiness={selectedReadiness} />
 
                 <section className="detail-section">
@@ -832,7 +778,6 @@ export default function ProspectListDetailPage() {
                         onStartEdit={() => startEditingContact(contact)}
                         onCancelEdit={() => { setEditingContactId(null); setEditContact(emptyContactForm); }}
                         onSave={(event) => void updateContact(event, contact)}
-                        onDelete={() => void deleteContact(contact)}
                       />
                     )) : <EmptyState title="Sin contactos" description="Agrega compras, rectoría, administración o persona operativa." />}
                   </div>
@@ -934,7 +879,6 @@ function EditableProspectContactCard({
   onStartEdit,
   onCancelEdit,
   onSave,
-  onDelete,
 }: {
   contact: ProspectContact;
   isEditing: boolean;
@@ -943,7 +887,6 @@ function EditableProspectContactCard({
   onStartEdit: () => void;
   onCancelEdit: () => void;
   onSave: (event: FormEvent<HTMLFormElement>) => void;
-  onDelete: () => void;
 }) {
   const validation = validateProspectContact(contact);
 
@@ -982,7 +925,6 @@ function EditableProspectContactCard({
           </div>
           <div className="row-actions">
             <button className="btn btn-secondary compact" type="button" onClick={onStartEdit}><Pencil size={14} />Editar</button>
-            <button className="btn btn-secondary compact" type="button" onClick={onDelete}><Trash2 size={14} />Eliminar</button>
           </div>
         </div>
         <div className="contact-links">

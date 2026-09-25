@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
 import { useCrmDashboardData } from "@/hooks/useCrmDashboardData";
+import { coerceDataTabForRole, getAllowedDataTabs } from "@/features/crm/authorizationModel";
 import { HomePanel } from "@/components/crm/HomePanel";
 import { MetricCard } from "@/components/crm/MetricCard";
 import { NavButton } from "@/components/crm/NavButton";
@@ -93,7 +94,7 @@ import {
 
 export default function HomePage() {
   const router = useRouter();
-  const { supabase, sessionReady, isAuthenticated, signIn, signOut } = useCrmSession();
+  const { supabase, sessionReady, isAuthenticated, role, isAdmin, signIn, signOut } = useCrmSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -118,7 +119,7 @@ export default function HomePage() {
     reviewCustomerResponse,
     markMasterSyncComplete,
     resetData,
-  } = useCrmDashboardData(supabase, isAuthenticated);
+  } = useCrmDashboardData(supabase, isAuthenticated, isAdmin);
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
@@ -137,6 +138,11 @@ export default function HomePage() {
   const [newProspectActivityType, setNewProspectActivityType] = useState<ActivityType>("follow_up");
   const [newProspectActivityDueDate, setNewProspectActivityDueDate] = useState("");
   const [convertingProspectId, setConvertingProspectId] = useState<string | null>(null);
+  const allowedDataTabs = getAllowedDataTabs(role);
+
+  useEffect(() => {
+    setDataTab((current) => coerceDataTabForRole(current, role));
+  }, [role]);
 
   useEffect(() => {
     setSelectedCompanyId((current) => (current && data.companies.some((company) => company.id === current) ? current : null));
@@ -656,7 +662,7 @@ export default function HomePage() {
             <h1>{getPageTitle(viewMode)}</h1>
           </div>
           <div className="topbar-actions">
-            {viewMode === "data" ? (
+            {isAdmin && viewMode === "data" ? (
               <button className="btn btn-secondary" type="button" onClick={() => handlePreparedAction("Enviar formulario de actualización")}>
                 <Mail size={17} />
                 Enviar formulario de actualización
@@ -748,28 +754,32 @@ export default function HomePage() {
                   >
                     Datos pendientes
                   </button>
-                  <button
-                    className={`subtab ${dataTab === "responses" ? "active" : ""}`}
-                    type="button"
-                    onClick={() => {
-                      setDataTab("responses");
-                      void loadCustomerResponses();
-                    }}
-                  >
-                    Respuestas de clientes
-                    <span>{customerResponses.length}</span>
-                  </button>
-                  <button
-                    className={`subtab ${dataTab === "sync" ? "active" : ""}`}
-                    type="button"
-                    onClick={() => {
-                      setDataTab("sync");
-                      void loadMasterSyncQueue();
-                    }}
-                  >
-                    Pendiente maestros
-                    <span>{masterSyncQueue.length}</span>
-                  </button>
+                  {allowedDataTabs.includes("responses") ? (
+                    <button
+                      className={`subtab ${dataTab === "responses" ? "active" : ""}`}
+                      type="button"
+                      onClick={() => {
+                        setDataTab("responses");
+                        void loadCustomerResponses();
+                      }}
+                    >
+                      Respuestas de clientes
+                      <span>{customerResponses.length}</span>
+                    </button>
+                  ) : null}
+                  {allowedDataTabs.includes("sync") ? (
+                    <button
+                      className={`subtab ${dataTab === "sync" ? "active" : ""}`}
+                      type="button"
+                      onClick={() => {
+                        setDataTab("sync");
+                        void loadMasterSyncQueue();
+                      }}
+                    >
+                      Pendiente maestros
+                      <span>{masterSyncQueue.length}</span>
+                    </button>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -868,7 +878,7 @@ export default function HomePage() {
                 />
               ) : null}
               {viewMode === "data" && dataTab === "pending" ? <DataIssuesTable issues={filteredDataIssues} onSelectCompany={handleCompanySelect} /> : null}
-              {viewMode === "data" && dataTab === "responses" ? (
+              {viewMode === "data" && isAdmin && dataTab === "responses" ? (
                 <CustomerResponsesTable
                   responses={filteredCustomerResponses}
                   loading={customerResponsesLoading}
@@ -879,7 +889,7 @@ export default function HomePage() {
                   onRetry={() => void loadCustomerResponses()}
                 />
               ) : null}
-              {viewMode === "data" && dataTab === "sync" ? (
+              {viewMode === "data" && isAdmin && dataTab === "sync" ? (
                 <MasterSyncTable
                   items={filteredMasterSyncQueue}
                   loading={masterSyncLoading}
