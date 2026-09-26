@@ -34,6 +34,8 @@ Las seis entradas remotas posteriores sin archivo local son `20260722031506`, `2
 
 Revalidación de solo lectura posterior: los cuatro pares incrementales de misma versión, los tres pares de timestamps distintos y RBAC coinciden al normalizar comentarios y espacios. Siete de los ocho también coinciden como texto normalizado a LF; el octavo (`20260720031715`) sólo tiene un comentario local adicional. El SQL RBAC remoto coincide textualmente con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`. La baseline y la allowlist no son equivalentes; el contenido de la siembra de membresías no se publicó ni imprimió.
 
+Inventario inicial de las 19 entradas sólo remotas: las 13 primeras crean o ajustan enlaces/respuestas de clientes, prospección, políticas, grants y funciones; las seis posteriores ajustan precarga/revisión y lotes de campaña. Tres contienen un `UPDATE` de nivel superior sobre filas preexistentes: `20260707013441` normaliza campos de `contacts`, `20260722034019` rellena `campaign_pilot_recipients.batch_key` antes de hacerlo no nulo y `20260722142520` reconcilia `cu_responses.confirm_no_changes` con su payload. Otras funciones contienen DML en su cuerpo ejecutable al invocarlas; eso no equivale a DML de la migración. Ninguna de estas entradas debe repetirse en QE2026 para “igualar” el historial.
+
 ## Archivos previstos
 
 - Modificar, sólo tras decisión: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
@@ -47,7 +49,7 @@ Revalidación de solo lectura posterior: los cuatro pares incrementales de misma
 - [ ] Conservar hashes del SQL original y normalizado en una matriz revisable. La revalidación comparó ya el contenido de los cuatro pares de misma versión y los tres pares de distinto timestamp, pero aún no produjo esa matriz de hashes.
 - [x] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
 - [x] Contrastar el SQL RBAC remoto registrado con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; la comparación textual normalizada a LF fue idéntica.
-- [ ] Inventariar las 19 entradas sólo remotas por objeto afectado y si contienen DML, identidades o dependencias de entorno; no exportar su contenido sensible a Git.
+- [ ] Completar la revisión de las 19 entradas sólo remotas por objeto, DML de nivel superior, identidades y dependencias de entorno. La primera pasada detectó tres backfills históricos al separar cuerpos de funciones; aún falta una matriz revisable y un examen manual del SQL completo antes de dar por exhaustivo el inventario.
 
 ### Tarea 2: reproducción aislada y comparación de estado
 
