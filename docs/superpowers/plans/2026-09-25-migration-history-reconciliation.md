@@ -36,6 +36,24 @@ Revalidación de solo lectura posterior: los cuatro pares incrementales de misma
 
 Inventario inicial de las 19 entradas sólo remotas: las 13 primeras crean o ajustan enlaces/respuestas de clientes, prospección, políticas, grants y funciones; las seis posteriores ajustan precarga/revisión y lotes de campaña. Tres contienen un `UPDATE` de nivel superior sobre filas preexistentes: `20260707013441` normaliza campos de `contacts`, `20260722034019` rellena `campaign_pilot_recipients.batch_key` antes de hacerlo no nulo y `20260722142520` reconcilia `cu_responses.confirm_no_changes` con su payload. Otras funciones contienen DML en su cuerpo ejecutable al invocarlas; eso no equivale a DML de la migración. Ninguna de estas entradas debe repetirse en QE2026 para “igualar” el historial.
 
+## Resultado del ensayo aislado aprobado
+
+Pedro confirmó la organización «Quindi Exquisito», el costo indicado por Supabase ($0/mes) y un replay **sin datos reales**. El proyecto temporal `ludafyflotobvmowlmej` fue creado vacío y verificado dos veces contra el ref productivo distinto `izbfawwmbilmsrdjaanw`. Se ejecutaron ocho archivos completos, el prefijo DDL de la novena migración (columna e índice de campaña, sin los 31 contactos institucionales) y RBAC como décimo paso. El proyecto temporal tenía cero filas CRM, usuarios Auth y membresías antes y después. Las versiones del historial temporal fueron asignadas por el conector; no son las versiones de los archivos locales ni deben copiarse a producción.
+
+| Superficie | QE2026 | Temporal | Resultado |
+| --- | ---: | ---: | --- |
+| Tablas `public`/`private` y RLS | 11 | 11 | Coinciden |
+| Columnas | 140 | 139 | Falta `campaign_pilot_recipients.batch_key` |
+| Constraints | 36 | 36 | Dos unicidades por lote sustituyen dos simples; secuencia 1–100 frente a 1–5 |
+| Índices | 37 | 36 | Cambia el par de índices únicos de lote y falta `campaign_pilot_recipients_batch_status_idx` |
+| Funciones | 22 | 21 | Falta `claim_campaign_batch`; otras cuatro definiciones comunes difieren más allá de comentarios/espacios |
+| Políticas RLS | 25 | 25 | Coinciden exactamente |
+| Grants de tabla | 95 | 95 | Coinciden exactamente |
+| Grants de función | 66 | 63 | Coinciden los de funciones compartidas; faltan sólo las tres filas de roles de `claim_campaign_batch` |
+| Tipos generados | 914 líneas | 882 líneas | El temporal coincide con el snapshot local anterior; no con producción |
+
+Las cuatro funciones comunes cuyas definiciones siguen distintas tras normalizar comentarios y espacios son `get_cu_form`, `submit_cu_form`, `get_cu_pending_reviews` y `claim_campaign_pilot_batch`. Otras cuatro diferencias de hash desaparecen con esa normalización. Vistas, triggers de usuario y secuencias: cero en ambos entornos. Los advisors temporales presentan las advertencias conocidas de funciones `SECURITY DEFINER` y RLS sin política cliente; 22 índices figuran sin uso porque el entorno está vacío. La pausa del proyecto temporal se confirmó con estado `INACTIVE`. El ensayo demuestra una brecha estructural concreta; no prueba por sí solo que sea seguro reparar versiones ni ejecutar migraciones históricas sobre QE2026.
+
 ## Archivos previstos
 
 - Modificar, sólo tras decisión: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
@@ -53,10 +71,10 @@ Inventario inicial de las 19 entradas sólo remotas: las 13 primeras crean o aju
 
 ### Tarea 2: reproducción aislada y comparación de estado
 
-- [ ] Preparar un proyecto Supabase desechable distinto de QE2026, confirmar dos veces su `project_ref` y usar sólo variables `QE_TEST_*`.
-- [ ] Aplicar los diez archivos locales en orden únicamente al proyecto aislado; no sembrar cuentas o datos productivos. Si alguna migración depende de una de las 19 entradas remotas, registrar el error y detenerse, sin parchear producción.
-- [ ] Comparar esquema final del aislado con QE2026 mediante firmas de columnas, constraints, índices, funciones, RLS y grants; incluir `batch_key`, unicidades compuestas y `claim_campaign_batch`.
-- [ ] Ejecutar pruebas aisladas pertinentes y limpiar/pausar o eliminar el proyecto temporal al terminar, según `AGENTS.md`. No ejecutar pruebas autenticadas o mutantes contra producción.
+- [x] Preparar un proyecto Supabase desechable distinto de QE2026 y confirmar dos veces su `project_ref`. No se usaron credenciales ni variables de pruebas autenticadas; las comprobaciones emplearon el conector con el ref temporal explícito.
+- [x] Aplicar los primeros ocho archivos en orden, sólo el DDL de la novena migración y la décima RBAC al proyecto aislado. La excepción a la novena fue aprobada por Pedro para no copiar 31 contactos reales; por ello no se afirma haber reproducido literalmente los diez archivos.
+- [x] Comparar esquema final del aislado con QE2026 mediante firmas de columnas, constraints, índices, funciones, RLS y grants, incluidos `batch_key`, unicidades compuestas y `claim_campaign_batch`.
+- [x] Completar la pausa del proyecto temporal y comprobar `INACTIVE`. Ya se confirmó cero usuarios, membresías y filas CRM; no se ejecutaron pruebas autenticadas/mutantes porque requerirían credenciales y no ayudan a esta comparación de catálogo.
 
 ### Tarea 3: decisión de estrategia, sin ejecución implícita
 
@@ -67,7 +85,7 @@ Inventario inicial de las 19 entradas sólo remotas: las 13 primeras crean o aju
 
 ## Gate de decisión inmediato
 
-Pedro debe confirmar primero si quiere financiar/permitir un proyecto temporal y, más adelante, elegir la estrategia de historia una vez vista la comparación aislada. Hasta entonces, `db push` y `migration repair` siguen bloqueados. La sincronización de tipos tiene un plan y un PR independientes.
+Pedro ya confirmó el proyecto temporal y su costo indicado; queda elegir la estrategia de historia una vez revisada esta comparación aislada. Hasta entonces, `db push` y `migration repair` siguen bloqueados. La sincronización de tipos tiene un plan y un PR independientes.
 
 ## Criterio de cierre
 
