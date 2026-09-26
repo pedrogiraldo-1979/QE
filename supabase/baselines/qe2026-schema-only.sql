@@ -1,6 +1,27 @@
 -- QE2026 structural replay for an empty, isolated Supabase project only.
 -- NOT a production migration. Never run against QE2026 or a database containing CRM rows.
 -- No Auth users, memberships, campaign contacts, business rows, or historical backfills.
+-- The historical replay-safe comment below applies only to its source migration, not this file.
+
+-- Fail closed before changing any schema object or privilege.
+do $qe_empty_guard$
+begin
+  if to_regclass('public.companies') is not null
+    or to_regclass('public.contacts') is not null
+    or to_regclass('public.activities') is not null
+    or to_regclass('public.cu_links') is not null
+    or to_regclass('public.cu_responses') is not null
+    or to_regclass('public.campaign_pilot_recipients') is not null
+    or to_regclass('public.prospect_lists') is not null
+    or to_regclass('public.prospects') is not null
+    or to_regclass('public.prospect_contacts') is not null
+    or to_regclass('public.prospect_activities') is not null
+    or to_regclass('private.crm_authorized_users') is not null
+  then
+    raise exception 'QE schema-only baseline requires an empty CRM schema';
+  end if;
+end
+$qe_empty_guard$;
 
 -- Source: 20260720000000_initial_crm_baseline.sql
 -- Reproducible CRM schema baseline for empty Supabase projects.

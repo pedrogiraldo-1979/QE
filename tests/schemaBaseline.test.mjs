@@ -11,6 +11,21 @@ test('la baseline estructural aislada existe fuera de migrations', () => {
   assert.equal(baselineExists, true, `Falta ${baselinePath}`);
 });
 
+test('la baseline rechaza un CRM existente antes de cualquier DDL', { skip: !baselineExists }, () => {
+  const executable = sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/--[^\r\n]*/g, '').trimStart();
+  const guard = executable.match(/^do \$qe_empty_guard\$([\s\S]*?)\$qe_empty_guard\$;/i);
+  assert.ok(guard, 'La primera instrucción ejecutable debe ser la guarda');
+  for (const relation of [
+    'public.companies', 'public.contacts', 'public.activities', 'public.cu_links',
+    'public.cu_responses', 'public.campaign_pilot_recipients', 'public.prospect_lists',
+    'public.prospects', 'public.prospect_contacts', 'public.prospect_activities',
+    'private.crm_authorized_users',
+  ]) {
+    assert.ok(guard[1].includes(`to_regclass('${relation}') is not null`), relation);
+  }
+  assert.match(guard[1], /raise exception 'QE schema-only baseline requires an empty CRM schema'/i);
+});
+
 test('la baseline no carga datos ni identidades reales', { skip: !baselineExists }, () => {
   const withoutComments = sql.replace(/\/\*[\s\S]*?\*\//g, '').replace(/--[^\r\n]*/g, '');
   const outsideFunctions = withoutComments.replace(
