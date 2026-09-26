@@ -19,6 +19,8 @@ Postflight temporal: cero filas en las diez tablas CRM, cero membresías y cero 
 
 La generación de tipos del temporal coincide exactamente con el snapshot antiguo local de 882 líneas; QE2026 genera 914. Esto demuestra que la reproducción estructural local, aun excluyendo los datos de la novena migración, no alcanza el esquema productivo. El proyecto temporal usó PostgreSQL `17.6.1.166` frente a `17.6.1.155` de QE2026; esta comparación de catálogo no sustituye pruebas autenticadas ni valida datos reales. Los advisors temporales informaron dos tablas con RLS sin política cliente, dos funciones `SECURITY DEFINER` ejecutables por `anon`, siete por `authenticated` y 22 índices sin uso en una base vacía. No se invocaron RPC de negocio ni se copiaron datos. Tras solicitar la pausa, `get_project` confirmó el estado final `INACTIVE`.
 
+La segunda lectura de sólo esquema/historial identificó el objeto principal y el efecto de cada una de las 19 entradas sólo remotas; la [matriz de conciliación](./superpowers/plans/2026-09-25-migration-history-reconciliation.md) omite literales y datos personales. Confirmó tres `UPDATE` de nivel superior y que `get_cu_pending_reviews` remota incluye filtros por valores literales no presentes en la reproducción local. Esos filtros requieren una decisión antes de declarar una nueva baseline funcionalmente equivalente. No se cambió el esquema, el historial ni las filas de QE2026.
+
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
 - Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.

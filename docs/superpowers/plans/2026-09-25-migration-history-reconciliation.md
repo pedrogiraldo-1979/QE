@@ -54,6 +54,43 @@ Pedro confirmó la organización «Quindi Exquisito», el costo indicado por Sup
 
 Las cuatro funciones comunes cuyas definiciones siguen distintas tras normalizar comentarios y espacios son `get_cu_form`, `submit_cu_form`, `get_cu_pending_reviews` y `claim_campaign_pilot_batch`. Otras cuatro diferencias de hash desaparecen con esa normalización. Vistas, triggers de usuario y secuencias: cero en ambos entornos. Los advisors temporales presentan las advertencias conocidas de funciones `SECURITY DEFINER` y RLS sin política cliente; 22 índices figuran sin uso porque el entorno está vacío. La pausa del proyecto temporal se confirmó con estado `INACTIVE`. El ensayo demuestra una brecha estructural concreta; no prueba por sí solo que sea seguro reparar versiones ni ejecutar migraciones históricas sobre QE2026.
 
+## Inventario de las 19 entradas sólo remotas
+
+Segunda lectura de **sólo esquema e historial** en QE2026, sin leer filas de negocio. Se revisó el SQL registrado de cada entrada y se omitieron de este informe los literales, correos, UUID, tokens y payloads. Los nombres de objetos identifican el efecto histórico, no una instrucción para volver a ejecutarlo. `DML interno` indica código dentro de una función, que sólo cambia filas si la función se invoca; `backfill` indica una sentencia `UPDATE` de la propia migración.
+
+| Versión | Objeto o efecto principal | Riesgo para un replay ingenuo |
+| --- | --- | --- |
+| `20260701140601` | Crea `cu_links` y habilita RLS | Ya absorbido por la baseline local. |
+| `20260701140700` | Crea `cu_responses` y habilita RLS | Ya absorbido por la baseline local. |
+| `20260701140823` | Políticas y grants iniciales de `cu_links`/`cu_responses` | Permisos históricos más amplios; no restablecerlos sobre RBAC. |
+| `20260701141010` | Primera versión de `get_cu_form` | `SECURITY DEFINER` histórico, reemplazado después. |
+| `20260701141127` | Grant de `get_cu_form` | Revisar junto con la versión final de la RPC. |
+| `20260701141258` | Añade `cu_responses.payload` | Ya absorbido por la baseline local. |
+| `20260701141447` | Primera versión de `submit_cu_form` | Contiene DML interno; reemplazada después. |
+| `20260707001356` | Primera versión de `get_cu_pending_reviews` | Definición de revisión sustituida después. |
+| `20260707001459` | Primeras versiones de aprobación/rechazo | Contienen DML interno sobre respuestas, empresas y contactos; sustituidas después. |
+| `20260707001603` | Grants de revisión | No restaurar los permisos anteriores a RBAC. |
+| `20260707003026` | Crea cuatro tablas de prospección | Ya absorbido por la baseline local. |
+| `20260707003159` | Habilita RLS de prospección | Ya absorbido por la baseline local. |
+| `20260707013441` | Amplía `contacts` | Ejecuta un **backfill** de contactos preexistentes. |
+| `20260722031506` | Reemplaza `get_cu_form` con precarga de dos contactos | Cambio de función ausente de la reproducción local. |
+| `20260722034019` | Añade `campaign_pilot_recipients.batch_key` | Ejecuta **backfill** antes de `NOT NULL` y de fijar el valor por defecto. |
+| `20260722034030` | Cambia unicidades y check de lote; añade índice | Sustituye restricciones simples por compuestas; depende de `batch_key`. |
+| `20260722034045` | Añade `claim_campaign_batch` y sus grants | RPC `SECURITY DEFINER` con DML interno; sólo `service_role` conserva `EXECUTE`. |
+| `20260722142520` | Reemplaza `submit_cu_form` y `get_cu_pending_reviews` | Ejecuta **backfill** de `confirm_no_changes`; la función de cola contiene filtros por literales que requieren revisión antes de reproducirse. |
+| `20260804203513` | Reemplaza `claim_campaign_pilot_batch` | DML interno y semántica de lote distinta a la versión local. |
+
+Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella: recrearían objetos o permisos antiguos y repetirían un backfill. Los seis posteriores explican las diferencias estructurales y funcionales observadas. El SQL remoto de cada una de las 29 versiones quedó identificado por versión, nombre, longitud y MD5 de `array_to_string(statements, E'\n')` durante esta revisión; ese fingerprint sólo prueba identidad del texto registrado, no equivalencia semántica con los archivos locales. Antes de fijar una nueva fuente canónica falta conservar una matriz de hashes cruzados y revisar las cuatro funciones divergentes con casos sintéticos.
+
+## Propuesta de decisión, sin ejecución
+
+| Ruta | Qué entrega | Riesgo y reversibilidad |
+| --- | --- | --- |
+| **A. Reconstruir la historia remota en `supabase/migrations/`** | Versiones locales alineadas con las 29 remotas y flujo CLI convencional. | Exige rehacer o renombrar archivos históricos, resolver la baseline-marker, la allowlist con identidades y la migración con 31 contactos. Un `db push` antes de resolver cada diferencia puede ejecutar SQL viejo. Reversión mediante Git, pero una reparación del historial remoto necesitaría respaldo y procedimiento aparte. No se recomienda ahora. |
+| **B. Baseline estructural nueva para entornos vacíos, conservando el legado** | Fuente sin datos reales cuyo objetivo es reproducir el catálogo actual, más futuros cambios *forward-only* separados. Los diez SQL existentes y las 29 entradas de QE2026 permanecen como evidencia histórica. | Necesita un archivo nuevo, comparación aislada completa y un procedimiento de publicación que no use todavía `db push` contra QE2026. Es reversible en Git mientras no se aplique remotamente. No resuelve por sí sola la discrepancia de versiones del CLI. |
+
+**Recomendación:** B, por etapas. Primero especificar y revisar una baseline sólo estructural que incluya `batch_key`, restricciones/índice de lote y la versión final de las cuatro funciones divergentes más `claim_campaign_batch`, sin filas de membresías, prospectos ni contactos. Los filtros por literales de la cola de revisión deben evaluarse antes de decidir si forman parte del contrato general o son una excepción propia de QE2026; no se declarará equivalencia exacta mientras esto no se resuelva. Después probar la baseline en un proyecto vacío y comparar columnas, constraints, índices, funciones, RLS, grants y tipos generados con QE2026, así como flujos sintéticos de autorización. Sólo cuando esa prueba pase, definir en un PR aparte el procedimiento de futuros cambios; mientras tanto, releases de SQL individuales y revisados, nunca `db push` ni `migration repair`. No modificar los diez archivos existentes ni QE2026 para adoptar esta recomendación sin autorización específica. La [guía oficial](https://supabase.com/docs/guides/deployment/database-migrations) confirma que `migration repair` cambia la tabla de seguimiento, no el esquema.
+
 ## Archivos previstos
 
 - Modificar, sólo tras decisión: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
@@ -67,7 +104,7 @@ Las cuatro funciones comunes cuyas definiciones siguen distintas tras normalizar
 - [ ] Conservar hashes del SQL original y normalizado en una matriz revisable. La revalidación comparó ya el contenido de los cuatro pares de misma versión y los tres pares de distinto timestamp, pero aún no produjo esa matriz de hashes.
 - [x] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
 - [x] Contrastar el SQL RBAC remoto registrado con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; la comparación textual normalizada a LF fue idéntica.
-- [ ] Completar la revisión de las 19 entradas sólo remotas por objeto, DML de nivel superior, identidades y dependencias de entorno. La primera pasada detectó tres backfills históricos al separar cuerpos de funciones; aún falta una matriz revisable y un examen manual del SQL completo antes de dar por exhaustivo el inventario.
+- [ ] Completar la revisión de las 19 entradas sólo remotas por objeto, DML de nivel superior, identidades y dependencias de entorno. Ya existe la matriz por objeto y se confirmaron tres backfills; quedan los fingerprints cruzados y la decisión sobre los literales de la cola de revisión antes de dar por exhaustivo el inventario.
 
 ### Tarea 2: reproducción aislada y comparación de estado
 
@@ -85,7 +122,7 @@ Las cuatro funciones comunes cuyas definiciones siguen distintas tras normalizar
 
 ## Gate de decisión inmediato
 
-Pedro ya confirmó el proyecto temporal y su costo indicado; queda elegir la estrategia de historia una vez revisada esta comparación aislada. Hasta entonces, `db push` y `migration repair` siguen bloqueados. La sincronización de tipos tiene un plan y un PR independientes.
+Pedro ya confirmó el proyecto temporal y su costo indicado. Se recomienda la ruta B, pero queda obtener una decisión específica sobre ella y sus límites, incluida la excepción por literales de la cola de revisión. Hasta entonces, `db push` y `migration repair` siguen bloqueados. La sincronización de tipos tiene un plan y un PR independientes.
 
 ## Criterio de cierre
 
