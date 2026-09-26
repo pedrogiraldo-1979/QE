@@ -1,5 +1,14 @@
 # Auditoría inicial del repositorio
 
+## 28. Brecha entre tipos e historial de QE2026 — 2026-09-25
+
+- Revisión de solo lectura en la rama documental `codex/supabase-reconciliation-plan`, creada desde `origin/main` en `14c77ca`; no se aplicó SQL ni se modificaron datos o configuración.
+- La generación de tipos desde QE2026 (`izbfawwmbilmsrdjaanw`) tiene 914 líneas frente a 882 del snapshot local. La comparación exacta normalizada a LF arroja 33 líneas presentes sólo en el resultado remoto y una línea local reemplazada: `campaign_pilot_recipients.batch_key` en Row/Insert/Update, la cardinalidad de `campaign_pilot_recipients_link_id_fkey` (`false` en producción frente a `true` local), la RPC `claim_campaign_batch` y `batch_key` en la respuesta de `claim_campaign_pilot_batch`. Las seis RPC RBAC ya están en ambos snapshots.
+- El catálogo productivo confirma que `batch_key` es `text NOT NULL`; existen unicidades compuestas `(batch_key, link_id)` y `(batch_key, sequence)`, no una unicidad simple de `link_id`. Esto explica la cardinalidad generada; no se leyeron filas de campaña.
+- El historial remoto contiene 29 versiones y el directorio local diez archivos. Hay seis versiones numéricas compartidas, cuatro archivos con versión local distinta de la remota y 19 entradas remotas sin archivo local correspondiente. La baseline `20260720000000` y la allowlist `20260720012043` comparten versión pero no SQL histórico equivalente; las tres equivalencias históricas de SQL y sus pares de versiones se documentaron en el plan de release RBAC. La migración RBAC local `20260917000000` figura remotamente como `20260925200537`.
+- Esto contradice la lectura de `docs/DATA-CONTRACTS.md` que presenta el snapshot local como reflejo completo del esquema remoto, y deja obsoleta la nota operativa de `D-021` que afirma que la baseline no está registrada en producción. Se preservan ambos textos históricos hasta decidir la estrategia de conciliación. No ejecutar `db push` ni `migration repair` con esta divergencia.
+- Planes de alcance separado: [`sincronización de tipos`](./superpowers/plans/2026-09-25-database-types-sync.md) e [`historial de migraciones`](./superpowers/plans/2026-09-25-migration-history-reconciliation.md). Ninguno autoriza cambios remotos por sí mismo.
+
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
 - Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.
