@@ -49,7 +49,7 @@
 **Files:** only the new baseline, focused test, design/plan, `docs/DECISIONS.md`, and `docs/AUDIT.md`.
 
 - [x] Run `pnpm typecheck`, `pnpm test`, `pnpm build`, and the repository's smoke test if the build environment is available. Review `git diff --check`, exact staged paths and secret/data scan.
-- [ ] Commit on `codex/schema-only-baseline`, push, and open a draft PR against `main`; do not merge. Wait for CI and Vercel checks and report their exact state.
+- [x] Commit on `codex/schema-only-baseline`, push, and open a draft PR against `main`; do not merge. Wait for CI and Vercel checks and report their exact state.
 
 ## Out of scope
 

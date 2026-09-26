@@ -119,8 +119,10 @@ For data, use only `SELECT count(*)` subqueries for `public.companies`, `public.
 
 - [x] Run `pnpm typecheck`, `pnpm test`, `pnpm build`, then `pnpm start` and `pnpm test:smoke`; stop the server. Restore any build-only change to `next-env.d.ts` with `apply_patch` without touching user files.
 - [x] Review `git diff --check`, changed/staged paths, no top-level DML, no emails/UUID/token fixtures, and no changes to `supabase/migrations/`; stage only the four named files.
-- [ ] Commit descriptively, push the existing branch, keep PR #34 a draft, and wait for CI and Vercel. Do not merge or execute SQL in QE2026.
+- [x] Commit descriptively, push the existing branch, keep PR #34 a draft, and wait for CI and Vercel. Do not merge or execute SQL in QE2026.
 
 ## Verification Limit
 
 The previous SQL body passed on a fresh empty project before this guard existed. This task verifies the new refusal path in the existing project. It does not claim a fresh full replay of the guarded file or functional parity of `get_cu_pending_reviews`, whose two omitted test predicates remain documented.
+
+Resultado posterior: Pedro autorizó otro proyecto temporal vacío y allí se aplicó desde cero el archivo completo con la guarda. La evidencia y la pausa del proyecto constan en `docs/AUDIT.md`. Esa prueba posterior cierra el límite de replay de este plan, pero no demuestra paridad funcional autenticada ni autoriza uso productivo.
