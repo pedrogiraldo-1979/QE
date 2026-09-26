@@ -32,6 +32,8 @@ El historial remoto enumera 29 versiones; el directorio local contiene diez arch
 
 Las seis entradas remotas posteriores sin archivo local son `20260722031506`, `20260722034019`, `20260722034030`, `20260722034045`, `20260722142520` y `20260804203513`. Las 13 anteriores al 20 de julio abarcan `20260701140601`–`20260707013441` y fueron absorbidas estructuralmente por la baseline local, no por identidad de historia. `docs/DECISIONS.md` D-021 aún indica que la baseline no figura en producción; el historial remoto actual sí la contiene. La diferencia se registra en `docs/AUDIT.md`, sin reescribir la decisión histórica.
 
+Revalidación de solo lectura posterior: los cuatro pares incrementales de misma versión, los tres pares de timestamps distintos y RBAC coinciden al normalizar comentarios y espacios. Siete de los ocho también coinciden como texto normalizado a LF; el octavo (`20260720031715`) sólo tiene un comentario local adicional. El SQL RBAC remoto coincide textualmente con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`. La baseline y la allowlist no son equivalentes; el contenido de la siembra de membresías no se publicó ni imprimió.
+
 ## Archivos previstos
 
 - Modificar, sólo tras decisión: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
@@ -41,10 +43,10 @@ Las seis entradas remotas posteriores sin archivo local son `20260722031506`, `2
 
 ### Tarea 1: inventario verificable de historia y SQL
 
-- [ ] Registrar commit base, estado del árbol, diez nombres de archivo locales y las 29 versiones remotas con nombres, sin obtener datos personales.
-- [ ] Revalidar con hashes de SQL normalizado los cuatro pares de misma versión y los tres pares de distinto timestamp previamente comparados; conservar además hashes del SQL original para detectar cambios posteriores.
-- [ ] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
-- [ ] Contrastar el SQL RBAC remoto registrado con el SHA-256 local `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; si el servicio no conserva SQL íntegro o no permite una comparación fiable, dejar ese límite explícito y usar el registro de aplicación del release.
+- [x] Registrar commit base, estado del árbol, diez nombres de archivo locales y las 29 versiones remotas con nombres, sin obtener datos personales.
+- [ ] Conservar hashes del SQL original y normalizado en una matriz revisable. La revalidación comparó ya el contenido de los cuatro pares de misma versión y los tres pares de distinto timestamp, pero aún no produjo esa matriz de hashes.
+- [x] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
+- [x] Contrastar el SQL RBAC remoto registrado con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; la comparación textual normalizada a LF fue idéntica.
 - [ ] Inventariar las 19 entradas sólo remotas por objeto afectado y si contienen DML, identidades o dependencias de entorno; no exportar su contenido sensible a Git.
 
 ### Tarea 2: reproducción aislada y comparación de estado
