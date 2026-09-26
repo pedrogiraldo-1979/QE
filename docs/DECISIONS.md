@@ -232,6 +232,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Idempotencia: sólo filas `approved` pueden reclamarse. Los estados `sending`, `sent` y `failed` no se reintentan automáticamente; una respuesta incierta se resuelve mediante auditoría del proveedor y autorización separada.
 - Límite: no habilita campañas masivas, destinatarios dinámicos, reintentos ni el envío durante CI/pruebas.
 - Evidencia/verificación: `tests/campaignPilot.test.mjs`, `supabase/migrations/20260721023246_add_approved_campaign_pilot.sql`, `supabase/functions/send-approved-campaign-pilot/` y `/piloto-campana`.
+- Actualización posterior (2026-09-26): Pedro confirmó que ya realizó el piloto de correo, sin precisar aquí cuál lote. La cifra de cinco pertenece a esta decisión histórica y no se adopta como límite permanente del producto. Esta confirmación no autoriza un nuevo lote ni modifica código, destinatarios o Supabase; cualquier envío posterior requiere un gate independiente.
 
 ## D-025 — Separar aprobación transaccional y sincronización de maestros
 

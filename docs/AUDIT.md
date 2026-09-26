@@ -770,3 +770,7 @@ Separación operativa:
 - esta rama no ejecutó ni volvió a publicar la Fase 8;
 - no se realizó deployment, merge, migración ni operación remota como parte de la reorganización;
 - el trabajo se limita a actualizar las fuentes documentales vigentes y registrar la diferencia entre el corte histórico y el estado remoto comprobado.
+
+## Anexo — Cierre documental del piloto de correo (2026-09-26)
+
+Pedro confirmó que ya realizó el piloto de correo y que su cantidad no debe interpretarse como límite vigente; no precisó aquí cuál lote se envió. La decisión D-024 y la sección 23 de esta auditoría conservan el alcance histórico de cinco destinatarios. El código versionado de la interfaz y la validación del envío exige trece para otro lote específico; esta actualización documental no verifica entregas del proveedor ni establece una política numérica nueva. README, PRD, roadmap y release checklist dejan de presentar cinco como permiso o límite actual. No se modificaron código, configuración, Supabase, destinatarios ni datos; un nuevo envío requiere aprobación y gate propios.
