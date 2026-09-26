@@ -67,6 +67,7 @@ export type Database = {
       }
       campaign_pilot_recipients: {
         Row: {
+          batch_key: string
           claimed_at: string | null
           created_at: string
           id: string
@@ -81,6 +82,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          batch_key?: string
           claimed_at?: string | null
           created_at?: string
           id?: string
@@ -95,6 +97,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          batch_key?: string
           claimed_at?: string | null
           created_at?: string
           id?: string
@@ -112,7 +115,7 @@ export type Database = {
           {
             foreignKeyName: "campaign_pilot_recipients_link_id_fkey"
             columns: ["link_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "cu_links"
             referencedColumns: ["id"]
           },
@@ -652,9 +655,38 @@ export type Database = {
         Args: { p_response_id: string }
         Returns: undefined
       }
+      claim_campaign_batch: {
+        Args: {
+          p_batch_key: string
+          p_expected_count: number
+          p_sent_by: string
+        }
+        Returns: {
+          batch_key: string
+          claimed_at: string | null
+          created_at: string
+          id: string
+          link_id: string
+          provider_status: number | null
+          recipient_email: string
+          recipient_name: string
+          sent_at: string | null
+          sent_by: string | null
+          sequence: number
+          status: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "campaign_pilot_recipients"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_campaign_pilot_batch: {
         Args: { p_sent_by: string }
         Returns: {
+          batch_key: string
           claimed_at: string | null
           created_at: string
           id: string

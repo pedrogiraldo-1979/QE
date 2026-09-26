@@ -1,17 +1,19 @@
 # Contratos de datos y Supabase
 
-Fecha de verificación del contrato base: 2026-07-19. Última evidencia RBAC: 2026-09-24 en el proyecto desechable `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`). La producción no se modificó durante esa validación.
+Fecha de verificación del contrato base: 2026-07-19. La validación RBAC del 2026-09-24 se hizo en el proyecto desechable `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`), sin modificar producción. El snapshot de tipos se contrastó de nuevo el 2026-09-25 con QE2026 (`izbfawwmbilmsrdjaanw`) mediante generación de solo lectura; la conciliación del historial de migraciones sigue pendiente.
 
 ## Fuente canónica
 
-- `src/lib/database.types.ts` es el snapshot generado del esquema remoto expuesto por la Data API.
+- `src/lib/database.types.ts` es el snapshot generado del esquema remoto expuesto por la Data API de QE2026. La salida del generador y el archivo versionado coinciden tras normalizar CRLF/LF; esta coincidencia no demuestra que los archivos de migración locales reproduzcan todo el esquema productivo.
 - `src/lib/types.ts` conserva únicamente vocabulario de dominio y compatibilidad de lectura sobre los tipos generados.
 - `src/lib/data/queryColumns.ts` define las columnas que el frontend solicita; no se usa `select("*")`.
 - `src/lib/data/queryLimits.ts` distingue selectores de referencia de feeds resumidos.
 - Los tipos deben regenerarse desde Supabase después de cada migración y revisarse en el mismo commit; no se editan formas de tablas o RPC manualmente.
 - `supabase/migrations/20260720000000_initial_crm_baseline.sql` es la fuente estructural para proyectos vacíos. No contiene usuarios, membresías ni filas; las migraciones posteriores conservan la evolución incremental.
 
-Backend verificado: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HEALTHY`.
+El ajuste del 2026-09-25 incorporó al snapshot `campaign_pilot_recipients.batch_key`, la cardinalidad real de su vínculo con `cu_links`, `claim_campaign_batch` y el campo `batch_key` del retorno de `claim_campaign_pilot_batch`. Sólo cambió el contrato TypeScript generado; no se desplegaron funciones, políticas ni migraciones.
+
+Backend registrado en la verificación anterior: PostgreSQL `17.6.1.127`, PostgREST `14.5`, estado `ACTIVE_HEALTHY`. El proyecto QE2026 seguía `ACTIVE_HEALTHY` al generar los tipos el 2026-09-25; esta tarea no revalidó la versión de PostgREST.
 
 ## Tablas expuestas
 
@@ -33,7 +35,7 @@ Las tablas nuevas ya no deben asumirse expuestas automáticamente: toda migraci�
 
 Desde `20260827015743_add_prospect_campaign_targeting`, `prospects.campaign` conserva una etiqueta operativa opcional independiente de `segment` y `list_id`. La campaña `Colegios Norte 153+ / antes del peaje` contiene 31 prospectos y 31 canales institucionales públicos; la migración no modifica RLS ni privilegios existentes.
 
-La reproducción desde cero fue contrastada mediante firmas normalizadas de columnas, constraints, índices, funciones, políticas y grants. El resultado coincidió con el proyecto productivo sin leer ni copiar filas productivas.
+La reproducción desde cero se contrastó en una validación anterior mediante firmas normalizadas de columnas, constraints, índices, funciones, políticas y grants, sin leer ni copiar filas productivas. Esa equivalencia no se ha revalidado después de los cambios productivos de campaña y RBAC; ver `docs/AUDIT.md` y el plan separado de conciliación del historial.
 
 ## RPC públicas
 
