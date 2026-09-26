@@ -17,7 +17,7 @@ Current product requirements live in [`docs/PRD-CRM.md`](docs/PRD-CRM.md), and s
 - Atomic customer-response approval for company, primary contact, both phone fields, and an optional second contact.
 - Explicit reconciliation queue for `Hoja1` and `contactos_base`; approvals never claim the spreadsheets are synchronized prematurely.
 - Authenticated internal ZeptoMail test route.
-- Authenticated five-recipient campaign pilot with a closed allowlist and duplicate-send protection.
+- Authenticated, batch-scoped campaign pilot with a closed allowlist and duplicate-send protection; the pilot has been completed.
 
 ## Supabase tables expected
 
@@ -104,7 +104,7 @@ La campaña de actualización cuenta con dos verificaciones adicionales:
 - `pnpm test:campaign:smoke`: comprueba rutas públicas, contrato de lectura del token sintético y rechazo de la Edge Function sin autenticación. No envía correo ni modifica datos.
 - `pnpm test:campaign:e2e`: crea una empresa, contacto, enlace y respuesta exclusivamente sintéticos; valida precarga, envío, revisión y aprobación, y limpia el fixture al terminar. Exige el mismo Supabase desechable y las variables `QE_TEST_*`; se niega a ejecutarse contra `QE2026`.
 
-El envío general de ZeptoMail permanece deshabilitado. El único envío real permitido es un piloto separado de exactamente cinco destinatarios provisionados fuera de Git, con confirmación en dos pasos, reclamación atómica y bloqueo de reintentos automáticos.
+Pedro confirmó el 2026-09-26 que el piloto de correo ya se realizó. El envío general de ZeptoMail permanece deshabilitado. La implementación del piloto conserva la confirmación en dos pasos, la reclamación atómica y el bloqueo de reintentos automáticos; su existencia no autoriza nuevos lotes.
 
 ## Repository structure
 
@@ -124,16 +124,11 @@ The ZeptoMail authorization token must remain in Supabase Edge Function secrets.
 
 Do not add the ZeptoMail token to the repository or to any `NEXT_PUBLIC_` environment variable.
 
-## Approved campaign pilot
+## Completed campaign pilot
 
-The protected route `/piloto-campana` invokes `send-approved-campaign-pilot`. Preview and send actions require the single authorized CRM identity. Recipients are read from `campaign_pilot_recipients`; no customer email or form token is committed to the repository.
+The protected route `/piloto-campana` invokes `send-approved-campaign-pilot`. Preview and send actions require the single authorized CRM identity. Recipients are read from `campaign_pilot_recipients`; no customer email or form token is committed to the repository. Pedro confirmed that the pilot was completed; this retained route is not approval for another send.
 
-Before enabling the route in an environment:
-
-1. apply `20260721023246_add_approved_campaign_pilot.sql` after reconciling migration history;
-2. provision exactly five approved rows directly in that environment by linking existing `cu_links` records;
-3. deploy both files under `supabase/functions/send-approved-campaign-pilot` with JWT verification enabled;
-4. verify preview mode before authorizing any real send.
+The five-recipient requirement in the original 2026-07-21 migration describes that historical pilot. Later application code is configured for a separate batch. Neither count is a standing product limit. Any future batch requires its own approved scope and an operational review of the deployed function, recipient list, preview, migration history and prior delivery outcomes.
 
 The batch is claimed atomically before the first provider call. Any interruption leaves the affected rows unavailable for automatic retry until a provider audit and an independently reviewed recovery decision.
 

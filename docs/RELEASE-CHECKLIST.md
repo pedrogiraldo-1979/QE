@@ -28,7 +28,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Tras una prueba mutante, eliminar los fixtures y membresías/cuentas sintéticas creadas, comprobar sus conteos en cero y pausar o eliminar el proyecto desechable.
 - [ ] Para cambios de campaña, ejecutar `pnpm test:campaign:smoke` sin autenticación y `pnpm test:campaign:e2e` únicamente en el proyecto desechable confirmado.
 - [ ] Confirmar que las pruebas de campaña usan direcciones `.invalid` para fixtures y que ningún paso automatizado invoca un envío a clientes.
-- [ ] Para el piloto real, verificar en modo preview que existan exactamente cinco filas `approved`, con correos únicos, enlaces activos y cero respuestas previas; no usar el send durante pruebas.
+- [ ] Si se aprueba un nuevo lote de correo mediante un gate independiente, verificar en modo preview la cantidad autorizada, correos únicos, enlaces activos y cero respuestas previas; no usar el send durante pruebas. El piloto ya realizado no se repite como gate de cada release.
 
 Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT_PUBLIC_` quedan embebidas durante el build.
 
@@ -40,8 +40,8 @@ Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT
 - [ ] Para RBAC, revisar los avisos `SECURITY DEFINER`: los formularios públicos por token y los wrappers `admin_*` sólo son aceptables si conservan grants mínimos y validación explícita de rol en backend.
 - [ ] Comparar conteos antes/después cuando la migración declara que no modifica filas.
 - [ ] Preparar SQL de reversión cuando sea seguro; una reversión destructiva de datos requiere aprobación separada.
-- [ ] Provisionar los cinco destinatarios aprobados fuera de Git y comprobar que `campaign_pilot_recipients` no concede acceso a `anon` ni `authenticated`.
-- [ ] Desplegar `send-approved-campaign-pilot` con `verify_jwt = true` y comprobar que una invocación sin JWT se rechaza antes de habilitar la interfaz.
+- [ ] No provisionar destinatarios por este checklist. Para un lote nuevo aprobado por separado, provisionarlos fuera de Git y comprobar que `campaign_pilot_recipients` no concede acceso a `anon` ni `authenticated`.
+- [ ] Si un lote nuevo exige desplegar `send-approved-campaign-pilot`, mantener `verify_jwt = true` y comprobar que una invocación sin JWT se rechaza antes de habilitar la interfaz.
 - [ ] No restablecer filas `sending`, `sent` o `failed` a `approved` sin revisar primero el resultado de ZeptoMail y obtener una autorización independiente.
 
 ## 4. Publicación y observación

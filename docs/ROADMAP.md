@@ -110,7 +110,7 @@ Gate: criterios `P9-TECH` aceptados, equivalencia funcional/visual/accesible, ro
 6. completar typecheck, pruebas, build, smoke, preview, revisión visual y rollback de cada cambio publicable;
 7. registrar en decisiones y auditoría los resultados, límites y deuda que se posponga.
 
-La activación de esta fase no autoriza implementar todos los frentes como una unidad ni modifica Supabase o datos por efecto del roadmap. El piloto cerrado de cinco correos aprobado el 2026-07-21 conserva un gate independiente y no autoriza una automatización general.
+La activación de esta fase no autoriza implementar todos los frentes como una unidad ni modifica Supabase o datos por efecto del roadmap. Pedro confirmó el 2026-09-26 que ya realizó el piloto de correo. La aprobación inicial de cinco destinatarios en 2026-07-21 es un antecedente histórico, no un límite permanente; esta actualización no identifica cuál lote se envió ni autoriza otros lotes o una automatización general.
 
 ## Backlog futuro y trabajo condicionado
 
@@ -149,7 +149,7 @@ Gate: problema, usuario, criterio de aceptación y riesgo de datos documentados 
 - ERP: inventario, compras, contabilidad, nómina y facturación;
 - migraciones, cambios de RLS/Auth, Edge Functions o datos sin gate independiente;
 - limpiezas, importaciones o borrados no autorizados;
-- automatización masiva de email o WhatsApp más allá del piloto cerrado aprobado;
+- nuevos lotes o automatización masiva de email o WhatsApp sin gate propio;
 - telemetría o servicios externos sin política y aprobación;
 - rediseño visual integral;
 - multi-organización, ownership por fila o permisos no definidos por producto;
