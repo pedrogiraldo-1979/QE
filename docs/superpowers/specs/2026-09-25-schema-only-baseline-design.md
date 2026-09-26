@@ -33,3 +33,15 @@ Primero, una prueba de contrato fallará porque el archivo aún no existe. Luego
 ## Publicación y reversión
 
 El PR contendrá sólo el SQL estructural, su prueba de contrato y la documentación de decisión/evidencia necesaria. Revertir el commit retirará el artefacto local; no habrá reversión productiva porque no se aplicará en QE2026. `db push` y `migration repair` seguirán bloqueados hasta una decisión separada sobre historia y release.
+
+## Adenda — guarda de proyecto vacío
+
+Estado: Pedro aprobó añadir una guarda al PR #34 y probar su rechazo en el proyecto temporal existente. Esta adenda documenta el diseño antes de modificar el SQL.
+
+**Opciones evaluadas.** Mantener sólo la advertencia actual y una comprobación manual evita cambios al archivo, pero deja abierta la ejecución accidental sobre una base con CRM. Un script externo que exija un `project_ref` añade otra vía de ejecución y mantenimiento, sin proteger a quien abra el SQL directamente. Se elige una guarda dentro del propio SQL, al inicio del archivo, combinada con la comprobación operativa del `project_ref`.
+
+**Comportamiento.** Antes de cualquier `CREATE`, `ALTER`, `DROP` o `GRANT`, un bloque `DO` comprueba si ya existe alguna de las diez tablas públicas del CRM o `private.crm_authorized_users`. Si encuentra al menos una, lanza un error genérico y termina sin recorrer el replay. No consulta ni registra filas, usuarios, correos, tokens o referencias de proyecto. En un proyecto vacío permite continuar con el SQL ya ensayado. Esta guarda protege de una aplicación accidental sobre QE2026 o un esquema CRM parcial, pero no identifica por sí sola un proyecto vacío equivocado: el operador aún debe confirmar el `project_ref`. El comentario histórico que llama reutilizable a la primera migración no debe interpretarse como permiso para reutilizar el archivo completo.
+
+**Prueba y límites.** Una prueba contractual nueva debe fallar primero porque la guarda falta, luego verificar que cubre las once relaciones y precede la primera instrucción de cambio de esquema. Para el ensayo real se confirma dos veces que `hsuxurarysmvmprgdeqo` es el proyecto temporal, se reanuda, se captura su catálogo y sus conteos sin leer filas, y se intenta allí el archivo completo. El resultado esperado es el error de la guarda, sin alteración de catálogo ni datos; finalmente se pausa y se confirma `INACTIVE`. El replay anterior ya aprobó sobre ese proyecto cuando estaba vacío; este ensayo adicional comprueba el camino de rechazo, no equivale a ejecutar la versión con guarda sobre un tercer proyecto vacío. No se creará otro proyecto ni se ejecutará SQL sobre QE2026.
+
+**Publicación.** La corrección queda en el mismo PR #34, que permanece en borrador. Se actualizan la prueba y `docs/AUDIT.md` con la evidencia exacta, se repiten las verificaciones locales y CI; no se hace merge ni se habilitan `db push` o `migration repair`.
