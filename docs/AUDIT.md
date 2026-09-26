@@ -10,6 +10,12 @@
 - El SQL de reversión de RBAC se ensayó en el mismo proyecto temporal y la migración se reaplicó sin errores; el procedimiento queda en [`PHASE-9-RBAC-ROLLBACK.md`](./PHASE-9-RBAC-ROLLBACK.md).
 - Esta evidencia cubre sólo la base RBAC. Auditoría de negocio, eliminación lógica/restauración, administración de membresías y el nuevo ciclo público de enlaces siguen fuera de esta entrega.
 
+## Anexo — Sincronización local de tipos con QE2026 (2026-09-25)
+
+En la rama `codex/supabase-types-qe2026`, creada desde `origin/main` en `14c77ca`, se generó de nuevo y en modo de solo lectura el contrato TypeScript de QE2026 (`izbfawwmbilmsrdjaanw`). El archivo `src/lib/database.types.ts` quedó idéntico a la salida completa del generador tras normalizar CRLF/LF (914 líneas). El diff frente al snapshot anterior de 882 líneas se limita a `campaign_pilot_recipients.batch_key` en Row/Insert/Update, la cardinalidad de `campaign_pilot_recipients_link_id_fkey`, la firma y el retorno de `claim_campaign_batch`, y `batch_key` en el retorno de `claim_campaign_pilot_batch`. Los tipos RBAC preexistentes no cambiaron.
+
+El catálogo confirmó `batch_key text NOT NULL`, unicidades compuestas `(batch_key, link_id)` y `(batch_key, sequence)`, y `claim_campaign_batch(p_sent_by uuid, p_batch_key text, p_expected_count integer)`. No se leyeron filas, se invocaron RPC de negocio ni se cambió Supabase. Pasaron `pnpm typecheck`, 41/41 pruebas y `pnpm build` con 11 rutas. `next-env.d.ts` generado por el build se retiró del diff. La actualización de tipos no concilia por sí misma el historial remoto ni demuestra reproducibilidad del esquema desde los diez archivos locales; ese trabajo permanece separado en el PR documental #32.
+
 ## 26. Cierre documental de la Fase 9, Etapa 2 — 2026-07-21
 
 - El PR #26 publicó la especificación aprobada de gobierno y recuperación junto con el primer plan independiente de RBAC.
