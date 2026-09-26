@@ -280,6 +280,16 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Consecuencias: la interfaz puede buscar, filtrar, editar y resumir la campaña separadamente. La lista maestra y los estados heredados no se reescriben de forma masiva.
 - Evidencia/verificación: migración `20260826000000_add_prospect_campaign_targeting.sql`, 31 prospectos y 31 contactos de canal público verificados en `QE2026`, sin duplicados de campaña ni cruces con `COLEGIO NUEVA YORK` o `COLEGIO GIMNASIO DEL NORTE`.
 
+## D-029 — Publicar una baseline estructural independiente para proyectos vacíos
+
+- Estado: Aceptada para ensayo aislado; publicación sujeta a revisión del PR
+- Fecha: 2026-09-25
+- Responsable: Pedro
+- Contexto: la historia de migraciones disponible localmente no reproduce por sí sola el esquema remoto actual y la migración de campaña incluye datos reales. Se necesita una ruta verificable para crear entornos nuevos sin copiar identidades ni contactos.
+- Decisión: mantener las diez migraciones históricas intactas y añadir `supabase/baselines/qe2026-schema-only.sql` como replay estructural independiente, fuera de `supabase/migrations/`. Se aplica únicamente a un proyecto Supabase vacío, desechable y confirmado por referencia. Excluye las cargas y correcciones de filas existentes, los 31 contactos de campaña y dos filtros literales ligados a pruebas de QE2026.
+- Seguridad y operación: el archivo no autoriza `db push`, `migration repair` ni ejecución en QE2026; tampoco sustituye una decisión futura sobre el historial productivo. Cualquier adopción operativa exige revisión separada. El ensayo se hizo sin usuarios Auth, membresías ni datos CRM y el proyecto temporal quedó pausado.
+- Evidencia/verificación: prueba contractual, typecheck, pruebas completas, build y smoke locales; comparación de catálogo y tipos registrada en `docs/AUDIT.md`. El diseño y el plan están en `docs/superpowers/`.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
