@@ -39,6 +39,14 @@ El [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) fija comprobaci
 
 Se detectó además una instrucción operativa obsoleta en `docs/RELEASE-CHECKLIST.md` que decía ejecutar `migration repair` si la baseline faltaba. La versión ya figura en QE2026 como marcador no equivalente; el checklist se corrigió para remitir a D-030 y al nuevo procedimiento sin alterar la entrada histórica de D-021.
 
+### Impacto de los filtros de la cola de revisión — 2026-09-28
+
+Se confirmó por detalle del proyecto que la consulta era de sólo lectura sobre QE2026 (`izbfawwmbilmsrdjaanw`). La definición productiva de `get_cu_pending_reviews()` añade dos exclusiones exactas al criterio `status = 'pendiente'`: una por `cu_links.token` y otra por `companies.name`. La baseline estructural conserva la misma selección y ordenación, pero omite ambas exclusiones. No se copiaron ni publicaron los valores literales. La aplicación llama a `admin_get_cu_pending_reviews()`, que invoca esta función después de exigir rol `admin`; por tanto, la diferencia puede afectar la cola que ve un administrador, no sólo una definición SQL sin uso.
+
+Una consulta agregada, sin devolver filas, tokens, nombres ni identificadores, encontró **12 respuestas pendientes** según las uniones de la función: **8** coinciden con la exclusión por token, **8** con la exclusión por nombre y las **8** son las mismas respuestas; quedan **4** visibles. `count(*)` sobre la función productiva confirmó **4**. Este corte no demuestra que las ocho respuestas sean de prueba, que puedan descartarse ni que todas correspondan a un único contacto. Tampoco equivale a una prueba autenticada de la interfaz. La descripción del PRD sobre revisión de respuestas pendientes es más amplia que el comportamiento productivo comprobado; se registra aquí la diferencia, sin reinterpretar todavía el requisito.
+
+**Decisión pendiente de Pedro:** identificar con revisión autorizada si esas ocho respuestas son fixtures o trabajo real y definir su tratamiento. Hasta entonces, conservar producción y la baseline sin cambios; no copiar los literales al repositorio, no quitar los filtros en QE2026 y no declarar paridad funcional. Si se decide eliminar las exclusiones, se necesitarán un plan de recuperación para las respuestas que reaparecerían, prueba con datos sintéticos en un proyecto desechable, migración nueva y gate de release propio. Esta revisión usó dos consultas `SELECT` agregadas sobre datos productivos y lecturas de la definición; no ejecutó DDL, DML ni recuperó filas comerciales. Los conteos ampliaron el alcance de lectura de metadatos fijado inicialmente en el plan de conciliación; no se harán lecturas adicionales de filas o agregados sin un gate explícito.
+
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
 - Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.

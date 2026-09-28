@@ -88,6 +88,8 @@ Segunda lectura de **sólo esquema e historial** en QE2026, sin leer filas de ne
 
 Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella: recrearían objetos o permisos antiguos y repetirían un backfill. Los seis posteriores explican las diferencias estructurales y funcionales observadas. La [matriz de trazabilidad](../../MIGRATION-HISTORY-MATRIX.md) conserva ahora huellas LF y normalizadas de las 29 versiones remotas y los diez archivos locales, sin publicar SQL ni filas. Ocho pares tienen una huella normalizada igual y dos no; esto no prueba equivalencia semántica. La revisión funcional de los filtros literales y las pruebas sintéticas pertinentes siguen pendientes.
 
+**Avance de sólo lectura (2026-09-28):** se comparó la función productiva con la baseline sin exponer los literales. La primera excluye por un token de enlace y un nombre de empresa exactos; la segunda no. Un conteo agregado de QE2026 encontró 12 respuestas `pendiente` elegibles por las uniones, ocho excluidas por ambos predicados (las mismas ocho) y cuatro devueltas por la función. El código de la aplicación consume la cola a través de `admin_get_cu_pending_reviews()`. No se estableció si las ocho son fixtures; quitar los filtros podría mostrar trabajo adicional al administrador. Véase la sección de impacto en [`AUDIT.md`](../../AUDIT.md). La decisión de producto y una eventual prueba autenticada sintética siguen abiertas; no se cambió la RPC, la baseline, los datos ni el historial.
+
 ## Propuesta de decisión, sin ejecución
 
 | Ruta | Qué entrega | Riesgo y reversibilidad |
@@ -110,7 +112,7 @@ Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella:
 - [x] Conservar hashes del SQL con saltos LF y de una normalización heurística en una [matriz revisable](../../MIGRATION-HISTORY-MATRIX.md), con diez pares locales/remotos y 19 entradas sólo remotas. No interpretar coincidencia de hash normalizado como prueba semántica.
 - [x] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
 - [x] Contrastar el SQL RBAC remoto registrado con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; la comparación textual normalizada a LF fue idéntica.
-- [ ] Completar la revisión funcional de las entradas sólo remotas que afectan `get_cu_pending_reviews()` y otros contratos divergentes. Ya existen el inventario por objeto, tres backfills identificados y las huellas cruzadas; la decisión sobre los filtros literales y los casos sintéticos sigue pendiente.
+- [ ] Completar la revisión funcional de las entradas sólo remotas que afectan `get_cu_pending_reviews()` y otros contratos divergentes. La forma de los dos filtros, el impacto agregado actual, el inventario por objeto, tres backfills y las huellas cruzadas están documentados; faltan la decisión sobre las ocho respuestas excluidas, los otros contratos divergentes y los casos sintéticos autenticados.
 
 ### Tarea 2: reproducción aislada y comparación de estado
 

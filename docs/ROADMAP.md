@@ -31,6 +31,7 @@ Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el rep
 Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 
 - verificar para un SQL nuevo el procedimiento de release, con respaldo y dry-run que no reaplique SQL antiguo;
+- decidir el tratamiento de ocho respuestas pendientes actualmente excluidas de la cola administrativa por dos filtros literales de QE2026; la baseline aislada no los reproduce y no hay decisión sobre si son pruebas o trabajo real (evidencia en `AUDIT.md`);
 - decidir el tratamiento del estado legado `por_validar`;
 - habilitar la protección de contraseñas filtradas mediante un gate de Auth;
 - definir permisos diferentes para `admin` y `member`;
