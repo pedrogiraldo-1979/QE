@@ -6,7 +6,8 @@
 - Tipo: fuente viva de requisitos de producto.
 - Estado: vigente.
 - Responsable de producto: Pedro.
-- Última revisión: 2026-07-21.
+- Última revisión general: 2026-07-21.
+- Actualización puntual: 2026-09-26 (estado del piloto de correo).
 - Baseline publicado inspeccionado: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
 - Fase activa: Fase 9 — Cierre funcional y operativo.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
@@ -94,7 +95,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - ruta interna autenticada para una prueba controlada de ZeptoMail;
 - destinatario y usuario restringidos;
 - secreto conservado exclusivamente en el runtime de la Edge Function.
-- piloto real separado para exactamente cinco destinatarios aprobados;
+- piloto controlado de correo realizado según confirmación de Pedro; la ruta conservada no autoriza nuevos envíos;
 - vista previa cerrada, confirmación en dos pasos, reclamación atómica y bloqueo de duplicados;
 - destinatarios y tokens provisionados por entorno, nunca incluidos en Git ni aceptados desde el navegador.
 
@@ -129,7 +130,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 | CU-03 | Revisión | Una respuesta sólo puede aprobarse o rechazarse desde el estado pendiente. |
 | CU-04 | Aplicación | Una aprobación aplica empresa y contactos en una transacción y no duplica un segundo contacto al reintentarse. |
 | CU-05 | Maestros | Una aprobación con cambios queda pendiente de maestros hasta confirmar `Hoja1` y `contactos_base`; confirmar sin cambios no crea tarea. |
-| COM-01 | Piloto de correo | Sólo el usuario autorizado puede previsualizar y reclamar exactamente cinco destinatarios provisionados; un segundo intento no puede reenviar un registro reclamado. |
+| COM-01 | Piloto de correo | La implementación restringe la vista previa y la reclamación a la identidad autorizada y bloquea reenvíos automáticos; cualquier lote nuevo requiere aprobación independiente. |
 | UX-01 | Interfaz | Acciones y filtros principales tienen nombre accesible y foco visible. |
 | UX-02 | Responsive | Los flujos críticos son utilizables en escritorio y en un viewport móvil de 390 px. |
 | OPS-01 | Release | Typecheck, pruebas, build, smoke y deployment deben aprobar antes de cerrar una fase publicable. |
@@ -286,7 +287,7 @@ La activación documental de la Fase 9 no cambia por sí misma el alcance funcio
 - funcionalidades ERP: inventario, compras, contabilidad, nómina y facturación;
 - migraciones, cambios de RLS/Auth, Edge Functions o datos sin un gate separado;
 - importaciones o limpiezas de datos no autorizadas;
-- automatización masiva de email o WhatsApp más allá del piloto cerrado de cinco destinatarios;
+- nuevos lotes de email, automatización masiva de email o WhatsApp sin alcance y aprobación independientes;
 - analítica avanzada o telemetría sin política aprobada;
 - rediseño visual integral;
 - permisos por propietario o multi-organización no definidos por producto.

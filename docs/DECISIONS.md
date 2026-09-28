@@ -232,6 +232,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Idempotencia: sólo filas `approved` pueden reclamarse. Los estados `sending`, `sent` y `failed` no se reintentan automáticamente; una respuesta incierta se resuelve mediante auditoría del proveedor y autorización separada.
 - Límite: no habilita campañas masivas, destinatarios dinámicos, reintentos ni el envío durante CI/pruebas.
 - Evidencia/verificación: `tests/campaignPilot.test.mjs`, `supabase/migrations/20260721023246_add_approved_campaign_pilot.sql`, `supabase/functions/send-approved-campaign-pilot/` y `/piloto-campana`.
+- Actualización posterior (2026-09-26): Pedro confirmó que ya realizó el piloto de correo, sin precisar aquí cuál lote. La cifra de cinco pertenece a esta decisión histórica y no se adopta como límite permanente del producto. Esta confirmación no autoriza un nuevo lote ni modifica código, destinatarios o Supabase; cualquier envío posterior requiere un gate independiente.
 
 ## D-025 — Separar aprobación transaccional y sincronización de maestros
 
@@ -279,6 +280,16 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Integridad: la carga es aditiva e idempotente; conserva los 26 prospectos existentes, incorpora cinco registros nuevos en `por_revisar`, completa sólo campos públicos vacíos y agrega un contacto institucional por colegio sin declarar responsables no confirmados.
 - Consecuencias: la interfaz puede buscar, filtrar, editar y resumir la campaña separadamente. La lista maestra y los estados heredados no se reescriben de forma masiva.
 - Evidencia/verificación: migración `20260826000000_add_prospect_campaign_targeting.sql`, 31 prospectos y 31 contactos de canal público verificados en `QE2026`, sin duplicados de campaña ni cruces con `COLEGIO NUEVA YORK` o `COLEGIO GIMNASIO DEL NORTE`.
+
+## D-029 — Publicar una baseline estructural independiente para proyectos vacíos
+
+- Estado: Aceptada para ensayo aislado; publicación sujeta a revisión del PR
+- Fecha: 2026-09-25
+- Responsable: Pedro
+- Contexto: la historia de migraciones disponible localmente no reproduce por sí sola el esquema remoto actual y la migración de campaña incluye datos reales. Se necesita una ruta verificable para crear entornos nuevos sin copiar identidades ni contactos.
+- Decisión: mantener las diez migraciones históricas intactas y añadir `supabase/baselines/qe2026-schema-only.sql` como replay estructural independiente, fuera de `supabase/migrations/`. Se aplica únicamente a un proyecto Supabase vacío, desechable y confirmado por referencia. Excluye las cargas y correcciones de filas existentes, los 31 contactos de campaña y dos filtros literales ligados a pruebas de QE2026.
+- Seguridad y operación: el archivo no autoriza `db push`, `migration repair` ni ejecución en QE2026; tampoco sustituye una decisión futura sobre el historial productivo. Cualquier adopción operativa exige revisión separada. El ensayo se hizo sin usuarios Auth, membresías ni datos CRM y el proyecto temporal quedó pausado.
+- Evidencia/verificación: prueba contractual, typecheck, pruebas completas, build y smoke locales; comparación de catálogo y tipos registrada en `docs/AUDIT.md`. El diseño y el plan están en `docs/superpowers/`.
 
 ### D-XXX — Título
 
