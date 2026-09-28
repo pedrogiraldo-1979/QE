@@ -145,6 +145,8 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Operación: altas, bajas y cambios de rol deben realizarse con migraciones revisadas según `docs/AUTHORIZATION.md`. Crear una cuenta Auth por sí sola no concede acceso.
 - Evidencia: ambos miembros ven 83 empresas, 220 prospectos y 8 respuestas en pruebas RLS; una identidad externa ve cero filas; una consulta `anon` directa recibe `42501 permission denied`.
 
+**Estado posterior (2026-09-28):** el CRUD compartido describe el corte inicial de D-016, no el modelo vigente. La base RBAC posterior figura en el historial de QE2026 bajo `20260925200537`; separa operaciones comerciales de administración. Esta constatación de historial y catálogo no sustituye pruebas autenticadas actuales en QE2026 ni completa auditoría, recuperación o el nuevo ciclo público.
+
 ## D-017 — Retirar los cinco duplicados raíz como una unidad
 
 - Estado: Aceptada y ejecutada

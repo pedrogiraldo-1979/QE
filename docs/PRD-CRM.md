@@ -7,8 +7,8 @@
 - Estado: vigente.
 - Responsable de producto: Pedro.
 - Última revisión general: 2026-07-21.
-- Actualización puntual: 2026-09-26 (estado del piloto de correo).
-- Baseline publicado inspeccionado: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
+- Actualización puntual: 2026-09-28 (D-030, D-031 y estado observado de la base RBAC).
+- Baseline de la revisión general: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`; las actualizaciones posteriores se fechan por separado.
 - Fase activa: Fase 9 — Cierre funcional y operativo.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
 
@@ -53,7 +53,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - autorización interna mediante allowlist privada;
 - rechazo y cierre de sesión para identidades no autorizadas;
 - defensa adicional mediante RLS en las tablas CRM;
-- roles `admin` y `member` registrados, actualmente con el mismo CRUD.
+- base RBAC registrada en QE2026: `member` conserva lectura, creación y actualización comercial; enlaces, revisión de respuestas, conciliación y eliminación sensible quedan reservados a `admin`. Esta revisión documental no repitió pruebas autenticadas en QE2026.
 
 ### Empresas y contactos
 
@@ -102,7 +102,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 ## 5. Reglas de negocio vigentes
 
 1. Una cuenta de Auth no obtiene acceso al CRM si no está activa en la allowlist privada.
-2. `admin` y `member` comparten capacidades hasta que producto apruebe una matriz de permisos.
+2. La matriz aprobada distingue `admin` y `member`; la base RBAC observada en QE2026 separa el trabajo comercial de las operaciones administrativas. Auditoría, recuperación, administración de membresías y nuevo ciclo público requieren entregas propias.
 3. Los estados heredados de prospectos se normalizan al leer; no se reescriben datos automáticamente.
 4. Una conversión repetida devuelve la empresa ya enlazada y no debe crear otra.
 5. Las eliminaciones de prospectos requieren confirmación y usan una operación transaccional; la política de recuperación sigue pendiente.
@@ -241,7 +241,7 @@ Los criterios `P9-WF-01..03`, `P9-FLD-01..02` y `P9-CONV-01..03` quedan aceptado
 
 ### Gobierno y recuperación aprobados — Etapa 2
 
-La Etapa 2 quedó aprobada e integrada mediante la [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md) y se registra como `D-027` en [DECISIONS.md](./DECISIONS.md). La base del [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) fue validada en un proyecto desechable el 2026-09-24 y conserva un gate de release independiente antes de cualquier entorno compartido.
+La Etapa 2 quedó aprobada e integrada mediante la [especificación de gobierno y recuperación](./superpowers/specs/2026-07-21-phase-9-governance-recovery-design.md) y se registra como `D-027` en [DECISIONS.md](./DECISIONS.md). La base del [plan RBAC](./superpowers/plans/2026-07-21-phase-9-rbac-foundation.md) se validó en un proyecto desechable el 2026-09-24. La lectura posterior del historial de QE2026 registra ese SQL bajo `20260925200537`, y la comparación estructural observó sus políticas y contratos; esta revisión no equivale a una nueva prueba autenticada en producción.
 
 El contrato:
 
@@ -251,7 +251,7 @@ El contrato:
 - excluye la purga definitiva de la aplicación y exige un procedimiento excepcional;
 - establece un enlace por ciclo, una sola respuesta válida y estados terminales sin reapertura.
 
-Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. La base RBAC cuenta con evidencia aislada, pero su publicación y cualquier cambio compartido siguen requiriendo release y reversión aprobados. Auditoría, eliminación lógica, recuperación y el nuevo ciclo público permanecen sin implementar y necesitan unidades separadas.
+Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. La base RBAC figura aplicada en QE2026; cualquier evolución compartida requiere un nuevo release y reversión aprobados. Auditoría, eliminación lógica, recuperación, administración de membresías y el nuevo ciclo público permanecen sin implementar y necesitan unidades separadas.
 
 ### Decisiones pendientes
 - cobertura mínima automatizada por flujo y evidencia manual aceptable;
@@ -264,7 +264,7 @@ Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptado
 - aprobación de las decisiones de producto antes de diseñar implementación;
 - contratos generados y esquema remoto contrastado antes de asumir columnas, RPC o políticas;
 - gate independiente para cualquier cambio de Supabase, RLS, Auth, Edge Functions o datos;
-- reconciliación de la baseline en el historial productivo antes de desplegar otra migración;
+- para cada SQL nuevo, inventario actualizado, respaldo, ensayo aislado, selección verificable de esa única versión y autorización específica conforme a D-030; no reparar ni reproducir el historial antiguo;
 - proyecto desechable confirmado para pruebas autenticadas o mutantes;
 - matriz de criterios y cobertura actualizada antes de cerrar cada frente;
 - release checklist, preview y rollback trazable para toda entrega publicable.

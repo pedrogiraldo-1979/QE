@@ -19,7 +19,7 @@ Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Esta
 - Fuente canónica de código: `src/`.
 - Stack reproducible: Node 24.14.0, pnpm 11.7.0 y lockfile versionado.
 - Superficie: diez rutas de Next.js, nueve tablas CRM con RLS, ocho RPC públicas tipadas y una función privada de autorización.
-- Autorización: allowlist privada; `admin` y `member` comparten actualmente el mismo CRUD.
+- Autorización: allowlist privada; la base RBAC figura aplicada en QE2026 y separa trabajo comercial de operaciones administrativas. Esta revisión no repitió pruebas autenticadas en producción.
 - Calidad publicada: typecheck, 25 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP 10/10, gate visual autenticado, smoke de campaña no mutante y suites aisladas de integración/E2E.
 - Baseline de Supabase en el corte de 2026-07-21: seis migraciones reprodujeron el esquema observado entonces; esa prueba no acredita la paridad actual de la cadena histórica con QE2026.
 - Entorno temporal de pruebas: limpio y en pausa después de las validaciones aisladas.
@@ -28,15 +28,15 @@ Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Esta
 
 Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el repositorio diez SQL históricos con versiones divergentes. El PR #34 publicó una baseline estructural independiente, ensayada sólo en proyectos vacíos, y el PR #33 sincronizó los tipos generados. D-030 aprobó conservar ambas historias intactas y reservar los cambios nuevos para releases SQL individuales con revisión y gate propio. La [matriz](./MIGRATION-HISTORY-MATRIX.md) y el [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) están preparados; aún falta verificar un método de despliegue y el dry-run de un SQL concreto. La estrategia no autoriza reparar el historial ni desplegar otra migración.
 
-Riesgos y decisiones abiertas que no bloquean el uso interno actual:
+Riesgos y trabajo abierto que no bloquean el uso interno actual:
 
 - verificar para un SQL nuevo el procedimiento de release, con respaldo y dry-run que no reaplique SQL antiguo;
 - evaluar un mecanismo explícito, sólo mediante diseño y release aprobados, para reemplazar los filtros literales que hoy mantienen fuera de la cola real ocho respuestas de ensayo confirmadas por Pedro (D-031); conservar mientras tanto los registros y el comportamiento productivo;
 - decidir el tratamiento del estado legado `por_validar`;
 - habilitar la protección de contraseñas filtradas mediante un gate de Auth;
-- definir permisos diferentes para `admin` y `member`;
-- definir auditoría y recuperación para eliminaciones;
-- acordar la semántica de múltiples respuestas por enlace;
+- completar la evidencia autenticada que corresponda a la base RBAC observada en QE2026 y tratar cualquier evolución de permisos mediante un gate nuevo;
+- implementar por unidades aprobadas la auditoría, eliminación lógica y recuperación ya definidas en D-027;
+- implementar mediante un gate propio el ciclo de enlaces y respuestas definido en D-027;
 - definir métricas, retención, alertas y observabilidad;
 - implementar paginación antes de superar 1.000 entidades por dominio.
 
@@ -84,7 +84,7 @@ Estado: cerrada documentalmente el 2026-07-21.
 
 Gate: cumplido mediante la especificación aprobada y `D-027`; los criterios `P9-RBAC`, `P9-AUD` y `P9-CU` quedan aceptados sin cambios de backend ni datos.
 
-Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBAC se implementó y validó en un proyecto Supabase desechable el 2026-09-24; su publicación en un entorno compartido conserva un gate de release independiente. Auditoría, recuperación, administración de membresías, nuevo ciclo público y datos conservan planes y autorizaciones propios.
+Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBAC se implementó y validó en un proyecto Supabase desechable el 2026-09-24; el historial posterior de QE2026 registra ese SQL bajo `20260925200537` y la comparación estructural observó sus políticas y contratos. No se repitió aquí una prueba autenticada en QE2026. Auditoría, recuperación, administración de membresías y nuevo ciclo público conservan planes y autorizaciones propios.
 
 #### Etapa 3 — Evidencia operable
 
@@ -129,7 +129,7 @@ Gate: cobertura reproducible sin secretos ni datos reales.
 
 ### Gates independientes de backend y datos
 
-- completar la matriz local/remoto y validar un release nuevo con respaldo, recuperación, ensayo aislado y dry-run que liste únicamente esa nueva versión; conservar intacto el historial de QE2026 conforme a D-030;
+- actualizar la matriz local/remoto ya documentada antes de cada release y validar un SQL nuevo con respaldo, recuperación, ensayo aislado y dry-run que liste únicamente esa nueva versión; conservar intacto el historial de QE2026 conforme a D-030;
 - evaluar protección de contraseñas filtradas;
 - ejecutar, si se aprueba en Fase 9, la migración de estados legados mediante un plan reversible;
 - implementar, si se aprueba en Fase 9, la política de respuestas públicas mediante un gate aislado;
