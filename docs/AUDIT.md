@@ -29,7 +29,15 @@ Contradicción detectada para este PR: `docs/ROADMAP.md` todavía describía sei
 
 ### Estrategia conservadora aprobada — 2026-09-28
 
-Pedro confirmó conservar intactas las 29 entradas del historial de QE2026 y los diez SQL históricos locales, usar la baseline nueva sólo en proyectos vacíos y preparar futuros cambios como releases SQL individuales y revisados. La decisión se registra en D-030 y se refleja en `README.md`, `docs/ROADMAP.md` y `docs/DATA-CONTRACTS.md`. La aprobación es estratégica y documental: no se ejecutaron `migration repair`, `db push`, SQL remoto, cambios de esquema ni mutaciones de datos. La matriz de fingerprints cruzados, el tratamiento de los filtros literales de `get_cu_pending_reviews()` y un dry-run que descarte reejecutar SQL antiguo siguen como gates separados antes de cualquier nuevo release.
+Pedro confirmó conservar intactas las 29 entradas del historial de QE2026 y los diez SQL históricos locales, usar la baseline nueva sólo en proyectos vacíos y preparar futuros cambios como releases SQL individuales y revisados. La decisión se registra en D-030 y se refleja en `README.md`, `docs/ROADMAP.md` y `docs/DATA-CONTRACTS.md`. La aprobación es estratégica y documental: no se ejecutaron `migration repair`, `db push`, SQL remoto mutante, cambios de esquema ni mutaciones de datos. La matriz de fingerprints cruzados, el tratamiento de los filtros literales de `get_cu_pending_reviews()` y un dry-run que descarte reejecutar SQL antiguo siguen como gates separados antes de cualquier nuevo release.
+
+### Matriz de huellas y procedimiento condicionado — 2026-09-28
+
+La lectura de detalle confirmó QE2026 (`izbfawwmbilmsrdjaanw`, `ACTIVE_HEALTHY`) antes de consultar únicamente el historial. Se calcularon en el servidor huellas MD5 sobre `supabase_migrations.schema_migrations.statements`, sin devolver el SQL ni consultar filas CRM, y se compararon con los diez archivos locales. La [matriz completa](./MIGRATION-HISTORY-MATRIX.md) contiene las 29 versiones remotas: ocho de diez pares locales/remotos tienen la misma huella tras normalizar comentarios de línea y espacios; las diferencias son la baseline-marker y la allowlist ya conocidas. Dos pares tienen además la misma huella LF sin recortar extremos. Una comprobación adicional que recorta sólo espacios/saltos exteriores reconcilió la revisión textual anterior: siete de los ocho pares esperados son idénticos así; `20260720031715` conserva un comentario local. Ninguna de estas huellas demuestra por sí sola equivalencia semántica o autoriza replay.
+
+El [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) fija comprobación doble del proyecto, inventario actualizado, respaldo/recuperación, ensayo aislado, selección demostrable de un único SQL nuevo, autorización específica y verificación posterior. La CLI Supabase no está instalada localmente y no existe aún una nueva migración aprobada; por ello no se ejecutó `db push --dry-run` ni se validó un método de despliegue productivo. Las cuatro versiones locales con timestamps distintos de los remotos impiden presumir que un push convencional elegiría sólo el SQL futuro. No se instaló software ni se ejecutaron migraciones, `migration repair`, DDL/DML o pruebas mutantes en QE2026. Permanecen aparte la revisión de `get_cu_pending_reviews()` y el gate de un release concreto.
+
+Se detectó además una instrucción operativa obsoleta en `docs/RELEASE-CHECKLIST.md` que decía ejecutar `migration repair` si la baseline faltaba. La versión ya figura en QE2026 como marcador no equivalente; el checklist se corrigió para remitir a D-030 y al nuevo procedimiento sin alterar la entrada histórica de D-021.
 
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
@@ -689,6 +697,8 @@ Validación desde cero:
 - después de la prueba, las nueve tablas, la allowlist y Auth quedaron en cero; el proyecto temporal terminó en estado `INACTIVE`.
 
 Límite operativo: `20260720000000` no se registró en el historial de producción. Antes de desplegar otra migración remota se necesita un gate separado para ejecutar `supabase migration repair --linked --status applied 20260720000000`, sin ejecutar el SQL de la baseline sobre producción.
+
+**Nota de vigencia (2026-09-28):** la instrucción anterior conserva la evidencia del corte de Fase 7, pero quedó invalidada por la lectura posterior del historial: la versión sí existe en QE2026 con otro SQL. No ejecutarla. D-030 y el [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) rigen cualquier release nuevo.
 
 ## 21. Gate visual autenticado restante — Fase 8 completada
 

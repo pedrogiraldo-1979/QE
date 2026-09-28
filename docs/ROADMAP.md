@@ -26,11 +26,11 @@ Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Esta
 - Fase 8: cerrada, fusionada mediante el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) y publicada.
 - Fase 9: fase activa para cerrar definiciones funcionales, gobierno, evidencia operable y deuda técnica incremental.
 
-Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el repositorio diez SQL históricos con versiones divergentes. El PR #34 publicó una baseline estructural independiente, ensayada sólo en proyectos vacíos, y el PR #33 sincronizó los tipos generados. D-030 aprobó conservar ambas historias intactas y reservar los cambios nuevos para releases SQL individuales con revisión y gate propio. Esta estrategia no autoriza reparar el historial ni desplegar otra migración; faltan la matriz cruzada y el procedimiento seguro de release.
+Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el repositorio diez SQL históricos con versiones divergentes. El PR #34 publicó una baseline estructural independiente, ensayada sólo en proyectos vacíos, y el PR #33 sincronizó los tipos generados. D-030 aprobó conservar ambas historias intactas y reservar los cambios nuevos para releases SQL individuales con revisión y gate propio. La [matriz](./MIGRATION-HISTORY-MATRIX.md) y el [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) están preparados; aún falta verificar un método de despliegue y el dry-run de un SQL concreto. La estrategia no autoriza reparar el historial ni desplegar otra migración.
 
 Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 
-- completar la matriz de historia local/remota y el procedimiento de release que no reaplique SQL antiguo antes de otra migración;
+- verificar para un SQL nuevo el procedimiento de release, con respaldo y dry-run que no reaplique SQL antiguo;
 - decidir el tratamiento del estado legado `por_validar`;
 - habilitar la protección de contraseñas filtradas mediante un gate de Auth;
 - definir permisos diferentes para `admin` y `member`;

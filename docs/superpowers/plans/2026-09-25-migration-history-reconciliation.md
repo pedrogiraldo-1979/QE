@@ -13,7 +13,7 @@
 ## Restricciones globales
 
 - Producción: QE2026 (`izbfawwmbilmsrdjaanw`), sólo lectura durante este plan. Confirmar `project_ref` en cada sesión.
-- No ejecutar `supabase db push`, `migration repair`, `db pull` con confirmación de historia, `apply_migration`, DDL ni DML en producción. Según la [referencia de Supabase](https://supabase.com/docs/reference/cli/supabase-migration-repair), `repair --status applied` inserta registros y `--status reverted` los elimina del historial; ninguna operación equivale a aplicar o revertir el esquema.
+- No ejecutar `supabase db push`, `migration repair`, `db pull` con confirmación de historia, `apply_migration`, DDL ni DML en producción. Se permiten únicamente consultas `SELECT` de metadatos e historial para la matriz autorizada, sin devolver el SQL registrado ni filas comerciales. Según la [referencia de Supabase](https://supabase.com/docs/reference/cli/supabase-migration-repair), `repair --status applied` inserta registros y `--status reverted` los elimina del historial; ninguna operación equivale a aplicar o revertir el esquema.
 - No borrar, mover, renombrar ni duplicar archivos históricos sin inventario, impacto, plan reversible y autorización explícita.
 - No copiar miembros de Auth, UUID de usuarios, correos, tokens ni filas comerciales a proyectos temporales o Git.
 - No instalar CLI, dependencias ni herramientas nuevas sin un gate separado. La CLI no estaba instalada durante el release RBAC; descubrir su versión y `--help` antes de usarla si se habilita.
@@ -35,6 +35,8 @@ El historial remoto enumera 29 versiones; el directorio local contiene diez arch
 Las seis entradas remotas posteriores sin archivo local son `20260722031506`, `20260722034019`, `20260722034030`, `20260722034045`, `20260722142520` y `20260804203513`. Las 13 anteriores al 20 de julio abarcan `20260701140601`–`20260707013441` y fueron absorbidas estructuralmente por la baseline local, no por identidad de historia. `docs/DECISIONS.md` D-021 aún indica que la baseline no figura en producción; el historial remoto actual sí la contiene. La diferencia se registra en `docs/AUDIT.md`, sin reescribir la decisión histórica.
 
 Revalidación de solo lectura posterior: los cuatro pares incrementales de misma versión, los tres pares de timestamps distintos y RBAC coinciden al normalizar comentarios y espacios. Siete de los ocho también coinciden como texto normalizado a LF; el octavo (`20260720031715`) sólo tiene un comentario local adicional. El SQL RBAC remoto coincide textualmente con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`. La baseline y la allowlist no son equivalentes; el contenido de la siembra de membresías no se publicó ni imprimió.
+
+**Aclaración posterior (2026-09-28):** la nueva [matriz de huellas](../../MIGRATION-HISTORY-MATRIX.md) observa sólo dos coincidencias `MD5-LF` sin recortar los extremos. Al recortar únicamente espacios y saltos iniciales/finales, siete de los ocho pares sí coinciden exactamente; el octavo (`20260720031715`) mantiene el comentario local adicional. Así se reconcilia el conteo anterior. La identidad textual bajo ese criterio tampoco sustituye una revisión semántica ni autoriza ejecutar SQL.
 
 Inventario inicial de las 19 entradas sólo remotas: las 13 primeras crean o ajustan enlaces/respuestas de clientes, prospección, políticas, grants y funciones; las seis posteriores ajustan precarga/revisión y lotes de campaña. Tres contienen un `UPDATE` de nivel superior sobre filas preexistentes: `20260707013441` normaliza campos de `contacts`, `20260722034019` rellena `campaign_pilot_recipients.batch_key` antes de hacerlo no nulo y `20260722142520` reconcilia `cu_responses.confirm_no_changes` con su payload. Otras funciones contienen DML en su cuerpo ejecutable al invocarlas; eso no equivale a DML de la migración. Ninguna de estas entradas debe repetirse en QE2026 para “igualar” el historial.
 
@@ -84,7 +86,7 @@ Segunda lectura de **sólo esquema e historial** en QE2026, sin leer filas de ne
 | `20260722142520` | Reemplaza `submit_cu_form` y `get_cu_pending_reviews` | Ejecuta **backfill** de `confirm_no_changes`; la función de cola contiene filtros por literales que requieren revisión antes de reproducirse. |
 | `20260804203513` | Reemplaza `claim_campaign_pilot_batch` | DML interno y semántica de lote distinta a la versión local. |
 
-Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella: recrearían objetos o permisos antiguos y repetirían un backfill. Los seis posteriores explican las diferencias estructurales y funcionales observadas. El SQL remoto de cada una de las 29 versiones quedó identificado por versión, nombre, longitud y MD5 de `array_to_string(statements, E'\n')` durante esta revisión; ese fingerprint sólo prueba identidad del texto registrado, no equivalencia semántica con los archivos locales. Antes de fijar una nueva fuente canónica falta conservar una matriz de hashes cruzados y revisar las cuatro funciones divergentes con casos sintéticos.
+Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella: recrearían objetos o permisos antiguos y repetirían un backfill. Los seis posteriores explican las diferencias estructurales y funcionales observadas. La [matriz de trazabilidad](../../MIGRATION-HISTORY-MATRIX.md) conserva ahora huellas LF y normalizadas de las 29 versiones remotas y los diez archivos locales, sin publicar SQL ni filas. Ocho pares tienen una huella normalizada igual y dos no; esto no prueba equivalencia semántica. La revisión funcional de los filtros literales y las pruebas sintéticas pertinentes siguen pendientes.
 
 ## Propuesta de decisión, sin ejecución
 
@@ -105,10 +107,10 @@ Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella:
 ### Tarea 1: inventario verificable de historia y SQL
 
 - [x] Registrar commit base, estado del árbol, diez nombres de archivo locales y las 29 versiones remotas con nombres, sin obtener datos personales.
-- [ ] Conservar hashes del SQL original y normalizado en una matriz revisable. La revalidación comparó ya el contenido de los cuatro pares de misma versión y los tres pares de distinto timestamp, pero aún no produjo esa matriz de hashes.
+- [x] Conservar hashes del SQL con saltos LF y de una normalización heurística en una [matriz revisable](../../MIGRATION-HISTORY-MATRIX.md), con diez pares locales/remotos y 19 entradas sólo remotas. No interpretar coincidencia de hash normalizado como prueba semántica.
 - [x] Para baseline y allowlist, documentar la diferencia semántica exacta: marcador frente a reconstrucción, y siembra productiva retirada frente a provisionamiento por entorno. No volcar UUID ni correos al informe.
 - [x] Contrastar el SQL RBAC remoto registrado con el archivo local de SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E`; la comparación textual normalizada a LF fue idéntica.
-- [ ] Completar la revisión de las 19 entradas sólo remotas por objeto, DML de nivel superior, identidades y dependencias de entorno. Ya existe la matriz por objeto y se confirmaron tres backfills; quedan los fingerprints cruzados y la decisión sobre los literales de la cola de revisión antes de dar por exhaustivo el inventario.
+- [ ] Completar la revisión funcional de las entradas sólo remotas que afectan `get_cu_pending_reviews()` y otros contratos divergentes. Ya existen el inventario por objeto, tres backfills identificados y las huellas cruzadas; la decisión sobre los filtros literales y los casos sintéticos sigue pendiente.
 
 ### Tarea 2: reproducción aislada y comparación de estado
 
@@ -122,13 +124,14 @@ Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella:
 - [x] Presentar las rutas A y B con sus riesgos históricos. Pedro eligió B después de la reproducción estructural aislada del PR #34; el inventario de versiones y objetos está arriba. La matriz de fingerprints cruzados sigue como gate de ejecución, no como condición retroactiva para esta elección documental.
 - [x] Recomendar una opción sólo después de que la Tarea 2 pruebe reproducibilidad; la ruta B quedó aceptada con sus límites estructurales y funcionales explícitos.
 - [x] Registrar la decisión estratégica en D-030, distinguiendo la conservación del historial de la autorización para desplegar.
-- [ ] Antes de la próxima migración, conservar un inventario actualizado de metadatos/hashes, preparar respaldo y recuperación, ensayar el cambio en un proyecto aislado y comprobar un dry-run que liste exclusivamente la nueva versión. Este gate no está satisfecho por D-030.
+- [x] Documentar en [`SUPABASE-RELEASE-PROCEDURE.md`](../../SUPABASE-RELEASE-PROCEDURE.md) el orden, las condiciones de parada y el gate de selección de una sola migración, sin habilitar ejecución productiva.
+- [ ] Para un SQL nuevo y aprobado, repetir inventario de metadatos/hashes, preparar respaldo y recuperación, ensayar el cambio en un proyecto aislado y comprobar un dry-run que liste exclusivamente la nueva versión. Hoy no existe ese SQL, la CLI no está instalada y este gate sigue abierto.
 - [ ] Solicitar autorización independiente antes de cualquier `migration repair`, cambio de archivos SQL históricos, nuevo servicio/dependencia o despliegue productivo. Nunca interpretar el visto bueno a este plan como autorización para esas acciones.
 
 ## Gate de decisión inmediato
 
-Pedro confirmó la ruta B y sus límites generales el 2026-09-28; D-030 la registra. La baseline aislada y la sincronización de tipos están publicadas mediante los PR #34 y #33. La excepción por literales de la cola de revisión, la matriz de fingerprints y el procedimiento verificable para una nueva migración no están resueltos. `db push` y `migration repair` siguen bloqueados, al igual que cualquier cambio productivo sin autorización específica.
+Pedro confirmó la ruta B y sus límites generales el 2026-09-28; D-030 la registra. La baseline aislada y la sincronización de tipos están publicadas mediante los PR #34 y #33. La matriz de fingerprints y el procedimiento condicionado están documentados; la excepción por literales de la cola de revisión, el método productivo y un dry-run sobre un SQL nuevo no están resueltos. `db push` y `migration repair` siguen bloqueados, al igual que cualquier cambio productivo sin autorización específica.
 
 ## Criterio de cierre
 
-La decisión documental está registrada, pero el plan operativo permanece abierto hasta disponer de una matriz local/remoto revisada y de una vía de release cuyo dry-run no reaplique migraciones históricas. La reproducción estructural aislada y sus límites están documentados. El cierre documental no modifica por sí mismo el historial remoto.
+La decisión, la matriz y el procedimiento preventivo están documentados. El plan operativo permanece abierto hasta verificar una vía de release con un SQL nuevo cuyo dry-run no reaplique migraciones históricas y resolver la paridad funcional necesaria. La reproducción estructural aislada y sus límites están documentados. El cierre documental no modifica por sí mismo el historial remoto.

@@ -1,6 +1,6 @@
 # Contratos de datos y Supabase
 
-Fecha de verificación del contrato base: 2026-07-19. La validación RBAC del 2026-09-24 se hizo en el proyecto desechable `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`), sin modificar producción. El snapshot de tipos se contrastó de nuevo el 2026-09-25 con QE2026 (`izbfawwmbilmsrdjaanw`) mediante generación de solo lectura. D-030, aprobada el 2026-09-28, conserva el historial productivo sin repararlo; la matriz cruzada y el procedimiento para nuevas migraciones siguen pendientes.
+Fecha de verificación del contrato base: 2026-07-19. La validación RBAC del 2026-09-24 se hizo en el proyecto desechable `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`), sin modificar producción. El snapshot de tipos se contrastó de nuevo el 2026-09-25 con QE2026 (`izbfawwmbilmsrdjaanw`) mediante generación de solo lectura. D-030, aprobada el 2026-09-28, conserva el historial productivo sin repararlo; la [matriz](./MIGRATION-HISTORY-MATRIX.md) y el [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) están documentados, pero ningún método de despliegue ni dry-run de un SQL nuevo ha sido validado.
 
 ## Fuente canónica
 
