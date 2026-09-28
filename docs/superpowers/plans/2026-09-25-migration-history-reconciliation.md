@@ -1,6 +1,6 @@
 # Conciliación del historial de migraciones — plan de investigación y decisión
 
-**Estado posterior (2026-09-28): investigación abierta.** El PR #34 ya publicó y verificó una baseline estructural independiente en proyectos temporales vacíos; el PR #33 ya sincronizó los tipos de QE2026. Ninguno concilió las 29 versiones del historial productivo con los diez archivos históricos locales. La ruta B sigue propuesta hasta una decisión específica de Pedro; no se debe interpretar la publicación de la baseline como aprobación de `migration repair`, `db push` o un cambio en QE2026.
+**Estado posterior (2026-09-28): estrategia B aceptada en D-030; preparación operativa abierta.** El PR #34 ya publicó y verificó una baseline estructural independiente en proyectos temporales vacíos; el PR #33 ya sincronizó los tipos de QE2026. Ninguno concilió las 29 versiones del historial productivo con los diez archivos históricos locales. Pedro aprobó conservar ambas historias intactas y reservar la baseline para proyectos vacíos. Esa decisión no autoriza `migration repair`, `db push` ni un cambio en QE2026.
 
 > **Para agentes:** usar `executing-plans` para los pasos documentales. No delegar en subagentes salvo petición expresa de Pedro. Ninguna casilla de este plan autoriza ejecutar `migration repair`, `db push`, SQL remoto ni borrar archivos.
 
@@ -93,11 +93,11 @@ Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella:
 | **A. Reconstruir la historia remota en `supabase/migrations/`** | Versiones locales alineadas con las 29 remotas y flujo CLI convencional. | Exige rehacer o renombrar archivos históricos, resolver la baseline-marker, la allowlist con identidades y la migración con 31 contactos. Un `db push` antes de resolver cada diferencia puede ejecutar SQL viejo. Reversión mediante Git, pero una reparación del historial remoto necesitaría respaldo y procedimiento aparte. No se recomienda ahora. |
 | **B. Baseline estructural nueva para entornos vacíos, conservando el legado** | Fuente sin datos reales cuyo objetivo es reproducir el catálogo actual, más futuros cambios *forward-only* separados. Los diez SQL existentes y las 29 entradas de QE2026 permanecen como evidencia histórica. | Necesita un archivo nuevo, comparación aislada completa y un procedimiento de publicación que no use todavía `db push` contra QE2026. Es reversible en Git mientras no se aplique remotamente. No resuelve por sí sola la discrepancia de versiones del CLI. |
 
-**Recomendación histórica:** B, por etapas. La especificación, publicación y comparación de catálogo de la baseline estructural para entornos vacíos se completaron en el PR #34. Quedan por decidir el tratamiento funcional de los filtros literales, pruebas sintéticas autenticadas si se requieren, la matriz de fingerprints cruzados y el procedimiento de futuros cambios. Mientras tanto, releases de SQL individuales y revisados, nunca `db push` ni `migration repair`. No modificar los diez archivos existentes ni QE2026 para adoptar esta recomendación sin autorización específica. La [guía oficial](https://supabase.com/docs/guides/deployment/database-migrations) confirma que `migration repair` cambia la tabla de seguimiento, no el esquema.
+**Ruta B aceptada en D-030, con límites:** la especificación, publicación y comparación de catálogo de la baseline estructural para entornos vacíos se completaron en el PR #34. La decisión conserva las 29 entradas remotas y los diez SQL locales sin reparación retroactiva, y exige releases SQL nuevos, individuales y revisados. Quedan pendientes el tratamiento funcional de los filtros literales, pruebas sintéticas autenticadas si se requieren, la matriz de fingerprints cruzados y el procedimiento de futuros cambios con respaldo, recuperación y dry-run. Ningún `db push`, `migration repair` o cambio en QE2026 queda autorizado. La [guía oficial](https://supabase.com/docs/guides/deployment/database-migrations) confirma que `migration repair` cambia la tabla de seguimiento, no el esquema.
 
 ## Archivos previstos
 
-- Modificar, sólo tras decisión: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
+- Modificar tras la decisión aceptada: `docs/DECISIONS.md` y `docs/DATA-CONTRACTS.md` para la estrategia elegida y sus límites.
 - Modificar, durante la investigación: `docs/AUDIT.md` para la matriz de evidencias y resultado del ensayo aislado.
 - Potencialmente modificar, sólo tras inventario y aprobación adicional: `supabase/migrations/` o scripts de generación/reproducción. No se presupone que haya que crear 19 archivos ni alterar los diez existentes.
 - No modificar: tablas, políticas, RPC, Auth, datos o historial de QE2026 durante este plan.
@@ -119,15 +119,16 @@ Los 13 cambios de julio previos a la baseline no deben copiarse detrás de ella:
 
 ### Tarea 3: decisión de estrategia, sin ejecución implícita
 
-- [ ] Presentar a Pedro la matriz completa y dos alternativas con impacto reversible: (A) preservar la historia remota y crear una representación local auditada/reproducible, sin copiar datos; (B) definir una nueva baseline estructural para proyectos vacíos y mantener el historial remoto como legado documentado. Precisar cómo cada opción trataría las 19 entradas, los cuatro timestamps distintos y las dos discrepancias de SQL.
-- [x] Recomendar una opción sólo después de que la Tarea 2 pruebe reproducibilidad; la ruta B se recomienda tras el ensayo estructural independiente del PR #34, con los límites funcionales explícitos. La aceptación de la estrategia sigue pendiente.
-- [ ] Registrar la decisión aceptada en `docs/DECISIONS.md`, junto con respaldo de metadatos, procedimiento de reversión y un dry-run verificable que liste exclusivamente la próxima migración nueva.
+- [x] Presentar las rutas A y B con sus riesgos históricos. Pedro eligió B después de la reproducción estructural aislada del PR #34; el inventario de versiones y objetos está arriba. La matriz de fingerprints cruzados sigue como gate de ejecución, no como condición retroactiva para esta elección documental.
+- [x] Recomendar una opción sólo después de que la Tarea 2 pruebe reproducibilidad; la ruta B quedó aceptada con sus límites estructurales y funcionales explícitos.
+- [x] Registrar la decisión estratégica en D-030, distinguiendo la conservación del historial de la autorización para desplegar.
+- [ ] Antes de la próxima migración, conservar un inventario actualizado de metadatos/hashes, preparar respaldo y recuperación, ensayar el cambio en un proyecto aislado y comprobar un dry-run que liste exclusivamente la nueva versión. Este gate no está satisfecho por D-030.
 - [ ] Solicitar autorización independiente antes de cualquier `migration repair`, cambio de archivos SQL históricos, nuevo servicio/dependencia o despliegue productivo. Nunca interpretar el visto bueno a este plan como autorización para esas acciones.
 
 ## Gate de decisión inmediato
 
-Pedro ya confirmó los proyectos temporales y sus costos indicados. Se recomienda la ruta B; la baseline aislada y la sincronización de tipos están publicadas mediante los PR #34 y #33. Queda obtener una decisión específica sobre la historia productiva y sus límites, incluida la excepción por literales de la cola de revisión. Hasta entonces, `db push` y `migration repair` siguen bloqueados.
+Pedro confirmó la ruta B y sus límites generales el 2026-09-28; D-030 la registra. La baseline aislada y la sincronización de tipos están publicadas mediante los PR #34 y #33. La excepción por literales de la cola de revisión, la matriz de fingerprints y el procedimiento verificable para una nueva migración no están resueltos. `db push` y `migration repair` siguen bloqueados, al igual que cualquier cambio productivo sin autorización específica.
 
 ## Criterio de cierre
 
-Existe una matriz local/remoto revisada, una reproducción aislada verificable o una limitación explícita, una decisión registrada y una vía de release cuyo dry-run no reaplica migraciones históricas. El cierre documental no modifica por sí mismo el historial remoto.
+La decisión documental está registrada, pero el plan operativo permanece abierto hasta disponer de una matriz local/remoto revisada y de una vía de release cuyo dry-run no reaplique migraciones históricas. La reproducción estructural aislada y sus límites están documentados. El cierre documental no modifica por sí mismo el historial remoto.

@@ -198,7 +198,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Evidencia: las seis migraciones se aplicaron desde cero; firmas de columnas, constraints, índices, nueve funciones, nueve políticas y 47 grants coincidieron con producción; integración 8/8 y advisors sin nuevas alertas críticas.
 - Operación: la baseline no se aplicó ni se registró en producción. Antes de la siguiente migración productiva se debe ejecutar, con revisión separada, `supabase migration repair --linked --status applied 20260720000000`.
 
-**Aclaración posterior (2026-09-28):** la línea operativa anterior es histórica y no debe ejecutarse. La lectura actual de QE2026 muestra que la versión `20260720000000` ya existe allí como marcador de SQL distinto de la baseline local. El PR #34 publicó otra baseline, independiente y limitada a proyectos vacíos; no sustituyó la cadena histórica. La estrategia de conciliación y cualquier futura operación sobre el historial requieren una decisión y autorización separadas.
+**Aclaración posterior (2026-09-28):** la línea operativa anterior es histórica y no debe ejecutarse. La lectura actual de QE2026 muestra que la versión `20260720000000` ya existe allí como marcador de SQL distinto de la baseline local. El PR #34 publicó otra baseline, independiente y limitada a proyectos vacíos; no sustituyó la cadena histórica. D-030 adoptó una estrategia que conserva el historial productivo sin repararlo. Cualquier operación futura sobre ese historial requiere una autorización nueva y específica.
 
 ## D-022 — Separar documentación histórica de documentación vigente
 
@@ -290,8 +290,21 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Responsable: Pedro
 - Contexto: la historia de migraciones disponible localmente no reproduce por sí sola el esquema remoto actual y la migración de campaña incluye datos reales. Se necesita una ruta verificable para crear entornos nuevos sin copiar identidades ni contactos.
 - Decisión: mantener las diez migraciones históricas intactas y añadir `supabase/baselines/qe2026-schema-only.sql` como replay estructural independiente, fuera de `supabase/migrations/`. Se aplica únicamente a un proyecto Supabase vacío, desechable y confirmado por referencia. Excluye las cargas y correcciones de filas existentes, los 31 contactos de campaña y dos filtros literales ligados a pruebas de QE2026.
-- Seguridad y operación: el archivo no autoriza `db push`, `migration repair` ni ejecución en QE2026; tampoco sustituye una decisión futura sobre el historial productivo. Cualquier adopción operativa exige revisión separada. El ensayo se hizo sin usuarios Auth, membresías ni datos CRM y el proyecto temporal quedó pausado.
+- Seguridad y operación: el archivo no autoriza `db push`, `migration repair` ni ejecución en QE2026; tampoco concilia por sí mismo el historial productivo. D-030 define la estrategia documental posterior. Cualquier adopción operativa exige revisión separada. El ensayo se hizo sin usuarios Auth, membresías ni datos CRM y el proyecto temporal quedó pausado.
 - Evidencia/verificación: prueba contractual, typecheck, pruebas completas, build y smoke locales; comparación de catálogo y tipos registrada en `docs/AUDIT.md`. El diseño y el plan están en `docs/superpowers/`.
+
+## D-030 — Conservar el historial de QE2026 y separar los releases futuros
+
+- Estado: Aceptada como estrategia documental; procedimiento operativo pendiente.
+- Fecha: 2026-09-28.
+- Responsable: Pedro.
+- Contexto: QE2026 registra 29 versiones y el repositorio conserva diez migraciones históricas. La versión `20260720000000` existe remotamente como marcador de SQL distinto; la allowlist de la misma versión local/remota tampoco es equivalente. El PR #34 verificó una baseline estructural independiente en proyectos temporales vacíos y el PR #33 sincronizó los tipos con QE2026, sin resolver esa divergencia de historia.
+- Decisión: conservar intactas las 29 entradas de QE2026 y los diez SQL históricos locales. No renombrar, eliminar, reescribir, repetir ni marcar artificialmente migraciones pasadas para hacer coincidir ambas listas. Usar `supabase/baselines/qe2026-schema-only.sql` únicamente como reproducción estructural para proyectos vacíos, desechables y verificados; no aplicarla a QE2026 ni tratarla como sustituto de `supabase/migrations/`.
+- Releases posteriores: preparar cada cambio nuevo como entrega SQL individual, prospectiva y revisada, con una versión nueva y sin ejecutar migraciones históricas. La estrategia no autoriza todavía un comando de despliegue: antes de cada release se exige un inventario actualizado del historial remoto, un respaldo apropiado, ensayo aislado, plan de recuperación y un dry-run verificable que liste exclusivamente la nueva migración. Si ese dry-run no puede garantizarlo, detener el release y solicitar una decisión separada.
+- Tratamiento del legado: mantener las 19 entradas sólo remotas, los cuatro pares de timestamps distintos y las dos versiones de SQL no equivalente en una matriz de trazabilidad sin copiar identidades, contactos ni payloads al repositorio. Los filtros literales de `get_cu_pending_reviews()` y la paridad funcional autenticada siguen siendo asuntos separados; no se infiere que la baseline aislada sea idéntica en comportamiento a QE2026.
+- Límites: esta aprobación no autoriza `migration repair`, `db push`, cambios de esquema/RLS/Auth/RPC/Edge Functions, edición de los diez SQL, cambios de datos ni una migración productiva. Cualquier excepción exige alcance exacto y autorización expresa.
+- Alternativa no adoptada: reconstruir o renombrar los archivos locales para reflejar retroactivamente las 29 entradas remotas, por el riesgo de reejecutar SQL antiguo, permisos previos o backfills sobre producción.
+- Evidencia/verificación: inventario y ensayos registrados en `docs/AUDIT.md`, plan del PR #32, baseline aislada del PR #34 y tipos publicados por el PR #33. La estrategia fue confirmada por Pedro el 2026-09-28; la matriz de fingerprints cruzados y el procedimiento de release aún deben completarse antes de cualquier migración nueva.
 
 ### D-XXX — Título
 

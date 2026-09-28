@@ -11,7 +11,7 @@
 
 ## Estado actual
 
-Fecha de corte: 2026-07-21.
+Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Estado de migraciones actualizado el 2026-09-28.
 
 - Baseline publicado en `main`: `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
 - Fuente viva de producto: [`PRD-CRM.md`](./PRD-CRM.md).
@@ -21,14 +21,16 @@ Fecha de corte: 2026-07-21.
 - Superficie: diez rutas de Next.js, nueve tablas CRM con RLS, ocho RPC públicas tipadas y una función privada de autorización.
 - Autorización: allowlist privada; `admin` y `member` comparten actualmente el mismo CRUD.
 - Calidad publicada: typecheck, 25 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP 10/10, gate visual autenticado, smoke de campaña no mutante y suites aisladas de integración/E2E.
-- Baseline de Supabase: seis migraciones reproducen el esquema desde cero sin usuarios ni datos.
+- Baseline de Supabase en el corte de 2026-07-21: seis migraciones reprodujeron el esquema observado entonces; esa prueba no acredita la paridad actual de la cadena histórica con QE2026.
 - Entorno temporal de pruebas: limpio y en pausa después de las validaciones aisladas.
 - Fase 8: cerrada, fusionada mediante el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) y publicada.
 - Fase 9: fase activa para cerrar definiciones funcionales, gobierno, evidencia operable y deuda técnica incremental.
 
+Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el repositorio diez SQL históricos con versiones divergentes. El PR #34 publicó una baseline estructural independiente, ensayada sólo en proyectos vacíos, y el PR #33 sincronizó los tipos generados. D-030 aprobó conservar ambas historias intactas y reservar los cambios nuevos para releases SQL individuales con revisión y gate propio. Esta estrategia no autoriza reparar el historial ni desplegar otra migración; faltan la matriz cruzada y el procedimiento seguro de release.
+
 Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 
-- reconciliar el historial productivo de la baseline antes de otra migración;
+- completar la matriz de historia local/remota y el procedimiento de release que no reaplique SQL antiguo antes de otra migración;
 - decidir el tratamiento del estado legado `por_validar`;
 - habilitar la protección de contraseñas filtradas mediante un gate de Auth;
 - definir permisos diferentes para `admin` y `member`;
@@ -51,7 +53,7 @@ Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 | 7 — Reproducibilidad de Supabase | El esquema se reconstruyó desde cero y coincidió con producción sin copiar identidades ni datos. | D-021 y `AUDIT.md` sección 20. |
 | 8 — Cierre visual autenticado y publicación | Se cerró la comparación visual, se corrigieron regresiones responsive y de accesibilidad y se publicó el alcance sin cambios de backend. | PR #13, `AUDIT.md` sección 21, 22/22 pruebas, build de diez rutas y gate visual autenticado en escritorio y móvil. |
 
-Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. Esta tabla expresa su estado vigente y sustituye los pendientes intermedios que quedaron resueltos por fases posteriores.
+Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. La equivalencia de la Fase 7 corresponde a su corte de 2026-07-20; no debe extrapolarse al esquema productivo posterior de campaña y RBAC. D-030 rige la estrategia actual de historia y baseline.
 
 ## Fase activa
 
@@ -126,7 +128,7 @@ Gate: cobertura reproducible sin secretos ni datos reales.
 
 ### Gates independientes de backend y datos
 
-- reconciliar la baseline en el historial productivo antes de otra migración;
+- completar la matriz local/remoto y validar un release nuevo con respaldo, recuperación, ensayo aislado y dry-run que liste únicamente esa nueva versión; conservar intacto el historial de QE2026 conforme a D-030;
 - evaluar protección de contraseñas filtradas;
 - ejecutar, si se aprueba en Fase 9, la migración de estados legados mediante un plan reversible;
 - implementar, si se aprueba en Fase 9, la política de respuestas públicas mediante un gate aislado;
