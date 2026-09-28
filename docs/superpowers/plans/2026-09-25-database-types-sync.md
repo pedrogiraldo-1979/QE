@@ -1,5 +1,7 @@
 # Sincronización de tipos de QE2026 — plan de implementación
 
+**Estado posterior (2026-09-28): cerrado mediante el PR #33, fusionado en `main` como `26edde0`.** El snapshot generado quedó contrastado con QE2026 y publicado sin cambios de Supabase. Los datos de partida y los pasos de abajo se conservan como registro de la ejecución; este plan no es un pendiente activo ni resuelve el historial de migraciones.
+
 > **Para agentes:** usar `executing-plans` al ejecutar este plan por etapas. No delegar en subagentes salvo petición expresa de Pedro. Este documento no autoriza cambios de Supabase ni su publicación en `main`.
 
 **Objetivo:** hacer que `src/lib/database.types.ts` refleje exactamente el esquema expuesto de QE2026, sin cambiar la base de datos ni introducir comportamiento de campaña.
@@ -38,22 +40,22 @@ El catálogo de producción confirma `batch_key text NOT NULL` y las unicidades 
 
 ### Tarea 1: confirmar la fuente y congelar el diff
 
-- [ ] Confirmar rama, árbol limpio de cambios de la tarea, commit de `main` y ref `izbfawwmbilmsrdjaanw`.
-- [ ] Generar los tipos mediante el conector oficial de Supabase para ese ref. No volcar el resultado a logs ni documentación: contiene estructura, no datos, pero el diff es suficiente para revisión.
-- [ ] Comparar salida completa normalizada a LF con `src/lib/database.types.ts`. Deben aparecer sólo las cuatro categorías de la tabla anterior; si el esquema cambió, detenerse y registrar un nuevo inventario antes de editar.
-- [ ] Confirmar en catálogo, mediante consultas `SELECT` sólo de metadatos, la columna, las dos unicidades compuestas y la firma de `claim_campaign_batch`.
+- [x] Confirmar rama, árbol limpio de cambios de la tarea, commit de `main` y ref `izbfawwmbilmsrdjaanw`.
+- [x] Generar los tipos mediante el conector oficial de Supabase para ese ref. No volcar el resultado a logs ni documentación: contiene estructura, no datos, pero el diff es suficiente para revisión.
+- [x] Comparar salida completa normalizada a LF con `src/lib/database.types.ts`. Deben aparecer sólo las cuatro categorías de la tabla anterior; si el esquema cambió, detenerse y registrar un nuevo inventario antes de editar.
+- [x] Confirmar en catálogo, mediante consultas `SELECT` sólo de metadatos, la columna, las dos unicidades compuestas y la firma de `claim_campaign_batch`.
 
 ### Tarea 2: actualizar el snapshot generado
 
-- [ ] Aplicar **verbatim** la salida generada al archivo `src/lib/database.types.ts`; no añadir propiedades ni ajustar tipos por intuición. Comprobar comparación byte a byte después de normalizar CRLF/LF.
-- [ ] Revisar que el diff del archivo sea exactamente el inventario de la Tarea 1 y que no incluya emails, tokens ni filas. Si cambia una firma consumida por el frontend, detenerse y separar un ajuste funcional con su propio gate.
-- [ ] Actualizar `docs/DATA-CONTRACTS.md` y `docs/AUDIT.md` con el proyecto fuente, fecha, diff y límites, sin afirmar que la historia de migraciones ya está reconciliada.
+- [x] Aplicar **verbatim** la salida generada al archivo `src/lib/database.types.ts`; no añadir propiedades ni ajustar tipos por intuición. Comprobar comparación byte a byte después de normalizar CRLF/LF.
+- [x] Revisar que el diff del archivo sea exactamente el inventario de la Tarea 1 y que no incluya emails, tokens ni filas. Si cambia una firma consumida por el frontend, detenerse y separar un ajuste funcional con su propio gate.
+- [x] Actualizar `docs/DATA-CONTRACTS.md` y `docs/AUDIT.md` con el proyecto fuente, fecha, diff y límites, sin afirmar que la historia de migraciones ya está reconciliada.
 
 ### Tarea 3: verificar y presentar
 
-- [ ] Ejecutar `pnpm typecheck`, `pnpm test` y `pnpm build`; si el build genera `next-env.d.ts` o artefactos, retirarlos del diff sin borrar trabajo ajeno.
-- [ ] Revisar `git diff --check`, `git diff --stat` y los archivos staged. Confirmar que no hay cambios de Supabase, datos, secretos o funcionalidad de campaña.
-- [ ] Crear un commit descriptivo de tipos/documentación y presentar un PR separado contra `main`; esperar CI y Vercel, sin merge.
+- [x] Ejecutar `pnpm typecheck`, `pnpm test` y `pnpm build`; si el build genera `next-env.d.ts` o artefactos, retirarlos del diff sin borrar trabajo ajeno.
+- [x] Revisar `git diff --check`, `git diff --stat` y los archivos staged. Confirmar que no hay cambios de Supabase, datos, secretos o funcionalidad de campaña.
+- [x] Crear un commit descriptivo de tipos/documentación y presentar un PR separado contra `main`; esperar CI y Vercel, sin merge. El PR fue fusionado posteriormente tras revisión.
 
 ## Gate de decisión
 

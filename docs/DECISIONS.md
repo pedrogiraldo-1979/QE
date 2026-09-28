@@ -198,6 +198,8 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Evidencia: las seis migraciones se aplicaron desde cero; firmas de columnas, constraints, índices, nueve funciones, nueve políticas y 47 grants coincidieron con producción; integración 8/8 y advisors sin nuevas alertas críticas.
 - Operación: la baseline no se aplicó ni se registró en producción. Antes de la siguiente migración productiva se debe ejecutar, con revisión separada, `supabase migration repair --linked --status applied 20260720000000`.
 
+**Aclaración posterior (2026-09-28):** la línea operativa anterior es histórica y no debe ejecutarse. La lectura actual de QE2026 muestra que la versión `20260720000000` ya existe allí como marcador de SQL distinto de la baseline local. El PR #34 publicó otra baseline, independiente y limitada a proyectos vacíos; no sustituyó la cadena histórica. La estrategia de conciliación y cualquier futura operación sobre el historial requieren una decisión y autorización separadas.
+
 ## D-022 — Separar documentación histórica de documentación vigente
 
 - Estado: Aceptada e implementada documentalmente
@@ -283,7 +285,7 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 ## D-029 — Publicar una baseline estructural independiente para proyectos vacíos
 
-- Estado: Aceptada para ensayo aislado; publicación sujeta a revisión del PR
+- Estado: Aceptada para ensayo aislado; archivo publicado en `main` mediante el PR #34. No autorizada para QE2026.
 - Fecha: 2026-09-25
 - Responsable: Pedro
 - Contexto: la historia de migraciones disponible localmente no reproduce por sí sola el esquema remoto actual y la migración de campaña incluye datos reales. Se necesita una ruta verificable para crear entornos nuevos sin copiar identidades ni contactos.
