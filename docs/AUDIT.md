@@ -16,6 +16,8 @@ En la rama `codex/supabase-types-qe2026`, creada desde `origin/main` en `14c77ca
 
 El catálogo confirmó `batch_key text NOT NULL`, unicidades compuestas `(batch_key, link_id)` y `(batch_key, sequence)`, y `claim_campaign_batch(p_sent_by uuid, p_batch_key text, p_expected_count integer)`. No se leyeron filas, se invocaron RPC de negocio ni se cambió Supabase. Pasaron `pnpm typecheck`, 41/41 pruebas y `pnpm build` con 11 rutas. `next-env.d.ts` generado por el build se retiró del diff. La actualización de tipos no concilia por sí misma el historial remoto ni demuestra reproducibilidad del esquema desde los diez archivos locales; ese trabajo permanece separado en el PR documental #32.
 
+Reconciliación del 2026-09-28: después del merge del PR #34 (`3293825`), Pedro aprobó aclarar en `docs/DATA-CONTRACTS.md` que la cadena histórica de migraciones continúa sin conciliación productiva, mientras la baseline estructural separada sí fue reproducida y comparada en proyectos temporales vacíos. El PR #33 no promueve esa baseline a migración ni modifica Supabase; conserva el snapshot de tipos generado sin ediciones manuales. Sobre la rama reconciliada pasaron typecheck, 46/46 pruebas y build de 11 rutas.
+
 ## 26. Cierre documental de la Fase 9, Etapa 2 — 2026-07-21
 
 - El PR #26 publicó la especificación aprobada de gobierno y recuperación junto con el primer plan independiente de RBAC.

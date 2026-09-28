@@ -9,7 +9,8 @@ Fecha de verificación del contrato base: 2026-07-19. La validación RBAC del 20
 - `src/lib/data/queryColumns.ts` define las columnas que el frontend solicita; no se usa `select("*")`.
 - `src/lib/data/queryLimits.ts` distingue selectores de referencia de feeds resumidos.
 - Los tipos deben regenerarse desde Supabase después de cada migración y revisarse en el mismo commit; no se editan formas de tablas o RPC manualmente.
-- `supabase/migrations/20260720000000_initial_crm_baseline.sql` es la fuente estructural para proyectos vacíos. No contiene usuarios, membresías ni filas; las migraciones posteriores conservan la evolución incremental.
+- `supabase/migrations/20260720000000_initial_crm_baseline.sql` es el punto de partida histórico de la cadena de migraciones. No contiene usuarios, membresías ni filas; las migraciones posteriores conservan la evolución incremental.
+- `supabase/baselines/qe2026-schema-only.sql` es una reproducción estructural separada, comprobada sólo en proyectos temporales vacíos. No sustituye las migraciones, no registra historial y no está autorizada para producción.
 
 El ajuste del 2026-09-25 incorporó al snapshot `campaign_pilot_recipients.batch_key`, la cardinalidad real de su vínculo con `cu_links`, `claim_campaign_batch` y el campo `batch_key` del retorno de `claim_campaign_pilot_batch`. Sólo cambió el contrato TypeScript generado; no se desplegaron funciones, políticas ni migraciones.
 
@@ -35,7 +36,7 @@ Las tablas nuevas ya no deben asumirse expuestas automáticamente: toda migraci�
 
 Desde `20260827015743_add_prospect_campaign_targeting`, `prospects.campaign` conserva una etiqueta operativa opcional independiente de `segment` y `list_id`. La campaña `Colegios Norte 153+ / antes del peaje` contiene 31 prospectos y 31 canales institucionales públicos; la migración no modifica RLS ni privilegios existentes.
 
-La reproducción desde cero se contrastó en una validación anterior mediante firmas normalizadas de columnas, constraints, índices, funciones, políticas y grants, sin leer ni copiar filas productivas. Esa equivalencia no se ha revalidado después de los cambios productivos de campaña y RBAC; ver `docs/AUDIT.md` y el plan separado de conciliación del historial.
+La cadena histórica de migraciones se contrastó en una validación anterior, pero su equivalencia completa no se ha revalidado después de los cambios productivos de campaña y RBAC. El PR #34 sí reprodujo y comparó por separado la baseline estructural protegida en proyectos temporales vacíos después de esos cambios: coincidieron los contratos y conteos de catálogo con QE2026, con la diferencia funcional intencional de `get_cu_pending_reviews()` documentada en `docs/AUDIT.md`. Esa prueba no demuestra paridad autenticada ni concilia el historial remoto de migraciones; ambos siguen siendo gates independientes.
 
 ## RPC públicas
 
