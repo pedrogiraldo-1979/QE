@@ -85,7 +85,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 
 - lectura de formulario mediante token activo y no vencido;
 - envío público con payload limitado;
-- revisión interna de respuestas pendientes;
+- revisión interna de respuestas pendientes de trabajo real; las respuestas de ensayo confirmadas por Pedro permanecen fuera de esta cola conforme a D-031;
 - aprobación o rechazo como decisiones terminales.
 - aprobación transaccional de empresa, contacto principal, celular, teléfono fijo y segundo contacto opcional;
 - cola explícita para reconciliar `Hoja1` y `contactos_base` después de aprobar cambios.

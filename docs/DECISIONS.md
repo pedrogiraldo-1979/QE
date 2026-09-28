@@ -306,6 +306,16 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Alternativa no adoptada: reconstruir o renombrar los archivos locales para reflejar retroactivamente las 29 entradas remotas, por el riesgo de reejecutar SQL antiguo, permisos previos o backfills sobre producción.
 - Evidencia/verificación: inventario y ensayos registrados en `docs/AUDIT.md`, [matriz de huellas](./MIGRATION-HISTORY-MATRIX.md), [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md), plan del PR #32, baseline aislada del PR #34 y tipos publicados por el PR #33. La estrategia fue confirmada por Pedro el 2026-09-28. El método productivo, respaldo y dry-run de un SQL nuevo siguen pendientes antes de cualquier migración.
 
+## D-031 — Mantener las respuestas de ensayo fuera de la cola real
+
+- Estado: Aceptada como decisión de producto; mecanismo técnico posterior pendiente.
+- Fecha: 2026-09-28.
+- Responsable: Pedro.
+- Contexto: `get_cu_pending_reviews()` en QE2026 excluye ocho respuestas pendientes mediante dos filtros literales que no están en la baseline estructural para proyectos vacíos. Una lectura agregada autorizada identificó una sola empresa etiquetada como prueba y un solo enlace, sin publicar sus valores.
+- Decisión: Pedro confirmó que las ocho respuestas corresponden al ensayo y deben permanecer fuera de la cola de revisión de trabajo real. Se conservan los registros y los filtros productivos actuales; cualquier sustitución del mecanismo exige una decisión técnica y un gate propios.
+- Límites: esta confirmación no autoriza aprobar, rechazar, archivar, borrar o modificar las respuestas; desactivar el enlace; cambiar la RPC, el esquema o la baseline; ni desplegar una migración. El mecanismo futuro requiere diseño, pruebas aisladas, respaldo/reversión y autorización de release independientes conforme a D-030.
+- Evidencia/verificación: lectura agregada y comparación de definiciones registradas en `docs/AUDIT.md`; la interfaz obtiene la cola mediante `admin_get_cu_pending_reviews()`. No se ejecutaron mutaciones de Supabase.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
