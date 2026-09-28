@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## 28. Evidencia operable y métricas de Fase 9 — 2026-09-24
+
+- Rama documental: `codex/phase-9-evidence-metrics`, basada en `main` en `14c77ca` después de fusionar el PR #29.
+- Se añadieron `PHASE-9-COVERAGE.md` y `PHASE-9-METRICS.md`; el primero cubre los 25 criterios `P9-*` con evidencia, vacío, responsable y gate, y el segundo define siete métricas agregadas en estado `no_instrumentada`.
+- `PRD-CRM.md`, `ROADMAP.md` y `DECISIONS.md` se reconciliaron mediante D-029. La Etapa 3 se cerró sólo como contrato documental; no se declara telemetría, consulta operativa, almacenamiento, dashboard, alerta o proveedor.
+- No se modificaron código, dependencias, configuración, esquema, RLS, Auth, RPC, Edge Functions, secretos, datos ni artefactos generados.
+- El release de la base RBAC permanece separado: la migración se validó sólo en un proyecto desechable y no se aplicó en un entorno compartido.
+
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
 - Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.
