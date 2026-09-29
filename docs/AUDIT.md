@@ -14,6 +14,12 @@ Pedro autorizó dos cuentas sintéticas `admin` y `member` exclusivamente en el 
 
 La lectura posterior confirmó cero filas en `auth.users`, `private.crm_authorized_users` y las diez tablas CRM. Esta prueba valida la política RLS en el proyecto temporal, **no** un inicio de sesión mediante Supabase Auth ni el flujo completo por API/navegador. No se ejecutó SQL en QE2026 ni se alteraron sus datos, políticas o funciones. Se volvió a solicitar la pausa del proyecto temporal.
 
+### Seguimiento: cola no vacía y permisos de cliente — 2026-09-29
+
+Pedro autorizó reanudar de nuevo únicamente el mismo proyecto temporal para completar el criterio pendiente de la Etapa 1. Se confirmaron su referencia y organización por detalle y listado; antes de la prueba había cero usuarios Auth, membresías, empresas, enlaces y respuestas, y una sola columna `cu_links.is_test boolean NOT NULL DEFAULT false`. En una única transacción se crearon dos empresas, dos enlaces y dos respuestas pendientes **sintéticos**, además de identidades `admin`/`member` simuladas. La cola administrativa devolvió exactamente las mismas dos identidades de respuesta antes y después de que `admin` marcara uno de los enlaces como `is_test = true`; la marca quedó aplicada dentro de la transacción. Esto comprueba que la columna por sí sola no cambia la cola en un caso no vacío. No afirma equivalencia con los filtros literales exclusivos de QE2026.
+
+Con el rol PostgreSQL `authenticated` y claims sintéticos, `member` no pudo ver ni modificar los enlaces ni invocar la cola administrativa. Con el rol `anon`, la lectura directa de `cu_links` fue denegada; la RPC pública `get_cu_form` conservó su comportamiento para el enlace sintético activo antes y después de marcarlo, como corresponde a la Etapa 1. No se realizó un inicio de sesión real por Supabase Auth ni una prueba HTTP del Data API. Se ejecutó `ROLLBACK` y la lectura posterior confirmó cero filas en `auth.users`, la allowlist y las diez tablas CRM. QE2026 no recibió SQL ni mutaciones. Se solicitó de nuevo la pausa del temporal.
+
 ## 28. Brecha entre tipos e historial de QE2026 — 2026-09-25
 
 - Revisión inicial de solo lectura en la rama documental `codex/supabase-reconciliation-plan`, creada desde `origin/main` en `14c77ca`; esa revisión no aplicó SQL ni modificó datos o configuración.
