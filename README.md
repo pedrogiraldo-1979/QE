@@ -108,7 +108,7 @@ Pedro confirmó el 2026-09-26 que el piloto de correo ya se realizó. El envío 
 
 ## Repository structure
 
-Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. `supabase/migrations/20260720000000_initial_crm_baseline.sql` reconstructs the schema without users or business data, followed by the incremental migrations. See `docs/DATA-CONTRACTS.md` for the verified backend surface. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
+Application code under `src/` is canonical. Dashboard rules and formatters live in `src/features/crm/`, shared data/session hooks in `src/hooks/`, and domain views in `src/components/crm/`. Generated Supabase contracts live in `src/lib/database.types.ts`; explicit query contracts and repositories live in `src/lib/data/`. `supabase/migrations/20260720000000_initial_crm_baseline.sql` starts the preserved historical chain; its ten local files do not by themselves reproduce the current QE2026 schema. The separate `supabase/baselines/qe2026-schema-only.sql` was verified only for empty disposable projects. The production migration history remains intact under D-030; see `docs/DATA-CONTRACTS.md` for the limits and release gates. The audited legacy duplicates at the repository root were removed during the approved cleanup phase.
 
 ## Internal ZeptoMail test
 

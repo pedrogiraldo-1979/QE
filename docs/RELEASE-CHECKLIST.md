@@ -12,7 +12,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Instalar con Node `24.14.0`, pnpm `11.7.0` y `pnpm install --frozen-lockfile`.
 - [ ] Comprobar que las variables `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` existen antes del build.
 - [ ] Si cambia la capa de datos, regenerar `src/lib/database.types.ts`, contrastar migraciones remotas/locales y actualizar `docs/DATA-CONTRACTS.md`.
-- [ ] Antes de cualquier nueva migración productiva, comprobar el historial remoto. Si la baseline sigue ausente, aprobar y ejecutar una sola vez `supabase migration repair --linked --status applied 20260720000000`; no ejecutar su SQL sobre producción.
+- [ ] Antes de cualquier nueva migración productiva, seguir el [procedimiento condicionado de Supabase](./SUPABASE-RELEASE-PROCEDURE.md): comparar la [matriz de historia](./MIGRATION-HISTORY-MATRIX.md) con QE2026, demostrar que sólo se selecciona el SQL nuevo y obtener autorización específica. La versión `20260720000000` ya existe remotamente como marcador distinto; **no ejecutar** la instrucción histórica de `migration repair` de D-021.
 
 ## 2. Gates locales obligatorios
 
@@ -35,7 +35,7 @@ Un HTTP `200` no sustituye la verificación de hidratación. Las variables `NEXT
 ## 3. Supabase y datos
 
 - [ ] No ejecutar RPC mutantes, inserts, updates o deletes contra producción como prueba.
-- [ ] Aplicar migraciones sólo con autorización y en orden trazable.
+- [ ] Aplicar únicamente un SQL nuevo con alcance, método, respaldo, recuperación y autorización específicos; preservar las 29 entradas y los diez archivos históricos conforme a D-030. No usar `db push` mientras su dry-run no descarte los archivos antiguos.
 - [ ] Verificar RLS, grants y advisors después de cualquier cambio de backend.
 - [ ] Para RBAC, revisar los avisos `SECURITY DEFINER`: los formularios públicos por token y los wrappers `admin_*` sólo son aceptables si conservan grants mínimos y validación explícita de rol en backend.
 - [ ] Comparar conteos antes/después cuando la migración declara que no modifica filas.
