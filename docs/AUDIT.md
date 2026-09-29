@@ -8,6 +8,12 @@ Se ejecutó sólo el contenido exacto de `supabase/migrations/20260929011508_add
 
 Las huellas de las cuatro RPC de actualización de datos inspeccionadas y de las políticas de `cu_links` permanecieron idénticas antes y después; RLS siguió habilitado. Los asesores repitieron los conteos ya documentados para esta baseline: dos avisos de RLS sin política, dos funciones `SECURITY DEFINER` ejecutables por `anon`, siete por `authenticated`, una FK sin índice y 23 índices sin uso observado en la base vacía. No se crearon usuarios de prueba ni se hizo una prueba autenticada de `admin`/`member`; por tanto, este ensayo no demuestra la autorización en tiempo de ejecución ni la equivalencia funcional de la cola con QE2026. Supabase confirmó el estado final `INACTIVE` después de solicitar la pausa. El esquema, historial, funciones y datos de QE2026 no fueron modificados; cualquier release productivo mantiene el gate independiente de D-030.
 
+### Seguimiento: comprobación transaccional de RLS — 2026-09-28
+
+Pedro autorizó dos cuentas sintéticas `admin` y `member` exclusivamente en el mismo proyecto temporal. Se revalidó su identidad y se reanudó. El formulario del panel de Auth no llegó a crear la primera cuenta: la lectura posterior confirmó cero usuarios. En su lugar, siguiendo el patrón de pruebas de RLS de Supabase, se insertaron dos identidades sintéticas, sus membresías y una empresa con un enlace sintético dentro de **una única transacción**, simulando sucesivamente el rol PostgreSQL `authenticated` y los claims de cada usuario. El contexto simulado `admin` pudo actualizar `cu_links.is_test` de `false` a `true` (una fila); el contexto `member` resolvió su rol correctamente, pero su actualización afectó cero filas. La verificación privilegiada dentro de la transacción confirmó que la marca continuaba en `true` y se ejecutó `ROLLBACK`.
+
+La lectura posterior confirmó cero filas en `auth.users`, `private.crm_authorized_users` y las diez tablas CRM. Esta prueba valida la política RLS en el proyecto temporal, **no** un inicio de sesión mediante Supabase Auth ni el flujo completo por API/navegador. No se ejecutó SQL en QE2026 ni se alteraron sus datos, políticas o funciones. Se volvió a solicitar la pausa del proyecto temporal.
+
 ## 28. Brecha entre tipos e historial de QE2026 — 2026-09-25
 
 - Revisión inicial de solo lectura en la rama documental `codex/supabase-reconciliation-plan`, creada desde `origin/main` en `14c77ca`; esa revisión no aplicó SQL ni modificó datos o configuración.
