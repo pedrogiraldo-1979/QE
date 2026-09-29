@@ -1,6 +1,6 @@
 # Aislamiento del enlace de ensayo — diseño documental
 
-Estado: aprobado por Pedro el 2026-09-28 **para documentar y revisar en un PR separado**. No autoriza implementación, modificación de QE2026, desactivación del enlace ni despliegue. La decisión de producto D-031 está propuesta en el [PR #32](https://github.com/pedrogiraldo-1979/QE/pull/32), aún separado de esta rama; este diseño depende de ella y no la fusiona.
+Estado: aprobado por Pedro el 2026-09-28 **para documentar y revisar en un PR separado**. No autoriza implementación, modificación de QE2026, desactivación del enlace ni despliegue. La decisión de producto D-031 ya está en `main` tras el [PR #32](https://github.com/pedrogiraldo-1979/QE/pull/32); este diseño se apoya en ella, pero no amplía su autorización.
 
 ## Problema y objetivo
 
@@ -24,7 +24,7 @@ El cambio se separa en tres etapas con parada entre ellas:
 2. **Clasificar y desactivar el enlace confirmado.** Bajo una autorización de datos específica, comprobar el proyecto y previsualizar el único enlace y las respuestas afectadas sin publicar sus identificadores. Marcar **un único enlace** como `is_test = true` y poner `is_active = false` en una transacción controlada, con condiciones de coincidencia exacta y reversión ante cualquier desvío. Conservar las ocho respuestas y sus estados. El identificador exacto se suministraría por un canal operativo protegido, nunca en Git, logs, PR o documentación. Los filtros literales permanecen como protección durante esta etapa. Antes de ejecutarla deberá decidirse y aprobarse cómo registrar esta operación de datos conforme a D-030; esta especificación no presupone que sea una migración versionada ni una excepción operativa.
 3. **Cambiar las RPC.** Sólo después de verificar la etapa 2, comparar por identidad —sin publicar filas— el conjunto de respuestas que excluyen los dos filtros productivos con el que excluiría `is_test`, incluyendo cualquier enlace adicional de la empresa de ensayo. Igualdad de conteos no basta: ante una sola diferencia, detenerse y decidir su tratamiento antes de retirar filtros. Una migración nueva sustituiría entonces en `get_cu_pending_reviews()` los filtros por `not l.is_test`. `admin_get_cu_pending_reviews()` conserva su gate de administrador. `get_cu_form` y `submit_cu_form` también rechazarían enlaces marcados como prueba, de forma que una reactivación accidental no reabra el formulario de ensayo. Las respuestas históricas no se reescriben.
 
-Las migraciones históricas y `supabase/baselines/qe2026-schema-only.sql` no se editan retroactivamente. En proyectos nuevos, la baseline se aplicaría únicamente a una base vacía y los cambios futuros se reproducirían después mediante sus migraciones nuevas. El procedimiento de publicación D-030, propuesto también en el PR #32 y todavía no incorporado a `main`, deberá resolverse antes de cualquier release: no se presupone que `db push` sea seguro con el historial actual.
+Las migraciones históricas y `supabase/baselines/qe2026-schema-only.sql` no se editan retroactivamente. En proyectos nuevos, la baseline se aplicaría únicamente a una base vacía y los cambios futuros se reproducirían después mediante sus migraciones nuevas. D-030 ya está aceptada en `main` como estrategia documental; su método operativo sigue pendiente y deberá verificarse antes de cualquier release. No se presupone que `db push` sea seguro con el historial actual.
 
 ## Seguridad, pruebas y condiciones de parada
 
@@ -36,4 +36,4 @@ Las migraciones históricas y `supabase/baselines/qe2026-schema-only.sql` no se 
 
 ## Límites y revisión
 
-Este PR contendrá sólo esta especificación. No crea migraciones, modifica funciones, esquema, RLS, Auth, datos, tipos generados, frontend ni configuración. No ejecuta SQL sobre QE2026 ni pruebas mutantes. El diseño técnico definitivo y cada etapa productiva requieren aprobación separada después de revisar esta especificación y el estado del PR #32.
+Este PR contendrá sólo esta especificación. No crea migraciones, modifica funciones, esquema, RLS, Auth, datos, tipos generados, frontend ni configuración. No ejecuta SQL sobre QE2026 ni pruebas mutantes. El diseño técnico definitivo y cada etapa productiva requieren aprobación separada después de revisar esta especificación.
