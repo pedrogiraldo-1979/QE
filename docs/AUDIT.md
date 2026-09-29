@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## Ensayo aislado de la Etapa 1 del enlace de prueba — 2026-09-28
+
+Pedro autorizó reanudar exclusivamente `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`) en la organización «Quindi Exquisito», aplicar allí la columna `is_test`, verificarla y volver a pausar el proyecto. Detalle y listado confirmaron dos veces la referencia, el nombre y la organización; QE2026 (`izbfawwmbilmsrdjaanw`) permaneció fuera de este ensayo. Antes del SQL, las diez tablas CRM, `private.crm_authorized_users` y `auth.users` tenían cero filas; las diez tablas tenían RLS y `public.cu_links.is_test` no existía.
+
+Se ejecutó sólo el contenido exacto de `supabase/migrations/20260929011508_add_cu_link_test_flag.sql` (SHA-256 `9329E216FBF9BCD7C127F2F204370C61FF0D25FE7342206A4FF5FA80104DA4C8`) mediante `execute_sql`. El temporal no tenía tabla `supabase_migrations.schema_migrations`; no se usaron `apply_migration`, `db push`, `migration repair` ni replay de las migraciones históricas. El catálogo posterior confirmó una sola columna `boolean NOT NULL DEFAULT false`. Una inserción de empresa y enlace exclusivamente sintéticos comprobó el valor predeterminado `false` y la posibilidad de marcar `true`; toda esa prueba se revirtió en la misma transacción. Los conteos posteriores siguieron en cero en las diez tablas CRM, Auth y la allowlist; la cola `get_cu_pending_reviews()` devolvió cero.
+
+Las huellas de las cuatro RPC de actualización de datos inspeccionadas y de las políticas de `cu_links` permanecieron idénticas antes y después; RLS siguió habilitado. Los asesores repitieron los conteos ya documentados para esta baseline: dos avisos de RLS sin política, dos funciones `SECURITY DEFINER` ejecutables por `anon`, siete por `authenticated`, una FK sin índice y 23 índices sin uso observado en la base vacía. No se crearon usuarios de prueba ni se hizo una prueba autenticada de `admin`/`member`; por tanto, este ensayo no demuestra la autorización en tiempo de ejecución ni la equivalencia funcional de la cola con QE2026. Supabase confirmó el estado final `INACTIVE` después de solicitar la pausa. El esquema, historial, funciones y datos de QE2026 no fueron modificados; cualquier release productivo mantiene el gate independiente de D-030.
+
 ## 28. Brecha entre tipos e historial de QE2026 — 2026-09-25
 
 - Revisión inicial de solo lectura en la rama documental `codex/supabase-reconciliation-plan`, creada desde `origin/main` en `14c77ca`; esa revisión no aplicó SQL ni modificó datos o configuración.
