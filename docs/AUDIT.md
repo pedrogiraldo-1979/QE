@@ -53,6 +53,8 @@ La revisión previa al merge del PR #32 detectó dos contradicciones en las fuen
 
 Se actualizaron PRD y roadmap para distinguir la **base RBAC observada en QE2026** del resto de gobierno y recuperación aún no implementado, y para reemplazar la instrucción de reparación por los gates prospectivos de D-030. La matriz de huellas ya está documentada; debe actualizarse antes de cada release, no crearse nuevamente. Esta corrección usa la evidencia de historial y catálogo ya registrada, sin nueva prueba autenticada de roles en QE2026, nueva consulta remota, cambio de esquema, datos o despliegue. No autoriza una migración ni acredita la operación futura del método de release.
 
+La revisión final encontró otra contradicción del PRD vivo: aún presentaba la eliminación transaccional de prospectos como disponible y sugería que `admin` podía borrar, aunque la migración RBAC revoca `DELETE` en las tablas CRM y la ejecución de `delete_prospect(uuid)` para `authenticated`; las pruebas contractuales y de interfaz comprueban ese bloqueo. Se corrigió el PRD para presentar el borrado físico como bloqueado para ambos roles y la eliminación lógica/recuperación de D-027 como trabajo futuro, sin modificar la evidencia histórica de la función anterior.
+
 ## 27. Validación aislada de la base RBAC de Fase 9 — 2026-09-24
 
 - Se validó la migración `phase_9_rbac_foundation` exclusivamente en `QE RBAC Validation Temp` (`xuqcgcfqzpjuxjnchukb`); producción no recibió SQL, cambios de Auth ni datos.

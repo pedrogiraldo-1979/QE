@@ -53,7 +53,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - autorización interna mediante allowlist privada;
 - rechazo y cierre de sesión para identidades no autorizadas;
 - defensa adicional mediante RLS en las tablas CRM;
-- base RBAC registrada en QE2026: `member` conserva lectura, creación y actualización comercial; enlaces, revisión de respuestas, conciliación y eliminación sensible quedan reservados a `admin`. Esta revisión documental no repitió pruebas autenticadas en QE2026.
+- base RBAC registrada en QE2026: `member` conserva lectura, creación y actualización comercial; enlaces, revisión de respuestas y conciliación quedan reservados a `admin`. El borrado físico está bloqueado para ambos roles y la eliminación lógica sigue pendiente. Esta revisión documental no repitió pruebas autenticadas en QE2026.
 
 ### Empresas y contactos
 
@@ -78,7 +78,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - creación y edición de prospectos y contactos asociados;
 - búsqueda y filtros por estado, prioridad y ciudad;
 - conversión transaccional e idempotente a empresa;
-- eliminación transaccional con confirmación explícita;
+- borrado físico bloqueado por la base RBAC; eliminación lógica y recuperación pendientes;
 - normalización en frontend del vocabulario legado de estados.
 
 ### Actualización externa de datos
@@ -105,7 +105,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 2. La matriz aprobada distingue `admin` y `member`; la base RBAC observada en QE2026 separa el trabajo comercial de las operaciones administrativas. Auditoría, recuperación, administración de membresías y nuevo ciclo público requieren entregas propias.
 3. Los estados heredados de prospectos se normalizan al leer; no se reescriben datos automáticamente.
 4. Una conversión repetida devuelve la empresa ya enlazada y no debe crear otra.
-5. Las eliminaciones de prospectos requieren confirmación y usan una operación transaccional; la política de recuperación sigue pendiente.
+5. El borrado físico de prospectos está bloqueado para `admin` y `member`. La futura eliminación lógica deberá exigir confirmación, atomicidad y recuperación conforme a D-027.
 6. Las únicas operaciones anónimas deliberadas son cargar y enviar el formulario público por token.
 7. Ningún cambio de interfaz autoriza por sí mismo cambios de esquema, RLS, Auth, Edge Functions, secretos o datos.
 
@@ -124,7 +124,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 | PRO-01 | Prospección | El usuario puede consultar listas, métricas, filtros y detalle. |
 | PRO-02 | Prospección | Puede crear y editar prospectos y contactos asociados. |
 | PRO-03 | Conversión | La conversión es transaccional, idempotente y evita duplicación accidental. |
-| PRO-04 | Eliminación | Una eliminación exige confirmación y no deja dependencias parciales. |
+| PRO-04 | Eliminación futura | La eliminación lógica exigirá confirmación y no dejará dependencias parciales; el borrado físico permanece bloqueado. |
 | CU-01 | Formulario público | Un token válido expone únicamente el formulario asociado. |
 | CU-02 | Formulario público | Un token inválido o vencido no expone datos. |
 | CU-03 | Revisión | Una respuesta sólo puede aprobarse o rechazarse desde el estado pendiente. |
@@ -276,7 +276,7 @@ Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptado
 | La fase agrupa demasiados frentes y pierde trazabilidad. | Ejecutar un frente por gate, con decisión, criterio, evidencia y rollback propios. |
 | Una definición funcional implica cambios de backend no autorizados. | Separar aprobación de producto, diseño técnico y gate de Supabase. |
 | La resolución de duplicados altera datos correctos. | Exigir señales explicables, revisión humana para ambigüedad y pruebas aisladas. |
-| El borrado lógico convive de forma inconsistente con eliminaciones actuales. | Definir alcance por entidad, compatibilidad, recuperación y transición antes de migrar. |
+| La eliminación lógica pendiente se confunde con el antiguo borrado físico. | Mantener bloqueado el borrado físico y aprobar por entidad la implementación, recuperación y transición antes de migrar. |
 | Las métricas incentivan comportamiento incorrecto o exponen datos. | Aprobar fórmula, contexto, responsable, privacidad y acción antes de instrumentar. |
 | El retiro de bridges introduce regresiones visuales o funcionales. | Sustituir uno por vez y repetir typecheck, pruebas, build, smoke y gate visual. |
 
