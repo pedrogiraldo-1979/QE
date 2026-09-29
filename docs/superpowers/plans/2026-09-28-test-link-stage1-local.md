@@ -84,7 +84,7 @@ El build y el suite normal no ejecutan SQL remoto. No crear `.env.local` ni guar
 - CLI transitoria `2.118.0`: creó `supabase/migrations/20260929011508_add_cu_link_test_flag.sql`; su carpeta temporal generada se retiró tras verificar que contenía sólo `cli-latest`.
 - GREEN: prueba dirigida 1/1, suite completa 47/47, `pnpm typecheck` y `pnpm build` de 11 rutas aprobados. El build usó sólo las dos variables públicas de `.env.example`; `next-env.d.ts` se restauró tras la generación automática.
 - Versiones observadas: Node `v24.19.0` y pnpm `11.25.0`, distintas de las versiones de referencia del repositorio; la futura CI deberá repetir los gates con su entorno fijado.
-- Ninguna migración se aplicó a un proyecto y no se ejecutaron pruebas autenticadas/mutantes. La protección real de permisos, el valor predeterminado en PostgreSQL y la cola de respuestas requieren el ensayo aislado posterior.
+- Al cierre de esta preparación local, ninguna migración se había aplicado a un proyecto y no se habían ejecutado pruebas autenticadas/mutantes. La protección real de permisos, el valor predeterminado en PostgreSQL y la cola de respuestas requerían un ensayo aislado; los ensayos posteriores y sus límites constan en `docs/AUDIT.md`.
 
 ## Gate posterior, fuera de esta autorización
 
