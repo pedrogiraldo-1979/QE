@@ -38,7 +38,7 @@ Presentar juntos a Pedro: ref confirmado, diff/huella del SQL, inventario remoto
 
 Después de una ejecución autorizada, comprobar que las 29 entradas anteriores conservan versión y huella, que apareció sólo la nueva versión esperada, y que el catálogo, permisos, tipos generados y pruebas del CRM corresponden al cambio aprobado. Registrar el resultado en `docs/AUDIT.md` y en el checklist de release. Ante un resultado incierto, no reintentar automáticamente ni reparar historia: preservar evidencia, evaluar recuperación y solicitar una decisión nueva.
 
-## Situación al redactar este procedimiento
+## Situación al redactar este procedimiento (corte 2026-09-28)
 
 - Matriz de historia: preparada con huellas de 29 entradas remotas y diez archivos locales.
 - SQL nuevo aprobado: ninguno.
@@ -46,3 +46,13 @@ Después de una ejecución autorizada, comprobar que las 29 entradas anteriores 
 - Dry-run productivo que seleccione sólo una nueva versión: **no realizado y no verificable todavía**.
 - Backup/recuperación y método productivo de ejecución: por definir para cada release.
 - Cambios en QE2026, en el historial o en datos por esta tarea: ninguno.
+
+## Revalidación de lectura para la Etapa 1 — 2026-09-30
+
+- La migración candidata `20260929011508_add_cu_link_test_flag.sql` quedó en `main` mediante el PR #37 (`a38d85d`). Esto integra el archivo al repositorio; **no autoriza ni acredita su aplicación en QE2026**.
+- Las consultas de detalle y listado identificaron QE2026 (`izbfawwmbilmsrdjaanw`, `ACTIVE_HEALTHY`, organización «Quindi Exquisito»). `list_migrations` devolvió 29 pares de versión/nombre, igual cantidad que la matriz ya documentada; esta lectura no devolvió huellas SQL, así que no sustituye su nueva comparación de fingerprints previa al release.
+- El panel de QE2026 indica que la organización está en el plan Free, que el plan no incluye backups programados y que no hay backups visibles. El estado de PITR no quedó verificado; no asumir que esté habilitado. No se cambió el plan.
+- En este entorno no están instalados Supabase CLI, Docker, `pg_dump` ni `psql`. No se pudo generar un backup lógico ni ejecutar `db push --dry-run`; tampoco se instaló software.
+- Por tanto, continúan pendientes un mecanismo de recuperación adecuado para este SQL y una vista previa comprobable que seleccione sólo su versión. El gate productivo sigue cerrado hasta resolverlos y obtener autorización expresa para el mecanismo y el release. No se ejecutó SQL mutante ni se cambiaron el historial o los datos de QE2026.
+
+La documentación oficial de [backups y recuperación con la CLI](https://supabase.com/docs/guides/platform/migrating-within-supabase/backup-restore) describe las opciones de exportación y restauración; su uso requiere herramientas y acceso que no están configurados en este entorno.

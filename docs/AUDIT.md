@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## Revalidación de recuperación para el primer release D-030 — 2026-09-30
+
+La lectura de detalle y listado confirmó QE2026 (`izbfawwmbilmsrdjaanw`, `ACTIVE_HEALTHY`) en «Quindi Exquisito». El historial devolvió 29 versiones, la misma cantidad documentada en `MIGRATION-HISTORY-MATRIX.md`; el conector sólo devolvió versión y nombre en esta consulta, no huellas SQL. La comparación de fingerprints debe repetirse antes de cualquier release.
+
+El panel de backups muestra que la organización está en el plan Free, que este plan no incluye backups programados y que no hay backups visibles para QE2026. No se confirmó un estado de PITR; no se debe presumir que existe recuperación a un instante previo. En el entorno de trabajo no están instalados Supabase CLI, Docker, `pg_dump` ni `psql`, así que no se produjo un dump ni se ejecutó un dry-run de `db push`.
+
+La migración de etapa 1 quedó integrada en `main` por el PR #37 como preparación de código. No se ejecutó SQL mutante en QE2026 ni se modificaron su esquema, historial o datos. Conforme a D-030, el release continúa detenido hasta documentar una recuperación adecuada y demostrar que sólo la migración nueva sería seleccionada. El procedimiento actualizado está en [`SUPABASE-RELEASE-PROCEDURE.md`](./SUPABASE-RELEASE-PROCEDURE.md).
+
 ## Ensayo aislado de la Etapa 1 del enlace de prueba — 2026-09-28
 
 Pedro autorizó reanudar exclusivamente `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`) en la organización «Quindi Exquisito», aplicar allí la columna `is_test`, verificarla y volver a pausar el proyecto. Detalle y listado confirmaron dos veces la referencia, el nombre y la organización; QE2026 (`izbfawwmbilmsrdjaanw`) permaneció fuera de este ensayo. Antes del SQL, las diez tablas CRM, `private.crm_authorized_users` y `auth.users` tenían cero filas; las diez tablas tenían RLS y `public.cu_links.is_test` no existía.
