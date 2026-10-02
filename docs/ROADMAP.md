@@ -11,7 +11,7 @@
 
 ## Estado actual
 
-Fecha de corte: 2026-07-21.
+Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Estado de migraciones actualizado el 2026-09-28.
 
 - Baseline publicado en `main`: `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
 - Fuente viva de producto: [`PRD-CRM.md`](./PRD-CRM.md).
@@ -19,21 +19,24 @@ Fecha de corte: 2026-07-21.
 - Fuente canónica de código: `src/`.
 - Stack reproducible: Node 24.14.0, pnpm 11.7.0 y lockfile versionado.
 - Superficie: diez rutas de Next.js, nueve tablas CRM con RLS, ocho RPC públicas tipadas y una función privada de autorización.
-- Autorización: allowlist privada; `admin` y `member` comparten actualmente el mismo CRUD.
+- Autorización: allowlist privada; la base RBAC figura aplicada en QE2026 y separa trabajo comercial de operaciones administrativas. Esta revisión no repitió pruebas autenticadas en producción.
 - Calidad publicada: typecheck, 25 pruebas unitarias/de contrato, build de diez rutas, smoke HTTP 10/10, gate visual autenticado, smoke de campaña no mutante y suites aisladas de integración/E2E.
-- Baseline de Supabase: seis migraciones reproducen el esquema desde cero sin usuarios ni datos.
+- Baseline de Supabase en el corte de 2026-07-21: seis migraciones reprodujeron el esquema observado entonces; esa prueba no acredita la paridad actual de la cadena histórica con QE2026.
 - Entorno temporal de pruebas: limpio y en pausa después de las validaciones aisladas.
 - Fase 8: cerrada, fusionada mediante el [PR #13](https://github.com/pedrogiraldo-1979/QE/pull/13) y publicada.
 - Fase 9: fase activa para cerrar definiciones funcionales, gobierno, evidencia operable y deuda técnica incremental.
 
-Riesgos y decisiones abiertas que no bloquean el uso interno actual:
+Actualización de migraciones (2026-09-28): QE2026 conserva 29 entradas y el repositorio diez SQL históricos con versiones divergentes. El PR #34 publicó una baseline estructural independiente, ensayada sólo en proyectos vacíos, y el PR #33 sincronizó los tipos generados. D-030 aprobó conservar ambas historias intactas y reservar los cambios nuevos para releases SQL individuales con revisión y gate propio. La [matriz](./MIGRATION-HISTORY-MATRIX.md) y el [procedimiento condicionado](./SUPABASE-RELEASE-PROCEDURE.md) están preparados; aún falta verificar un método de despliegue y el dry-run de un SQL concreto. La estrategia no autoriza reparar el historial ni desplegar otra migración.
 
-- reconciliar el historial productivo de la baseline antes de otra migración;
+Riesgos y trabajo abierto que no bloquean el uso interno actual:
+
+- verificar para un SQL nuevo el procedimiento de release, con respaldo y dry-run que no reaplique SQL antiguo;
+- evaluar un mecanismo explícito, sólo mediante diseño y release aprobados, para reemplazar los filtros literales que hoy mantienen fuera de la cola real ocho respuestas de ensayo confirmadas por Pedro (D-031); conservar mientras tanto los registros y el comportamiento productivo;
 - decidir el tratamiento del estado legado `por_validar`;
 - habilitar la protección de contraseñas filtradas mediante un gate de Auth;
-- definir permisos diferentes para `admin` y `member`;
-- definir auditoría y recuperación para eliminaciones;
-- acordar la semántica de múltiples respuestas por enlace;
+- completar la evidencia autenticada que corresponda a la base RBAC observada en QE2026 y tratar cualquier evolución de permisos mediante un gate nuevo;
+- implementar por unidades aprobadas la auditoría, eliminación lógica y recuperación ya definidas en D-027;
+- implementar mediante un gate propio el ciclo de enlaces y respuestas definido en D-027;
 - definir métricas, retención, alertas y observabilidad;
 - implementar paginación antes de superar 1.000 entidades por dominio.
 
@@ -51,7 +54,7 @@ Riesgos y decisiones abiertas que no bloquean el uso interno actual:
 | 7 — Reproducibilidad de Supabase | El esquema se reconstruyó desde cero y coincidió con producción sin copiar identidades ni datos. | D-021 y `AUDIT.md` sección 20. |
 | 8 — Cierre visual autenticado y publicación | Se cerró la comparación visual, se corrigieron regresiones responsive y de accesibilidad y se publicó el alcance sin cambios de backend. | PR #13, `AUDIT.md` sección 21, 22/22 pruebas, build de diez rutas y gate visual autenticado en escritorio y móvil. |
 
-Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. Esta tabla expresa su estado vigente y sustituye los pendientes intermedios que quedaron resueltos por fases posteriores.
+Las afirmaciones históricas de cada fase se conservan en `AUDIT.md` y `DECISIONS.md`. La equivalencia de la Fase 7 corresponde a su corte de 2026-07-20; no debe extrapolarse al esquema productivo posterior de campaña y RBAC. D-030 rige la estrategia actual de historia y baseline.
 
 ## Fase activa
 
@@ -81,7 +84,7 @@ Estado: cerrada documentalmente el 2026-07-21.
 
 Gate: cumplido mediante la especificación aprobada y `D-027`; los criterios `P9-RBAC`, `P9-AUD` y `P9-CU` quedan aceptados sin cambios de backend ni datos.
 
-Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBAC se implementó y validó en un proyecto Supabase desechable el 2026-09-24; su publicación en un entorno compartido conserva un gate de release independiente. Auditoría, recuperación, administración de membresías, nuevo ciclo público y datos conservan planes y autorizaciones propios.
+Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBAC se implementó y validó en un proyecto Supabase desechable el 2026-09-24; el historial posterior de QE2026 registra ese SQL bajo `20260925200537` y la comparación estructural observó sus políticas y contratos. No se repitió aquí una prueba autenticada en QE2026. Auditoría, recuperación, administración de membresías y nuevo ciclo público conservan planes y autorizaciones propios.
 
 #### Etapa 3 — Evidencia operable
 
@@ -110,7 +113,7 @@ Gate: criterios `P9-TECH` aceptados, equivalencia funcional/visual/accesible, ro
 6. completar typecheck, pruebas, build, smoke, preview, revisión visual y rollback de cada cambio publicable;
 7. registrar en decisiones y auditoría los resultados, límites y deuda que se posponga.
 
-La activación de esta fase no autoriza implementar todos los frentes como una unidad ni modifica Supabase o datos por efecto del roadmap. El piloto cerrado de cinco correos aprobado el 2026-07-21 conserva un gate independiente y no autoriza una automatización general.
+La activación de esta fase no autoriza implementar todos los frentes como una unidad ni modifica Supabase o datos por efecto del roadmap. Pedro confirmó el 2026-09-26 que ya realizó el piloto de correo. La aprobación inicial de cinco destinatarios en 2026-07-21 es un antecedente histórico, no un límite permanente; esta actualización no identifica cuál lote se envió ni autoriza otros lotes o una automatización general.
 
 ## Backlog futuro y trabajo condicionado
 
@@ -126,7 +129,7 @@ Gate: cobertura reproducible sin secretos ni datos reales.
 
 ### Gates independientes de backend y datos
 
-- reconciliar la baseline en el historial productivo antes de otra migración;
+- actualizar la matriz local/remoto ya documentada antes de cada release y validar un SQL nuevo con respaldo, recuperación, ensayo aislado y dry-run que liste únicamente esa nueva versión; conservar intacto el historial de QE2026 conforme a D-030;
 - evaluar protección de contraseñas filtradas;
 - ejecutar, si se aprueba en Fase 9, la migración de estados legados mediante un plan reversible;
 - implementar, si se aprueba en Fase 9, la política de respuestas públicas mediante un gate aislado;
@@ -149,7 +152,7 @@ Gate: problema, usuario, criterio de aceptación y riesgo de datos documentados 
 - ERP: inventario, compras, contabilidad, nómina y facturación;
 - migraciones, cambios de RLS/Auth, Edge Functions o datos sin gate independiente;
 - limpiezas, importaciones o borrados no autorizados;
-- automatización masiva de email o WhatsApp más allá del piloto cerrado aprobado;
+- nuevos lotes o automatización masiva de email o WhatsApp sin gate propio;
 - telemetría o servicios externos sin política y aprobación;
 - rediseño visual integral;
 - multi-organización, ownership por fila o permisos no definidos por producto;
