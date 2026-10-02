@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## Preparación de recuperación para uso diario — 2026-10-01
+
+Pedro autorizó añadir/publicar la recuperación en `qe-crm` y solicitar un único correo para la cuenta comercial existente. Se reutiliza el PR #31, que ya contenía `/recuperar-clave` y `/restablecer-clave`, integrando el `main` vigente sin alterar el checkout original ni sus cambios. Se conservan los anexos históricos al resolver el conflicto documental del merge.
+
+Se refuerza el rechazo de enlaces ausentes/vencidos aunque exista una sesión anterior, se verifica la identidad mediante `getUser` y la autorización antes de guardar, se exige coincidencia y mínimo de ocho caracteres y se solicita cierre global de sesiones después del éxito. No se cambian tablas, RPC, RLS, membresías, servicios, dependencias ni variables. La contraseña real sólo la introduce la titular.
+
+Verificación local: typecheck, 55/55 pruebas, build de trece rutas y smoke HTTP 13/13 aprobados; pantallas públicas hidratadas en escritorio y móvil de 390 px, sin overflow ni errores/warnings de consola. La prueba nueva de enlace ausente y sesión normal se observó fallar antes del refuerzo. No se usó una contraseña real ni se ejecutó una mutación de prueba en QE2026. El estado autenticado sigue requiriendo validación interactiva por la titular; el antecedente del 2026-09-25 no acredita por sí solo la entrega del correo actual.
+
+Verificación remota de solo lectura: Vercel identifica `qe-crm` con el proyecto configurado localmente y dominio `qe-crm.vercel.app`; es el proyecto enlazado al repositorio QE y a `main`. El proyecto público `qe` aparece sin enlace Git y queda fuera de esta publicación. Supabase conserva Site URL local y sólo una redirección de preview histórica. El panel informa uso del correo incorporado; su restricción de destinatarios puede bloquear el correo comercial. La redirección productiva y el resultado de la solicitud se registrarán después de verificarse; no se presume entrega ni se configura SMTP sin autorización propia.
+
 ## Ensayo aislado de la Etapa 1 del enlace de prueba — 2026-09-28
 
 Pedro autorizó reanudar exclusivamente `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`) en la organización «Quindi Exquisito», aplicar allí la columna `is_test`, verificarla y volver a pausar el proyecto. Detalle y listado confirmaron dos veces la referencia, el nombre y la organización; QE2026 (`izbfawwmbilmsrdjaanw`) permaneció fuera de este ensayo. Antes del SQL, las diez tablas CRM, `private.crm_authorized_users` y `auth.users` tenían cero filas; las diez tablas tenían RLS y `public.cu_links.is_test` no existía.
@@ -856,6 +866,27 @@ Separación operativa:
 - no se realizó deployment, merge, migración ni operación remota como parte de la reorganización;
 - el trabajo se limita a actualizar las fuentes documentales vigentes y registrar la diferencia entre el corte histórico y el estado remoto comprobado.
 
+## Anexo — Recuperación de contraseña CRM en rama (2026-09-25)
+
+La rama `codex/crm-password-recovery` añade una solicitud pública de enlace y una página de cambio de clave. La solicitud usa la respuesta genérica de Supabase para no revelar si existe una cuenta; la página de cambio exige sesión y autorización CRM antes de actualizar la contraseña. Ninguna cuenta, dato, política, esquema o configuración remota fue modificado durante esta implementación.
+
+Verificación local: typecheck aprobado, 48/48 pruebas aprobadas, build de 13 rutas con las variables públicas versionadas de Supabase y smoke HTTP 13/13. En navegador local se comprobó el enlace desde el login, el formulario de solicitud y el estado de enlace ausente o vencido; no se envió ningún correo ni se cambió una contraseña. La revisión visual móvil y los estados autenticados de cambio siguen sin evidencia de navegador.
+
+Gate pendiente antes de ofrecerlo a usuarios: publicar un preview, autorizar su URL exacta de retorno en Supabase Auth mediante aprobación independiente y hacer una prueba interactiva controlada de envío, enlace y cambio de clave. El código de esta rama no se considera comportamiento publicado hasta superar ese gate y fusionarse por separado.
+
+Durante la prueba del preview, el enlace de recuperación llegó a la página pero esta mostró «No se pudo verificar el acceso». La inspección de solo lectura de QE2026 confirmó que `public.get_crm_session_context()` aún no existe allí; `public.is_crm_authorized()` sí existe y `authenticated` puede ejecutarla. El flujo de recuperación ahora usa esta última comprobación booleana, suficiente para impedir que una identidad ajena a la allowlist cambie la clave desde el CRM. No se aplicó la migración RBAC ni se modificaron datos. El cierre interactivo con un enlace nuevo permanece pendiente tras publicar el ajuste.
+
+## Anexo — Despliegue productivo de la base RBAC (2026-09-25)
+
+Después de una aprobación separada, se aplicó a QE2026 exclusivamente el contenido revisado de `20260917000000_phase_9_rbac_foundation.sql` mediante el conector de Supabase. El historial remoto la registró como `20260925200537_phase_9_rbac_foundation`; la diferencia de versión local/remota debe conservarse visible para la siguiente reconciliación. No se ejecutó `db push` ni ninguna migración histórica. El proyecto Free no tenía una copia diaria automática ni se creó una exportación completa; Pedro aceptó expresamente continuar con el SQL de reversión previamente ensayado y sin backup integral de datos.
+
+Preflight: proyecto `ACTIVE_HEALTHY`, migración aún ausente, nueve políticas `crm_allowlist_all`, archivo con SHA-256 `E3333A7D9C394A6ADABB3E41A4D51BE5791A0BAF920B0797A5B8DDD45135FE1E` y `pnpm verify` aprobado (48/48 pruebas, typecheck y build de 13 rutas). Postflight de solo lectura: los conteos de las nueve tablas CRM y la allowlist permanecieron idénticos; aparecieron el contexto de sesión y cinco wrappers `admin_*`; las políticas heredadas desaparecieron y quedaron 21 políticas comerciales y cuatro administrativas; `authenticated` ya no posee `DELETE` sobre esas nueve tablas ni `EXECUTE` sobre `delete_prospect`. Los grants de las RPC heredadas de revisión fueron retirados y los nuevos wrappers no son ejecutables por `anon`.
+
+Los advisors posteriores muestran los cinco wrappers `admin_*` como nuevos avisos `SECURITY DEFINER` para `authenticated`, previstos y protegidos por la comprobación de rol en backend; permanecen los avisos previos de las dos RPC públicas por token, tablas intencionalmente sin política de cliente y protección de contraseñas filtradas deshabilitada. No se ejecutaron pruebas autenticadas ni mutantes contra producción desde el agente. La validación manual de acceso de Pedro se registra más abajo; la verificación de los demás roles y flujos sensibles sigue pendiente.
+
+Contraste adicional de tipos: una regeneración de solo lectura desde QE2026 contiene las seis RPC RBAC en `src/lib/database.types.ts`, pero el archivo local no es idéntico al esquema productivo completo; la primera diferencia observada es `campaign_pilot_recipients.batch_key`, presente remotamente y ausente del snapshot local generado antes desde el proyecto temporal. No se reescribió el archivo generado dentro de este despliegue RBAC. Su reconciliación requiere una revisión de alcance separada para no mezclar contratos de campaña con el gate de acceso.
+
+Validación manual posterior informada por Pedro: tras aplicar RBAC, una sesión que ya estaba abierta pudo entrar al CRM y, después de cerrar sesión, un nuevo inicio de sesión con la contraseña restablecida también funcionó. El agente no vio ni registró la contraseña ni ejecutó pruebas autenticadas con esa cuenta. Esto cierra el gate manual de acceso de ese usuario; no sustituye la futura verificación de los demás roles y flujos sensibles en un entorno aislado.
 ## Anexo — Ensayo aislado de baseline estructural (2026-09-25)
 
 Alcance: se creó `supabase/baselines/qe2026-schema-only.sql` en la rama `codex/schema-only-baseline`, separada de las migraciones históricas y del PR #32. No se ejecutó SQL ni se modificaron datos en QE2026 (`izbfawwmbilmsrdjaanw`). El archivo conserva el replay estructural de ocho migraciones locales, seis deltas remotos, dos sentencias de esquema de la novena migración local y la migración RBAC; excluye las 31 filas de campaña, dos backfills sobre datos preexistentes y dos filtros literales de prueba específicos de QE2026. Es para un proyecto vacío, no una migración incremental ni un respaldo de datos.

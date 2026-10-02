@@ -60,6 +60,16 @@ El cambio afecta las nuevas solicitudes y sesiones que se revaliden. Para retira
 
 ## Recuperación administrativa
 
+### Contraseña propia de un usuario existente
+
+El acceso principal ofrece **¿Olvidaste tu contraseña?** hacia `/recuperar-clave`. La solicitud responde de forma genérica para no revelar si existe una cuenta. El enlace debe redirigir al origen autorizado y a `/restablecer-clave`; no crea cuentas ni cambia membresías.
+
+La pantalla de cambio exige un enlace de recuperación, una identidad verificada con Supabase Auth y autorización CRM. La clave y su confirmación deben coincidir y tener al menos ocho caracteres. Después del éxito se solicita el cierre global de sesiones, con cierre local como alternativa. La nueva contraseña la introduce únicamente la titular; no se registra en logs ni documentación. Recargar la página después de consumir el enlace puede requerir solicitar uno nuevo.
+
+Para producción debe autorizarse la URL exacta `https://qe-crm.vercel.app/restablecer-clave` en Supabase Auth. El servicio de correo incorporado puede rechazar destinatarios externos al equipo de Supabase; configurar SMTP propio requiere autorización y credenciales independientes.
+
+### Recuperar autorización administrativa
+
 Si todos los administradores quedaran fuera, usar el SQL Editor de Supabase con una cuenta autorizada del proyecto para reactivar o insertar el UUID correcto. No crear RPC públicas para administrar la allowlist y nunca usar una clave `service_role` en el navegador.
 
 ## Límites vigentes

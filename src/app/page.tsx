@@ -621,6 +621,7 @@ export default function HomePage() {
               {authLoading ? "Entrando..." : "Entrar"}
             </button>
           </form>
+          <Link href="/recuperar-clave">¿Olvidaste tu contraseña?</Link>
         </section>
       </main>
     );
