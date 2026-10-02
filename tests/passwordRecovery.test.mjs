@@ -6,6 +6,7 @@ import {
   RECOVERY_REQUEST_CONFIRMATION,
   recoveryRedirectUrl,
   validateRecoveryPassword,
+  isPasswordRecoveryUrl,
 } from "../src/features/crm/passwordRecovery.ts";
 
 test("el enlace de recuperación vuelve al origen exacto", () => {
@@ -16,6 +17,14 @@ test("la contraseña nueva exige dos campos iguales y no vacíos", () => {
   assert.equal(validateRecoveryPassword("", ""), "Completa ambos campos.");
   assert.equal(validateRecoveryPassword("clave-uno", "clave-dos"), "Las contraseñas no coinciden.");
   assert.equal(validateRecoveryPassword("clave-nueva", "clave-nueva"), null);
+  assert.equal(validateRecoveryPassword("corta", "corta"), "Usa al menos 8 caracteres.");
+});
+
+test("un enlace vencido o una sesión normal no habilitan el cambio", () => {
+  assert.equal(isPasswordRecoveryUrl(""), false);
+  assert.equal(isPasswordRecoveryUrl("#error=access_denied&type=recovery"), false);
+  assert.equal(isPasswordRecoveryUrl("#access_token=synthetic&refresh_token=synthetic&type=signup"), false);
+  assert.equal(isPasswordRecoveryUrl("#access_token=synthetic&refresh_token=synthetic&type=recovery"), true);
 });
 
 test("la confirmación de solicitud no revela si existe la cuenta", () => {
@@ -44,7 +53,9 @@ test("el cambio usa la autorización CRM disponible en producción antes de actu
   assert.match(source, /validateRecoveryPassword\(password, confirmation\)/);
   assert.match(source, /auth\.updateUser\(\{ password \}\)/);
   assert.match(source, /auth\.signOut\(\{ scope: "local" \}\)/);
-  assert.doesNotMatch(source, /service_role|console\.log|location\.hash|pedro\.giraldo@/);
+  assert.match(source, /isPasswordRecoveryUrl\(window\.location\.hash\)/);
+  assert.match(source, /auth\.getUser\(\)/);
+  assert.doesNotMatch(source, /service_role|console\.log|pedro\.giraldo@/);
 });
 
 test("el smoke HTTP cubre ambas rutas públicas de recuperación", async () => {

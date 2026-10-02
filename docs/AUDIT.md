@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## Preparación de recuperación para uso diario — 2026-10-01
+
+Pedro autorizó añadir/publicar la recuperación en `qe-crm` y solicitar un único correo para la cuenta comercial existente. Se reutiliza el PR #31, que ya contenía `/recuperar-clave` y `/restablecer-clave`, integrando el `main` vigente sin alterar el checkout original ni sus cambios. Se conservan los anexos históricos al resolver el conflicto documental del merge.
+
+Se refuerza el rechazo de enlaces ausentes/vencidos aunque exista una sesión anterior, se verifica la identidad mediante `getUser` y la autorización antes de guardar, se exige coincidencia y mínimo de ocho caracteres y se solicita cierre global de sesiones después del éxito. No se cambian tablas, RPC, RLS, membresías, servicios, dependencias ni variables. La contraseña real sólo la introduce la titular.
+
+Verificación local: typecheck, 55/55 pruebas, build de trece rutas y smoke HTTP 13/13 aprobados; pantallas públicas hidratadas en escritorio y móvil de 390 px, sin overflow ni errores/warnings de consola. La prueba nueva de enlace ausente y sesión normal se observó fallar antes del refuerzo. No se usó una contraseña real ni se ejecutó una mutación de prueba en QE2026. El estado autenticado sigue requiriendo validación interactiva por la titular; el antecedente del 2026-09-25 no acredita por sí solo la entrega del correo actual.
+
+Verificación remota de solo lectura: Vercel identifica `qe-crm` con el proyecto configurado localmente y dominio `qe-crm.vercel.app`; es el proyecto enlazado al repositorio QE y a `main`. El proyecto público `qe` aparece sin enlace Git y queda fuera de esta publicación. Supabase conserva Site URL local y sólo una redirección de preview histórica. El panel informa uso del correo incorporado; su restricción de destinatarios puede bloquear el correo comercial. La redirección productiva y el resultado de la solicitud se registrarán después de verificarse; no se presume entrega ni se configura SMTP sin autorización propia.
+
 ## Ensayo aislado de la Etapa 1 del enlace de prueba — 2026-09-28
 
 Pedro autorizó reanudar exclusivamente `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`) en la organización «Quindi Exquisito», aplicar allí la columna `is_test`, verificarla y volver a pausar el proyecto. Detalle y listado confirmaron dos veces la referencia, el nombre y la organización; QE2026 (`izbfawwmbilmsrdjaanw`) permaneció fuera de este ensayo. Antes del SQL, las diez tablas CRM, `private.crm_authorized_users` y `auth.users` tenían cero filas; las diez tablas tenían RLS y `public.cu_links.is_test` no existía.

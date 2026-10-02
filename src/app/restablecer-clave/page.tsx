@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { validateRecoveryPassword } from "@/features/crm/passwordRecovery";
+import { isPasswordRecoveryUrl, validateRecoveryPassword } from "@/features/crm/passwordRecovery";
 import { getSupabaseClient } from "@/lib/supabase";
 
 type Phase = "checking" | "ready" | "invalid" | "verification-error" | "saving" | "done";
@@ -13,15 +13,26 @@ export default function SetPasswordPage() {
   const [confirmation, setConfirmation] = useState("");
   const [message, setMessage] = useState("");
   const verificationId = useRef(0);
+  const recoveryUrl = useRef<boolean | null>(null);
 
   const verify = useCallback(async () => {
     const currentId = ++verificationId.current;
     setPhase("checking");
     try {
+      if (!recoveryUrl.current) {
+        setPhase("invalid");
+        return;
+      }
       const supabase = getSupabaseClient();
       const { data, error } = await supabase.auth.getSession();
       if (verificationId.current !== currentId) return;
       if (error || !data.session) {
+        setPhase("invalid");
+        return;
+      }
+      const identity = await supabase.auth.getUser();
+      if (verificationId.current !== currentId) return;
+      if (identity.error || !identity.data.user) {
         setPhase("invalid");
         return;
       }
@@ -47,6 +58,8 @@ export default function SetPasswordPage() {
   }, []);
 
   useEffect(() => {
+    // Capture before the SDK removes recovery credentials from the URL.
+    recoveryUrl.current ??= isPasswordRecoveryUrl(window.location.hash);
     void verify();
     return () => { verificationId.current += 1; };
   }, [verify]);
@@ -63,6 +76,14 @@ export default function SetPasswordPage() {
     setMessage("");
     try {
       const supabase = getSupabaseClient();
+      const identity = await supabase.auth.getUser();
+      const access = identity.error || !identity.data.user ? null : await supabase.rpc("is_crm_authorized");
+      if (!access || access.error || access.data !== true) {
+        setPassword("");
+        setConfirmation("");
+        setPhase("invalid");
+        return;
+      }
       const updated = await supabase.auth.updateUser({ password });
       setPassword("");
       setConfirmation("");
@@ -73,7 +94,8 @@ export default function SetPasswordPage() {
       }
       let signedOut = false;
       try {
-        signedOut = !(await supabase.auth.signOut({ scope: "local" })).error;
+        signedOut = !(await supabase.auth.signOut({ scope: "global" })).error;
+        if (!signedOut) signedOut = !(await supabase.auth.signOut({ scope: "local" })).error;
       } catch {
         signedOut = false;
       }
@@ -104,12 +126,12 @@ export default function SetPasswordPage() {
         {(phase === "ready" || phase === "saving") ? (
           <form className="form-stack" onSubmit={submit}>
             <label className="field-label">Nueva contraseña
-              <input className="input" type="password" autoComplete="new-password" value={password}
-                onChange={(event) => setPassword(event.target.value)} required />
+              <input className="input" type="password" autoComplete="new-password" minLength={8} value={password}
+                onChange={(event) => setPassword(event.target.value)} required disabled={phase === "saving"} />
             </label>
             <label className="field-label">Confirmar contraseña
-              <input className="input" type="password" autoComplete="new-password" value={confirmation}
-                onChange={(event) => setConfirmation(event.target.value)} required />
+              <input className="input" type="password" autoComplete="new-password" minLength={8} value={confirmation}
+                onChange={(event) => setConfirmation(event.target.value)} required disabled={phase === "saving"} />
             </label>
             {message ? <p role="alert" className="alert alert-danger">{message}</p> : null}
             <button className="btn btn-primary full-width" type="submit" disabled={phase === "saving"}>
