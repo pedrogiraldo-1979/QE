@@ -20,7 +20,7 @@ Este procedimiento cubre cambios del CRM en `main`. No autoriza migraciones, mut
 - [ ] Ejecutar `pnpm test`.
 - [ ] Ejecutar `pnpm build`.
 - [ ] Iniciar el artefacto con `pnpm start`.
-- [ ] Ejecutar `pnpm test:smoke`; las diez rutas deben responder `200` y la inexistente `404`.
+- [ ] Ejecutar `pnpm test:smoke`; las doce rutas deben responder `200` y la inexistente `404` (13 verificaciones, incluidas recuperación y restablecimiento de contraseña).
 - [ ] Abrir una pestaña nueva y comprobar que el login hidrata sin error overlay ni errores de consola.
 - [ ] Revisar al menos un viewport de escritorio y uno móvil; comprobar overflow y nombres/etiquetas de controles.
 - [ ] Si el cambio afecta una superficie autenticada, validarla contra un entorno de datos controlado antes de aprobar el release.

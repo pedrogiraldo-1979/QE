@@ -7,6 +7,7 @@ Current product requirements live in [`docs/PRD-CRM.md`](docs/PRD-CRM.md), and s
 ## What this app includes
 
 - Supabase login gate using email/password.
+- Self-service password recovery for existing authorized accounts, with an exact approved Auth redirect and generic email-request confirmation.
 - Private CRM allowlist enforced in the frontend and through RLS.
 - Companies dashboard with search, segment filters, and status filters.
 - Company detail view with company data, contacts, notes, and activity history.
@@ -93,7 +94,7 @@ http://localhost:3000
 pnpm verify
 ```
 
-El pipeline ejecuta typecheck, las pruebas unitarias/de contrato vigentes, build de producción y un smoke HTTP de once verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
+El pipeline ejecuta typecheck, las pruebas unitarias/de contrato vigentes y build de producción. CI inicia después el servidor y ejecuta un smoke HTTP de trece verificaciones. Para repetir el smoke localmente, iniciar primero `pnpm start` y ejecutar `pnpm test:smoke`; se puede cambiar la URL con `CRM_BASE_URL`.
 
 Las variables públicas de Supabase deben estar disponibles durante `pnpm build`, no únicamente al iniciar el servidor. El procedimiento completo está en `docs/RELEASE-CHECKLIST.md`.
 
