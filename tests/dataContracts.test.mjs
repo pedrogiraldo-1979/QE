@@ -163,12 +163,52 @@ test("la baseline reconstruye el contrato sin sembrar identidades ni datos", asy
   assert.doesNotMatch(authorization, /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i);
 });
 
-test("el bridge de contactos no realimenta su observador al decorar botones", async () => {
-  const bridge = await read("src/components/ContactCompletionBridge.tsx");
+test("el editor React de contacto conserva sus campos y delega por ID sin acceso DOM ni Supabase", async () => {
+  const editor = await read("src/components/crm/ContactQuickEditPanel.tsx");
+  assert.match(editor, /aria-label="Editar contacto comercial"/);
+  for (const label of ["Nombre contacto", "Rol operativo", "Email", "Teléfono / WhatsApp", "Notas"]) {
+    assert.ok(editor.includes(label), `Falta el campo ${label}`);
+  }
+  assert.match(editor, /onSave\(contact\.id, result\.patch\)/);
+  assert.match(editor, /prepareContactUpdate/);
+  assert.match(editor, /scrollIntoView\(\{ behavior: "smooth", block: "start" \}\)/);
+  assert.doesNotMatch(editor, /getSupabaseClient|document\./);
+});
 
-  assert.match(bridge, /const actionLabel = hasIssues \? "Completar datos" : "Editar contacto";/);
-  assert.match(bridge, /if \(actionButton\.textContent !== actionLabel\) \{\s*actionButton\.textContent = actionLabel;\s*\}/);
-  assert.doesNotMatch(bridge, /actionButton\.textContent = hasIssues \?/);
+test("la acción de contactos entrega la fila seleccionada y el guardado se limita al ID exacto", async () => {
+  const table = await read("src/components/crm/ContactsTable.tsx");
+  const page = await read("src/app/page.tsx");
+  assert.match(table, /onEditContact\(contact, event\.currentTarget\)/);
+  assert.match(table, /Datos mínimos OK/);
+  assert.doesNotMatch(table, /onCompleteData\(contact\.company_id\)/);
+  assert.match(page, /\.eq\("id", contactId\)/);
+  const saveHandler = page.match(/async function handleSaveContact[\s\S]*?\n  \}/)?.[0];
+  assert.ok(saveHandler, "No se encontró el handler de guardado del contacto.");
+  assert.match(saveHandler, /No se pudo actualizar el contacto\. Intenta de nuevo\./);
+  assert.doesNotMatch(saveHandler, /error\??\.message/);
+  assert.match(page, /setData\(\(current\) => \(\{[\s\S]*?contacts: current\.contacts\.map/);
+});
+
+test("al abrir el editor enfoca su título y al cerrarlo devuelve el foco a la fila de origen", async () => {
+  const editor = await read("src/components/crm/ContactQuickEditPanel.tsx");
+  const table = await read("src/components/crm/ContactsTable.tsx");
+  const page = await read("src/app/page.tsx");
+  assert.match(editor, /panelHeadingRef\.current\?\.focus\(\)/);
+  assert.match(editor, /<h2 ref=\{panelHeadingRef\} tabIndex=\{-1\}>/);
+  assert.match(table, /onEditContact\(contact, event\.currentTarget\)/);
+  assert.match(page, /contactEditTriggerRef\.current = trigger/);
+  assert.match(page, /requestAnimationFrame\(\(\) => \{\s*if \(trigger\?\.isConnected\) trigger\.focus\(\);\s*\}\)/);
+});
+
+test("el coordinador ya no monta el bridge de contactos y el panel queda en su ruta propietaria", async () => {
+  const bridges = await read("src/components/CrmClientBridges.tsx");
+  const page = await read("src/app/page.tsx");
+  const layout = await read("src/app/layout.tsx");
+  assert.doesNotMatch(bridges, /ContactCompletionBridge/);
+  assert.match(page, /ContactQuickEditPanel/);
+  assert.match(page, /viewMode === "contacts"[\s\S]*?ContactQuickEditPanel/);
+  assert.match(layout, /contact-quick-edit\.css/);
+  assert.doesNotMatch(layout, /contact-completion-bridge\.css/);
 });
 
 test("el buscador de listas de prospección conserva un nombre accesible", async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -35,6 +35,7 @@ import { useCrmSession } from "@/hooks/useCrmSession";
 import { useCrmDashboardData } from "@/hooks/useCrmDashboardData";
 import { coerceDataTabForRole, getAllowedDataTabs } from "@/features/crm/authorizationModel";
 import { HomePanel } from "@/components/crm/HomePanel";
+import { ContactQuickEditPanel } from "@/components/crm/ContactQuickEditPanel";
 import { MetricCard } from "@/components/crm/MetricCard";
 import { NavButton } from "@/components/crm/NavButton";
 import { ActivitiesTable } from "@/components/crm/ActivitiesTable";
@@ -44,6 +45,7 @@ import { CustomerResponsesTable } from "@/components/crm/CustomerResponsesTable"
 import { DataIssuesTable } from "@/components/crm/DataIssuesTable";
 import { MasterSyncTable } from "@/components/crm/MasterSyncTable";
 import { ProspectsTable } from "@/components/crm/ProspectsTable";
+import type { ContactEditorPatch } from "@/features/crm/contactEditorModel";
 import {
   activityTypeLabels,
   buildConvertedProspectNotes,
@@ -78,7 +80,7 @@ import {
   isConvertedProspect,
   normalizeProspectStatus,
 } from "@/lib/prospectOperations";
-import { ACTIVITY_COLUMNS, PROSPECT_ACTIVITY_COLUMNS } from "@/lib/data/queryColumns";
+import { ACTIVITY_COLUMNS, CONTACT_COLUMNS, PROSPECT_ACTIVITY_COLUMNS } from "@/lib/data/queryColumns";
 import {
   ACTIVITY_TYPES,
   COMPANY_STATUSES,
@@ -124,6 +126,8 @@ export default function HomePage() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null);
   const [selectedProspectId, setSelectedProspectId] = useState<string | null>(null);
   const [selectedProspectActivityId, setSelectedProspectActivityId] = useState<string | null>(null);
+  const [editingContactId, setEditingContactId] = useState<string | null>(null);
+  const contactEditTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("home");
   const [search, setSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("todos");
@@ -138,6 +142,7 @@ export default function HomePage() {
   const [newProspectActivityType, setNewProspectActivityType] = useState<ActivityType>("follow_up");
   const [newProspectActivityDueDate, setNewProspectActivityDueDate] = useState("");
   const [convertingProspectId, setConvertingProspectId] = useState<string | null>(null);
+  const editingContact = editingContactId ? data.contacts.find((contact) => contact.id === editingContactId) || null : null;
   const allowedDataTabs = getAllowedDataTabs(role);
 
   useEffect(() => {
@@ -172,6 +177,7 @@ export default function HomePage() {
   async function handleSignOut() {
     await signOut();
     resetData();
+    setEditingContactId(null);
     setSelectedCompanyId(null);
     setSelectedActivityId(null);
     setSelectedProspectId(null);
@@ -545,6 +551,7 @@ export default function HomePage() {
   };
 
   const goToView = (view: ViewMode) => {
+    setEditingContactId(null);
     setViewMode(view);
     setSearch("");
     setSegmentFilter("todos");
@@ -559,6 +566,7 @@ export default function HomePage() {
   };
 
   const goToCompanyStatus = (status: CompanyStatus) => {
+    setEditingContactId(null);
     setViewMode("companies");
     setStatusFilter(status);
     setSegmentFilter("todos");
@@ -568,6 +576,32 @@ export default function HomePage() {
   const handlePreparedAction = (label: string) => {
     setMessage(`${label}: acción preparada para conectar con backend.`);
   };
+
+  async function handleSaveContact(contactId: string, patch: ContactEditorPatch): Promise<string | null> {
+    const { data: updated, error } = await supabase
+      .from("contacts")
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq("id", contactId)
+      .select(CONTACT_COLUMNS)
+      .single();
+
+    if (error || !updated) return "No se pudo actualizar el contacto. Intenta de nuevo.";
+
+    const updatedContact = updated as Contact;
+    setData((current) => ({
+      ...current,
+      contacts: current.contacts.map((contact) => contact.id === updatedContact.id ? updatedContact : contact),
+    }));
+    return null;
+  }
+
+  function closeContactEditor() {
+    const trigger = contactEditTriggerRef.current;
+    setEditingContactId(null);
+    requestAnimationFrame(() => {
+      if (trigger?.isConnected) trigger.focus();
+    });
+  }
 
   const handleCreateActivityForCompany = (companyId: string) => {
     setSelectedCompanyId(companyId);
@@ -861,14 +895,24 @@ export default function HomePage() {
                 />
               ) : null}
               {viewMode === "contacts" ? (
-                <ContactsTable
-                  contacts={filteredContacts}
-                  onSelectCompany={handleCompanySelect}
-                  onCompleteData={(companyId) => {
-                    if (companyId) handleCompanySelect(companyId);
-                    handlePreparedAction("Completar datos de contacto");
-                  }}
-                />
+                <>
+                  <ContactsTable
+                    contacts={filteredContacts}
+                    onSelectCompany={handleCompanySelect}
+                    onEditContact={(contact, trigger) => {
+                      contactEditTriggerRef.current = trigger;
+                      setEditingContactId(contact.id);
+                    }}
+                  />
+                  {editingContact ? (
+                    <ContactQuickEditPanel
+                      key={editingContact.id}
+                      contact={editingContact}
+                      onClose={closeContactEditor}
+                      onSave={handleSaveContact}
+                    />
+                  ) : null}
+                </>
               ) : null}
               {viewMode === "activities" ? (
                 <ActivitiesTable
