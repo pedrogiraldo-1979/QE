@@ -12,6 +12,16 @@ Verificación remota de solo lectura: Vercel identifica `qe-crm` con el proyecto
 
 Resultado posterior del release autorizado: PR #31 fusionado como `2a6e2669ee047407d15321c608ec891e67273a0c`, CI de `main` aprobado y deployment `dpl_7MU438teFjzzbvx989NZgQMQimMq` en estado `READY` para `qe-crm`. Smoke público 13/13 aprobado. Se añadió únicamente la redirección exacta `https://qe-crm.vercel.app/restablecer-clave` en Supabase Auth; la URL local y la redirección histórica permanecieron intactas. Se solicitó una sola recuperación para la cuenta comercial previamente autorizada y la pantalla productiva devolvió la confirmación genérica sin error. Esto acredita aceptación de la solicitud, no recepción en el buzón ni cambio de contraseña. SMTP, membresías, roles, esquema, RPC, RLS y datos comerciales permanecieron intactos. La titular debe completar el cambio y comprobar el ingreso; su clave no fue conocida ni introducida por el agente.
 
+## Editor React de contactos — evidencia local y aislada (2026-10-02)
+
+La rama sustituye únicamente el `ContactCompletionBridge` por un panel React: la tabla entrega el contacto seleccionado por ID y la página actualiza sólo esa fila mediante el contrato existente. Se conservan nombre, rol, email, teléfono y notas; los errores muestran un mensaje genérico. No se modificaron esquema, RLS, Auth, RPC, Edge Functions, secretos ni datos comerciales.
+
+En el proyecto temporal `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`), una cuenta sintética `member` creó una empresa y su contacto desde la interfaz, consultó el directorio y guardó una edición. Un fallo controlado de guardado mostró el mensaje genérico y mantuvo los valores del formulario. Se limpiaron fixtures y la cuenta temporal y se pausó el proyecto. QE2026 no se consultó ni modificó.
+
+La revisión visual local a 390×844 cubrió alta, directorio y editor: no hubo overflow horizontal global; la navegación principal mantuvo desplazamiento horizontal interno. `pnpm verify` aprobó typecheck, 52 pruebas y build; `pnpm test:smoke` aprobó 11/11. La evidencia no valida los demás flujos ni el preview. El uso diario queda sujeto a la revisión del preview.
+
+Verificación de la entrega aislada sobre `main` en `f939f94`, el 2026-10-03: typecheck, 61/61 pruebas, build de trece rutas y smoke HTTP 13/13 aprobados. El cambio se prepara en `codex/phase-9-contact-editor`; la evidencia autenticada anterior corresponde a la implementación local y aún requiere validación del preview.
+
 ## Ensayo aislado de la Etapa 1 del enlace de prueba — 2026-09-28
 
 Pedro autorizó reanudar exclusivamente `QE Schema Baseline Guard Temp 2026-09-26` (`jfmauklmfhuecftvgjms`) en la organización «Quindi Exquisito», aplicar allí la columna `is_test`, verificarla y volver a pausar el proyecto. Detalle y listado confirmaron dos veces la referencia, el nombre y la organización; QE2026 (`izbfawwmbilmsrdjaanw`) permaneció fuera de este ensayo. Antes del SQL, las diez tablas CRM, `private.crm_authorized_users` y `auth.users` tenían cero filas; las diez tablas tenían RLS y `public.cu_links.is_test` no existía.

@@ -9,7 +9,7 @@ import "./home-commercial-workbench.css";
 import "./legacy-view-layout-polish.css";
 import "./activities-operational-workbench.css";
 import "./activities-workbench-polish.css";
-import "./contact-completion-bridge.css";
+import "./contact-quick-edit.css";
 
 export const metadata: Metadata = {
   title: "Quindío Exquisito CRM",
