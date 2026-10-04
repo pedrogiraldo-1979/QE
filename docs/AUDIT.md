@@ -1,5 +1,11 @@
 # Auditoría inicial del repositorio
 
+## Corrección de confirmaciones de actividades — 2026-10-04 (rama)
+
+En `codex/phase-9-activity-feedback`, basada en `main` publicado `57cd6d8`, se corrigió la causa del mensaje fugaz: la recarga posterior a completar o reprogramar limpiaba inmediatamente la confirmación. Sólo esas recargas conservan el mensaje; una carga inicial o actualización manual lo limpia y un error de lectura lo reemplaza. No se alteraron consultas, tablas, permisos ni el diálogo nativo de reprogramación.
+
+Ocho pruebas ejecutan los handlers existentes con transporte y setters sustituidos, sin acceder a Supabase: completar/reprogramar cliente y prospecto, actualización manual, error de recarga, cancelación/formato inválido y error de escritura. Las cuatro pruebas de persistencia del mensaje fallaron antes del arreglo y después aprobaron. `pnpm verify` aprobó typecheck, 69 pruebas y build; el smoke HTTP del servidor de producción local aprobó 13/13 y el servidor se detuvo al terminar. Esto prueba los handlers, no la UI montada, el diálogo nativo ni persistencia remota; la aceptación visual/auth de reprogramación sigue pendiente. No implica publicación ni cierre de ACT-02.
+
 ## Preparación de recuperación para uso diario — 2026-10-01
 
 Pedro autorizó añadir/publicar la recuperación en `qe-crm` y solicitar un único correo para la cuenta comercial existente. Se reutiliza el PR #31, que ya contenía `/recuperar-clave` y `/restablecer-clave`, integrando el `main` vigente sin alterar el checkout original ni sus cambios. Se conservan los anexos históricos al resolver el conflicto documental del merge.

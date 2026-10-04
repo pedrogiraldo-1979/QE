@@ -106,9 +106,9 @@ export default function ActivitiesOperationalWorkbench() {
     void loadActivities();
   }, [active]);
 
-  async function loadActivities() {
+  async function loadActivities(preserveMessage = false) {
     setLoading(true);
-    setMessage(null);
+    if (!preserveMessage) setMessage(null);
 
     const [companiesResult, prospectsResult, activitiesResult, prospectActivitiesResult] = await Promise.all([
       supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
@@ -197,7 +197,7 @@ export default function ActivitiesOperationalWorkbench() {
       return;
     }
     setMessage("Actividad completada.");
-    void loadActivities();
+    void loadActivities(true);
   }
 
   async function rescheduleActivity(activity: ActivityItem) {
@@ -215,7 +215,7 @@ export default function ActivitiesOperationalWorkbench() {
       return;
     }
     setMessage("Actividad reprogramada.");
-    void loadActivities();
+    void loadActivities(true);
   }
 
   if (!active || !container) return null;
