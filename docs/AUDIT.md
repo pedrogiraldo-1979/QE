@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## Selector inline de reprogramación — 2026-10-04 (rama)
+
+Tras aprobación del diseño, `codex/phase-9-activity-feedback` sustituye `window.prompt` por un formulario dentro de la actividad con fecha, Guardar y Cancelar. Valida fechas reales sin prohibir fechas pasadas; conserva tabla/origen, filtro por ID y patch de fecha/estado. Bloquea acciones durante el guardado, conserva el formulario y fecha ante error genérico y anuncia el estado. No se cambian esquema, RLS, Auth, RPC ni configuración.
+
+La prueba visual montó el componente real con React y el CSS existente en un servidor exclusivamente local con transporte y datos ficticios en memoria. Se comprobaron apertura/foco del campo, cancelación sin escritura con retorno al botón, Escape, éxito de cliente y prospecto con los patches esperados, confirmación conservada y error genérico sin detalles de backend manteniendo la fecha. Se encontró y corrigió una carrera de foco: el retorno espera tanto recarga como fin de guardado. A 390×844 el formulario fue utilizable y el documento no excedió el ancho del viewport (379 frente a 390 px). Es una prueba del componente, no de la página CRM autenticada completa.
+
+Las cinco nuevas comprobaciones fallaron antes de la implementación; el contrato adicional de foco falló antes del ajuste. La suite final aprobó 75 pruebas, typecheck, build y smoke HTTP 13/13. Los servidores, pestaña y archivos auxiliares del fixture se retiraron; el viewport se restauró. No se accedió a Supabase durante estas pruebas, no se publicó ni se hizo merge. Pendientes: persistencia autenticada aislada del nuevo selector, aceptación en deployment y verificación de filas afectadas por una actualización (limitación preexistente). ACT-02 permanece parcial.
+
 ## Corrección de confirmaciones de actividades — 2026-10-04 (rama)
 
 En `codex/phase-9-activity-feedback`, basada en `main` publicado `57cd6d8`, se corrigió la causa del mensaje fugaz: la recarga posterior a completar o reprogramar limpiaba inmediatamente la confirmación. Sólo esas recargas conservan el mensaje; una carga inicial o actualización manual lo limpia y un error de lectura lo reemplaza. No se alteraron consultas, tablas, permisos ni el diálogo nativo de reprogramación.

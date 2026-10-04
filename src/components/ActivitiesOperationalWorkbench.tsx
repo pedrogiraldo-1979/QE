@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   CalendarClock,
@@ -78,6 +78,12 @@ export default function ActivitiesOperationalWorkbench() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [data, setData] = useState<WorkbenchData>(emptyData);
+  const [rescheduleTarget, setRescheduleTarget] = useState<ActivityItem | null>(null);
+  const [draftDate, setDraftDate] = useState("");
+  const [saving, setSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
+  const pendingFocusRef = useRef<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   useEffect(() => {
     const updateActiveState = () => {
@@ -102,9 +108,22 @@ export default function ActivitiesOperationalWorkbench() {
   }, []);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      setRescheduleTarget(null);
+      setDraftDate("");
+      pendingFocusRef.current = null;
+      return;
+    }
     void loadActivities();
   }, [active]);
+
+  useEffect(() => {
+    if (!active || loading || saving || rescheduleTarget || !pendingFocusRef.current) return;
+    const button = document.getElementById(pendingFocusRef.current);
+    if (button instanceof HTMLButtonElement && !button.disabled) button.focus();
+    else headingRef.current?.focus();
+    pendingFocusRef.current = null;
+  }, [active, loading, saving, rescheduleTarget, data]);
 
   async function loadActivities(preserveMessage = false) {
     setLoading(true);
@@ -200,22 +219,48 @@ export default function ActivitiesOperationalWorkbench() {
     void loadActivities(true);
   }
 
-  async function rescheduleActivity(activity: ActivityItem) {
-    const nextDate = window.prompt("Nueva fecha de vencimiento (YYYY-MM-DD)", activity.due_date || today);
-    if (!nextDate) return;
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(nextDate)) {
-      setMessage("Usa formato YYYY-MM-DD.");
+  async function rescheduleActivity(activity: ActivityItem, nextDate: string) {
+    if (saveInFlightRef.current) return;
+    if (!isValidActivityDate(nextDate)) {
+      setMessage("Selecciona una fecha válida.");
       return;
     }
 
-    const table = activity.source === "prospecto" ? "prospect_activities" : "activities";
-    const { error } = await supabase.from(table).update({ due_date: nextDate, completed: false }).eq("id", activity.id);
-    if (error) {
-      setMessage(error.message);
-      return;
+    saveInFlightRef.current = true;
+    setSaving(true);
+    setMessage(null);
+    try {
+      const table = activity.source === "prospecto" ? "prospect_activities" : "activities";
+      const { error } = await supabase.from(table).update({ due_date: nextDate, completed: false }).eq("id", activity.id);
+      if (error) {
+        setMessage("No se pudo reprogramar la actividad. Intenta de nuevo.");
+        return;
+      }
+      pendingFocusRef.current = `activity-reschedule-${activity.source}-${activity.id}`;
+      setRescheduleTarget(null);
+      setMessage("Actividad reprogramada.");
+      await loadActivities(true);
+    } catch {
+      setMessage("No se pudo reprogramar la actividad. Intenta de nuevo.");
+    } finally {
+      saveInFlightRef.current = false;
+      setSaving(false);
     }
-    setMessage("Actividad reprogramada.");
-    void loadActivities(true);
+  }
+
+  function beginReschedule(activity: ActivityItem) {
+    if (saveInFlightRef.current) return;
+    setDraftDate(activity.due_date || today);
+    setRescheduleTarget(activity);
+    setMessage(null);
+  }
+
+  function cancelReschedule() {
+    if (saveInFlightRef.current || !rescheduleTarget) return;
+    pendingFocusRef.current = `activity-reschedule-${rescheduleTarget.source}-${rescheduleTarget.id}`;
+    setRescheduleTarget(null);
+    setDraftDate("");
+    setMessage(null);
   }
 
   if (!active || !container) return null;
@@ -225,18 +270,18 @@ export default function ActivitiesOperationalWorkbench() {
       <div className="activities-hero">
         <div>
           <p className="panel-kicker">Actividades operativas</p>
-          <h2>Qué tareas requieren atención</h2>
+          <h2 ref={headingRef} tabIndex={-1}>Qué tareas requieren atención</h2>
           <p>Cola diaria para llamadas, WhatsApp, emails y seguimientos antes de conectar calendarios de Juliana y Sandra.</p>
         </div>
         <div className="activities-hero-actions">
-          <button className="btn btn-secondary" type="button" onClick={() => void loadActivities()} disabled={loading}>
+          <button className="btn btn-secondary" type="button" onClick={() => void loadActivities()} disabled={loading || saving}>
             <RefreshCw size={17} className={loading ? "spin" : ""} />
             {loading ? "Actualizando" : "Actualizar"}
           </button>
         </div>
       </div>
 
-      {message ? <div className="alert alert-info">{message}</div> : null}
+      {message ? <div className="alert alert-info" role="status">{message}</div> : null}
 
       <div className="activity-kpi-grid">
         <ActivityKpi icon={Clock3} label="Vencidas" value={overdue.length} helper="requieren acción inmediata" urgent={overdue.length > 0} />
@@ -270,14 +315,35 @@ export default function ActivitiesOperationalWorkbench() {
                 </div>
                 <div className="activity-source-pill">{activity.source}</div>
                 <div className="activity-row-actions">
-                  <button className="btn btn-primary compact" type="button" onClick={() => void completeActivity(activity)}>
+                  <button className="btn btn-primary compact" type="button" disabled={loading || saving} onClick={() => void completeActivity(activity)}>
                     Completar
                   </button>
-                  <button className="btn btn-secondary compact" type="button" onClick={() => void rescheduleActivity(activity)}>
+                  <button id={`activity-reschedule-${activity.source}-${activity.id}`} className="btn btn-secondary compact" type="button" disabled={loading || saving} onClick={() => beginReschedule(activity)}>
                     <RotateCcw size={13} />
                     Reprogramar
                   </button>
                 </div>
+                {rescheduleTarget?.id === activity.id && rescheduleTarget.source === activity.source ? (
+                  <form
+                    className="activity-reschedule-form"
+                    aria-label={`Reprogramar actividad de ${activity.relatedName}`}
+                    noValidate
+                    onSubmit={(event) => { event.preventDefault(); void rescheduleActivity(activity, draftDate); }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape" && !saving) { event.preventDefault(); cancelReschedule(); }
+                    }}
+                  >
+                    <label className="field-label">
+                      Nueva fecha de vencimiento
+                      <input className="input" type="date" min="0001-01-01" max="9999-12-31" required autoFocus
+                        value={draftDate} onChange={(event) => setDraftDate(event.target.value)} disabled={saving} />
+                    </label>
+                    <div className="activity-row-actions">
+                      <button className="btn btn-primary compact" type="submit" disabled={saving}>{saving ? "Guardando" : "Guardar"}</button>
+                      <button className="btn btn-secondary compact" type="button" onClick={cancelReschedule} disabled={saving}>Cancelar</button>
+                    </div>
+                  </form>
+                ) : null}
               </article>
             ))}
             {!activeQueue.length ? (
@@ -371,4 +437,10 @@ function getActivityBucket(activity: ActivityItem) {
 function getActivityUrgency(activity: ActivityItem) {
   const bucket = getActivityBucket(activity);
   return bucket === "vencida" ? "urgent" : bucket === "hoy" ? "today" : "";
+}
+
+function isValidActivityDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith("0000-")) return false;
+  const date = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
