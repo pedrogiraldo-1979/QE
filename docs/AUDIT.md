@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## Nuevo prospecto: corrección móvil aprobada y verificada localmente — 2026-10-05
+
+Pedro aprobó únicamente corregir la distribución móvil, conservando campos, reglas y otras pantallas. Se añadió el marcador exclusivo `prospect-create-grid` a `/prospectos/nuevo` y un override de una columna hasta 860 px. La regla compartida de prospección y el diseño de escritorio no se modificaron. Sin cambios de datos, Supabase, configuración persistida, dependencias ni publicación.
+
+Prueba de contrato RED 0/1, GREEN 1/1; typecheck y 118/118 pruebas aprobados. Build aprobado; smoke HTTP de producción 13/13. El primer build empleó un nombre incorrecto de variable pública: el navegador detectó falta de configuración aunque HTTP aprobaba; se repitió con `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` sólo en el proceso, y el acceso real de Nuevo prospecto renderizó Email/Password/Entrar sin errores/warnings capturados. No se inició sesión.
+
+Se midió el DOM del componente real renderizado mediante React SSR, con los CSS compilados, en una herramienta temporal externa al repositorio. Sólo esa herramienta sustituye la sesión para mostrar el formulario vacío; no hay scripts de hidratación, credenciales, consultas ni mutaciones. A 390×844, el formulario mide 346,7 px y los once controles 316 px; la vista previa queda debajo, sin solapamiento y con documento/scroll de 375 px. A 860/861 px hay una columna sin overflow; a 1280 px hay dos columnas (702,6/420 px). Consola sin warnings/errores capturados. La captura móvil confirma campos completos y acciones accesibles visualmente.
+
+Límites: esta evidencia acredita distribución con formulario vacío, no un nuevo guardado autenticado, un ensayo táctil, todos los estados ni accesibilidad completa. El ensayo autenticado anterior se conserva como histórico y no se reescribe; producción y el temporal pausado no recibieron cambios. PRO-02, UX-02 y Fase 9 no se declaran cerrados; preview/PR/release mantienen su aprobación independiente.
+
 ## Alta de prospectos: protección local aprobada — 2026-10-05
 
 Pedro aprobó corregir únicamente el formulario de nuevo prospecto. Implementación en `codex/phase-9-prospect-create-safety`, sobre `a4082c2`, preservando el checkout original. Guarda síncrona para evitar envíos simultáneos; carga y creación con `try/catch/finally`; recuperación de controles y conservación del formulario ante error. Campos deshabilitados durante carga/guardado; Refrescar, Salir y cancelación local protegidos durante guardado. Mensajes genéricos sin detalles del backend ni reintento automático; ante resultado incierto se solicita revisar la lista antes de repetir. Consultas, columnas, payload, estados y validaciones comerciales permanecen iguales.

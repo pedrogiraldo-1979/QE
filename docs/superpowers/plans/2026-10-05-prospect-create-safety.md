@@ -32,3 +32,13 @@ Pedro aprobó este alcance el 2026-10-05. Base `a4082c2`; rama separada, preserv
 ## Ensayo autenticado autorizado
 
 2026-10-05: build de `2e1ed77` aislado en `jfmauklmfhuecftvgjms`. Alta y error FK comprobados con cuenta `member` y fixtures ficticias; campos conservados y controles recuperados. Gate móvil fallido: regla CSS previa comprime el formulario a 1,3 px a 390 px; no se publica ni se amplía el diseño sin aprobación. Limpieza comprobada en cero; pausa confirmada `INACTIVE`, servidor cerrado y viewport restablecido. Evidencia y límites en `docs/AUDIT.md`.
+
+## Corrección móvil aprobada
+
+Alcance aprobado: sólo distribución móvil de Nuevo prospecto, sin cambiar campos, reglas, otras pantallas ni Supabase. Ejecutar inline con writing-plans/executing-plans y TDD.
+
+- [x] Añadir prueba de contrato: marcador exclusivo de alta y override específico hasta 860 px; comprobar RED.
+- [x] Añadir `prospect-create-grid` al grid existente y regla móvil de una columna en ui-density-sidebar-polish.css; comprobar GREEN.
+- [x] Ejecutar verify y smoke de producción; medir el DOM del componente real con CSS compilado en una vista local aislada sin conexión a Supabase. Comprobar móvil y escritorio, registrar límites en AUDIT y guardar commit local sin publicar.
+
+Evidencia: RED 0/1 y GREEN 1/1 del contrato; typecheck y 118/118 pruebas aprobados; build y smoke 13/13 aprobados. A 390 px, formulario de 346,7 px y controles de 316 px, preview debajo y documento sin overflow. A 860/861 px se conserva una columna; a 1280 px dos columnas (702,6/420 px). Diagnóstico SSR del componente real con sesión sustituida sólo en herramienta temporal externa, sin hidratación ni escrituras; no equivale a repetir el ensayo autenticado. Carga real del acceso aprobada sin errores/warnings después de repetir el build con el nombre correcto de la variable pública. Preview/publicación pendientes.

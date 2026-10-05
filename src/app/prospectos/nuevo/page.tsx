@@ -267,7 +267,7 @@ export default function NewProspectPage() {
 
         {message ? <section className="alert alert-info" role="status">{message}</section> : null}
 
-        <section className="crm-grid">
+        <section className="crm-grid prospect-create-grid">
           <section className="list-panel">
             <div className="panel-toolbar">
               <div>
