@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## Confirmación autenticada de actividades — 2026-10-05 (entorno aislado)
+
+Con autorización explícita, se probó el build de `dc5c523` exclusivamente contra el proyecto desechable `jfmauklmfhuecftvgjms`, con cuenta sintética `member`, empresa/prospecto ficticios y seis actividades. La referencia y el hostname del bundle se comprobaron antes del ensayo; no se accedió al proyecto productivo.
+
+Reprogramar desde la UI persistió `2027-10-05` en ambos orígenes, conservando entidad, notas y `completed=false`; completar anunció éxito y una lectura independiente confirmó `completed=true` en cliente y prospecto. Para completar se devolvieron exclusivamente las fechas de esas dos fixtures al día inicial. El llenado automatizado directo del input mostró fechas que no llegaron al estado React; el incremento de año mediante teclado sí persistió. Por ello, la evidencia de cambio real corresponde a esa interacción de teclado, no al llenado directo ni a un ensayo de usabilidad del calendario.
+
+Se retiraron cuatro actividades ficticias mientras sus filas seguían visibles: completar y reprogramar, cliente y prospecto. Los cuatro intentos mostraron el aviso de actualización no confirmada, sin anuncio de éxito ni recarga; los dos formularios conservaron fecha y controles habilitados. Esto comprueba la respuesta de cero filas real bajo una sesión autorizada, no un fallo de transporte inducido.
+
+Al terminar se cerró sesión y se eliminaron únicamente las fixtures y la cuenta sintética autorizadas. La consulta de control confirmó cero usuarios, sesiones, membresías, empresas, contactos, prospectos y actividades de ambos orígenes. Supabase confirmó la pausa con estado `INACTIVE`, se detuvo el servidor aislado y se restauró únicamente el cambio automático de `next-env.d.ts`. No hubo migraciones ni cambios de esquema, permisos, configuración o datos productivos. La evidencia aislada no equivale a publicación ni cierra ACT-02: el release de esta rama sigue pendiente de aprobación.
+
 ## Confirmación de filas actualizadas — 2026-10-04 (rama)
 
 Tras aprobación del diseño escrito, `codex/phase-9-activity-write-verification`, desde `main` publicado `f7871f7`, pide únicamente `id` en la respuesta de las actualizaciones de completar y reprogramar. Conserva tabla por origen, filtro por ID y patches existentes. Sólo una respuesta sin error y con exactamente una fila cuyo ID coincide permite anunciar éxito y recargar. Respuesta vacía/nula, ID distinto, múltiples filas, error o excepción muestran un aviso genérico de actualización no confirmada; no hay reintento automático. Reprogramar conserva formulario/fecha y libera el estado de guardado. El aviso no afirma que un fallo de transporte haya impedido necesariamente la escritura.
