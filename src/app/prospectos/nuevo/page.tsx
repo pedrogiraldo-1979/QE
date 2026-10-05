@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity as ActivityIcon,
   Building2,
@@ -52,6 +52,7 @@ export default function NewProspectPage() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
   const [lists, setLists] = useState<ProspectList[]>([]);
   const [selectedListId, setSelectedListId] = useState("");
@@ -63,24 +64,25 @@ export default function NewProspectPage() {
   }, [isAuthenticated]);
 
   async function loadLists() {
+    if (saveInFlightRef.current) return;
     setLoading(true);
     setMessage(null);
-
-    const { data, error } = await supabase.from("prospect_lists").select(PROSPECT_LIST_COLUMNS).order("created_at", { ascending: false });
-
-    if (error) {
-      setMessage(error.message);
+    try {
+      const { data, error } = await supabase.from("prospect_lists").select(PROSPECT_LIST_COLUMNS).order("created_at", { ascending: false });
+      if (error) {
+        setMessage("No pudimos cargar las listas. Pulsa Refrescar para intentar de nuevo.");
+        return;
+      }
+      const loadedLists = (data || []) as ProspectList[];
+      setLists(loadedLists);
+      const queryListId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("listId") : null;
+      const fallbackListId = loadedLists[0]?.id || "";
+      setSelectedListId((current) => current || queryListId || fallbackListId);
+    } catch {
+      setMessage("No pudimos cargar las listas. Pulsa Refrescar para intentar de nuevo.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const loadedLists = (data || []) as ProspectList[];
-    setLists(loadedLists);
-
-    const queryListId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("listId") : null;
-    const fallbackListId = loadedLists[0]?.id || "";
-    setSelectedListId((current) => current || queryListId || fallbackListId);
-    setLoading(false);
   }
 
   async function handleSignIn(event: FormEvent<HTMLFormElement>) {
@@ -107,6 +109,7 @@ export default function NewProspectPage() {
 
   async function createProspect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saveInFlightRef.current || loading) return;
     const companyName = cleanText(form.company_name);
     const selectedList = lists.find((list) => list.id === selectedListId) || null;
 
@@ -120,11 +123,13 @@ export default function NewProspectPage() {
       return;
     }
 
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage(null);
     setCreatedProspect(null);
 
-    const { data, error } = await supabase
+    try {
+      const { data, error } = await supabase
       .from("prospects")
       .insert({
         list_id: selectedListId,
@@ -144,16 +149,19 @@ export default function NewProspectPage() {
       .select(PROSPECT_COLUMNS)
       .single();
 
-    if (error) {
-      setMessage(error.message);
+      if (error) {
+        setMessage("No se pudo confirmar la creación del prospecto. Revisa la lista antes de intentar de nuevo para evitar duplicados.");
+        return;
+      }
+      setCreatedProspect(data as Prospect);
+      setForm(emptyProspectForm);
+      setMessage("Prospecto creado para revisión. Puedes abrir la lista para agregar contactos o editarlo.");
+    } catch {
+      setMessage("No se pudo confirmar la creación del prospecto. Revisa la lista antes de intentar de nuevo para evitar duplicados.");
+    } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
-      return;
     }
-
-    setCreatedProspect(data as Prospect);
-    setForm(emptyProspectForm);
-    setSaving(false);
-    setMessage("Prospecto creado para revisión. Puedes abrir la lista para agregar contactos o editarlo.");
   }
 
   function updateField<K extends keyof ProspectForm>(field: K, value: ProspectForm[K]) {
@@ -235,7 +243,7 @@ export default function NewProspectPage() {
           </Link>
         </nav>
         <div className="sidebar-footer">
-          <button aria-label="Salir" className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()}>
+          <button aria-label="Salir" className="btn btn-ghost full-width" type="button" onClick={() => void handleSignOut()} disabled={saving}>
             <LogOut size={17} />
             <span>Salir</span>
           </button>
@@ -249,15 +257,15 @@ export default function NewProspectPage() {
             <h1>Nuevo prospecto</h1>
           </div>
           <div className="topbar-actions">
-            <Link className="btn btn-secondary" href="/prospectos">Volver a listas</Link>
-            <button className="btn btn-secondary" type="button" onClick={() => void loadLists()} disabled={loading}>
+            {saving ? <span className="btn btn-secondary" aria-disabled="true">Volver a listas</span> : <Link className="btn btn-secondary" href="/prospectos">Volver a listas</Link>}
+            <button className="btn btn-secondary" type="button" onClick={() => void loadLists()} disabled={loading || saving}>
               <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
             </button>
           </div>
         </header>
 
-        {message ? <section className="alert alert-info">{message}</section> : null}
+        {message ? <section className="alert alert-info" role="status">{message}</section> : null}
 
         <section className="crm-grid">
           <section className="list-panel">
@@ -270,6 +278,7 @@ export default function NewProspectPage() {
             </div>
 
             <form className="activity-form" onSubmit={createProspect}>
+              <fieldset disabled={saving || loading} className="activity-form" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
               <label className="field-label">
                 Lista de prospección
                 <select className="select" value={selectedListId} onChange={(event) => setSelectedListId(event.target.value)} required>
@@ -299,10 +308,11 @@ export default function NewProspectPage() {
                 Notas
                 <textarea className="textarea" value={form.notes} onChange={(event) => updateField("notes", event.target.value)} />
               </label>
+              </fieldset>
 
               <div className="panel-actions">
-                <Link className="btn btn-secondary" href="/prospectos">Cancelar</Link>
-                <button className="btn btn-primary" type="submit" disabled={saving || !lists.length}>
+                {saving ? <span className="btn btn-secondary" aria-disabled="true">Cancelar</span> : <Link className="btn btn-secondary" href="/prospectos">Cancelar</Link>}
+                <button className="btn btn-primary" type="submit" disabled={saving || loading || !lists.length}>
                   <Plus size={17} />
                   {saving ? "Guardando" : "Crear prospecto"}
                 </button>
