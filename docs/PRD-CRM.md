@@ -7,7 +7,7 @@
 - Estado: vigente.
 - Responsable de producto: Pedro.
 - Última revisión general: 2026-07-21.
-- Actualización puntual: 2026-09-28 (D-030, D-031 y estado observado de la base RBAC).
+- Actualización puntual: 2026-10-05 (D-032, cobertura y releases #31, #39–41; Fase 9 abierta).
 - Baseline de la revisión general: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`; las actualizaciones posteriores se fechan por separado.
 - Fase activa: Fase 9 — Cierre funcional y operativo.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
@@ -49,6 +49,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 
 ### Acceso y autorización
 
+- recuperación de contraseña para cuentas existentes autorizadas, publicada en PR #31; solicitud genérica y redirección aprobada. La entrega del correo y el cambio de clave real requieren aceptación de la titular;
 - inicio y cierre de sesión mediante Supabase Auth;
 - autorización interna mediante allowlist privada;
 - rechazo y cierre de sesión para identidades no autorizadas;
@@ -62,6 +63,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - creación de empresa con contacto principal;
 - creación independiente de contactos;
 - actualización de empresa y contacto desde los flujos disponibles;
+- editor de contactos React publicado mediante PR #39, con evidencia aislada de guardado/error y aceptación de preview acotada;
 - indicadores de calidad y completitud.
 
 ### Actividades
@@ -70,6 +72,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 - creación con fecha y entidad relacionada;
 - marcado como completada;
 - reprogramación de actividades abiertas;
+- formulario inline de reprogramación y confirmaciones conservadas (PR #40); completar/reprogramar anuncian éxito únicamente cuando la actualización devuelve una fila con el ID solicitado (PR #41). Un resultado no confirmado muestra aviso genérico; reprogramar conserva formulario/fecha, sin reintento automático;
 - visibilidad de vencimientos y próximo paso.
 
 ### Prospección
@@ -135,7 +138,7 @@ Mantiene autorización, contratos, despliegues y recuperación operativa. Los ca
 | UX-02 | Responsive | Los flujos críticos son utilizables en escritorio y en un viewport móvil de 390 px. |
 | OPS-01 | Release | Typecheck, pruebas, build, smoke y deployment deben aprobar antes de cerrar una fase publicable. |
 
-La cobertura y evidencia de estos criterios se registran en [`AUDIT.md`](./AUDIT.md), [`RELEASE-CHECKLIST.md`](./RELEASE-CHECKLIST.md) y las pruebas del repositorio. Un criterio implementado no se considera totalmente automatizado si sólo cuenta con evidencia manual.
+La cobertura y evidencia se relacionan en [`ACCEPTANCE-COVERAGE.md`](./ACCEPTANCE-COVERAGE.md), [`AUDIT.md`](./AUDIT.md), [`RELEASE-CHECKLIST.md`](./RELEASE-CHECKLIST.md) y las pruebas. La matriz no certifica onboarding ni todos los recorridos autenticados. Un criterio implementado no se considera totalmente automatizado si sólo cuenta con evidencia manual.
 
 ## 7. Requisitos no funcionales
 
@@ -253,9 +256,17 @@ El contrato:
 
 Los criterios `P9-RBAC-01..03`, `P9-AUD-01..03` y `P9-CU-01..03` quedan aceptados como contrato funcional. La base RBAC figura aplicada en QE2026; cualquier evolución compartida requiere un nuevo release y reversión aprobados. Auditoría, eliminación lógica, recuperación, administración de membresías y el nuevo ciclo público permanecen sin implementar y necesitan unidades separadas.
 
-### Decisiones pendientes
-- cobertura mínima automatizada por flujo y evidencia manual aceptable;
-- catálogo inicial de métricas, objetivos, responsables y política de privacidad;
+### Evidencia y catálogo mínimo aprobados — Etapa 3 abierta
+
+P9-COV-01/02 fueron aceptados documentalmente el 2026-10-01; la matriz se reconcilia con los releases publicados hasta `1d1b45c`. D-032 aprueba tres snapshots: empresas con contacto utilizable, prospectos activos con contacto utilizable y seguimientos vencidos. Se conserva el [catálogo mínimo](./superpowers/specs/2026-10-01-phase-9-metrics-design.md), sin instrumentación, persistencia, tracking, alertas ni metas antes de baseline.
+
+P9-MET-01 sigue parcial, P9-MET-02 abierto y P9-MET-03 aceptado sólo como política preventiva. Primera gestión, conversión por periodo, formularios y errores críticos quedan diferidos. El PR #30 propone un alcance anterior de siete métricas y cierre de etapa: no es comportamiento publicado ni sustituye D-032. Fase 9 no cerrada.
+
+### Decisiones operativas pendientes
+
+- rol/acceso de la hermana y aceptación de sus recorridos diarios; ningún documento crea cuenta o concede permiso;
+- completar evidencia manual de los flujos y móvil pendientes de la matriz;
+- operador diario, objetivos después de baseline y fuentes pendientes de P9-MET;
 - orden definitivo de bridges y criterio de salida de cada sustitución;
 - política de paginación con orden estable antes de superar 1.000 entidades por dominio.
 

@@ -11,6 +11,19 @@
 
 ## Estado actual
 
+### Corte vigente — 2026-10-05
+
+- Baseline publicado: `main` en `1d1b45c`, PR #41.
+- Recuperación de clave: PR #31 publicado; aceptación del correo y clave reales por la titular sigue independiente.
+- Editor React de contactos: PR #39 publicado; se retiró sólo `ContactCompletionBridge`.
+- Actividades: PR #40 publicó selector inline/confirmaciones; PR #41 exige exactamente una fila con ID coincidente antes de anunciar éxito. Completar/reprogramar y cero filas se verificaron sólo con fixtures aislados; sin escritura productiva.
+- Calidad del release #41: 99 pruebas, typecheck, build, smoke CI; smoke público 13/13; Vercel `qe-crm` Production/Ready y login sin errores de consola. La solicitud de viewport móvil no se aplicó: sigue pendiente aceptación móvil del deployment.
+- Cobertura: [matriz de 46 criterios](./ACCEPTANCE-COVERAGE.md), aceptada documentalmente en P9-COV, no certificado de uso diario.
+- D-032: tres métricas diarias definidas, sin instrumentación ni metas; P9-MET-01 parcial, P9-MET-02 abierto, P9-MET-03 aceptado como política preventiva.
+- Fase 9 y Etapa 3 siguen abiertas. Rol/acceso de la hermana, recorridos restantes y aceptación operativa requieren gates propios.
+
+### Corte histórico conservado
+
 Fecha de corte de los indicadores históricos de esta sección: 2026-07-21. Estado de migraciones actualizado el 2026-09-28.
 
 - Baseline publicado en `main`: `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`.
@@ -37,7 +50,7 @@ Riesgos y trabajo abierto que no bloquean el uso interno actual:
 - completar la evidencia autenticada que corresponda a la base RBAC observada en QE2026 y tratar cualquier evolución de permisos mediante un gate nuevo;
 - implementar por unidades aprobadas la auditoría, eliminación lógica y recuperación ya definidas en D-027;
 - implementar mediante un gate propio el ciclo de enlaces y respuestas definido en D-027;
-- definir métricas, retención, alertas y observabilidad;
+- completar definiciones/fuentes pendientes de métricas y decidir operador; conservar D-032 sin metas hasta baseline y sin instrumentación implícita;
 - implementar paginación antes de superar 1.000 entidades por dominio.
 
 ## Fases cerradas
@@ -88,15 +101,16 @@ Evidencia: PR #26 publicó la especificación y el primer plan RBAC. La base RBA
 
 #### Etapa 3 — Evidencia operable
 
-- mapear criterios del PRD a pruebas unitarias, contratos, integración, smoke o evidencia manual;
-- registrar vacíos de cobertura, responsables y gates;
-- definir métricas con fórmula, fuente, granularidad, zona horaria, frecuencia, objetivo, responsable, privacidad y retención.
+- P9-COV-01/02: matriz aceptada documentalmente el 2026-10-01 y reconciliada con releases #39–41 en esta entrega; mantener evidencia, vacíos y gates.
+- P9-MET: D-032 aprueba el [catálogo mínimo](./superpowers/specs/2026-10-01-phase-9-metrics-design.md) y privacidad preventiva; operador, objetivos posteriores a baseline y fuentes diferidas siguen abiertos.
+- El [PR #30](https://github.com/pedrogiraldo-1979/QE/pull/30) mantiene una propuesta anterior de siete métricas y cierre de etapa. No tomarla como vigente ni fusionarla sin reconciliación. No se cambia aquel PR desde esta rama.
 
-Gate: matriz de cobertura revisada, criterios `P9-COV` y `P9-MET` aceptados y ninguna telemetría o dependencia externa introducida sin aprobación.
+Gate pendiente: resolver alcance restante de P9-MET y sus responsabilidades sin inventar metas; aceptación de documentos no autoriza telemetría, proveedores o cambios de datos. La etapa permanece abierta.
 
 #### Etapa 4 — Mantenibilidad incremental
 
-- priorizar `ContactCompletionBridge` y `AddActivityEntryBridge`;
+- `ContactCompletionBridge`: entrega publicada en PR #39, no pendiente de sustitución;
+- `AddActivityEntryBridge` y demás unidades: pendientes de inventario/orden aceptado y aprobación independiente; no retirarlas como efecto de esta documentación;
 - sustituir un bridge por entrega con composición React propietaria;
 - centralizar repositorios sólo al intervenir su ruta;
 - repetir typecheck, pruebas, build, smoke y gate visual tras cada sustitución.
@@ -118,6 +132,16 @@ La activación de esta fase no autoriza implementar todos los frentes como una u
 ## Backlog futuro y trabajo condicionado
 
 Los puntos siguientes no forman parte automática de la Fase 9. Cada uno necesita alcance, aprobación y gate propios.
+
+### Prioridad inmediata — preparación del uso diario
+
+1. Confirmar identidad, acceso y rol de la operadora; recomendar menor privilegio suficiente, sin provisionar desde el roadmap.
+2. Completar búsqueda/filtros/detalle, alta/edición de prospectos/contactos, alta de actividades, errores y teclado/móvil; mutaciones de prueba sólo aisladas.
+3. Si revisará respuestas, validar el recorrido y token vencido en entorno controlado; verificar hojas antes de marcar conciliación.
+4. Preparar guía breve y primera sesión acompañada. No repetir como pendiente técnico el ajuste de completar/reprogramar ya publicado.
+5. Reconciliar propuestas documentales abiertas por separado: PR #30 no cierra métricas; PR #38 no demuestra por sí solo respaldo recuperable ni dry-run exclusivo de SQL nuevo.
+
+Auditoría avanzada, eliminación/restauración, instrumentación y retirada de otros bridges pueden posponerse explícitamente; no se presentan como implementados ni como prerrequisito automático de tareas comerciales que no los usan.
 
 ### Calidad y automatización posterior
 
