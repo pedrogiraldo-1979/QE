@@ -7,23 +7,33 @@ const source = await readFile(new URL("../src/components/ActivitiesOperationalWo
 
 // Exercise the existing component handlers without mounting its DOM bridge.
 // Only the external database transport and React state setters are substituted.
-function harness({ readError = null, writeError = null, inFlight = false } = {}) {
+function harness({ readError = null, writeError = null, inFlight = false, returnedRows = [{ id: "synthetic" }], throwWrite = false } = {}) {
   let message = "Mensaje anterior";
   let saving = false;
   let editing = "synthetic";
   let draft = "2026-10-04";
   const pendingFocusRef = { current: null };
   const writes = [];
+  const selections = [];
+  let reloads = 0;
   const from = (table) => ({
     select: () => ({
       order: () => {
+        reloads += 1;
         const result = { data: [], error: readError };
         return { ...result, limit: () => result };
       },
     }),
-    update: (patch) => ({ eq: async (column, id) => {
+    update: (patch) => ({ eq: (column, id) => {
       writes.push({ table, patch, column, id });
-      return { error: writeError };
+      const response = () => {
+        if (throwWrite) throw new Error("Detalle privado de transporte");
+        return { data: returnedRows, error: writeError };
+      };
+      return {
+        then: (resolve, reject) => Promise.resolve().then(response).then(resolve, reject),
+        select: async (columns) => { selections.push(columns); return response(); },
+      };
     } }),
   });
   const loader = source.slice(source.indexOf("  async function loadActivities("), source.indexOf("  const companyById"));
@@ -37,7 +47,7 @@ function harness({ readError = null, writeError = null, inFlight = false } = {})
     { current: inFlight }, (value) => { saving = value; }, (value) => { editing = value; }, pendingFocusRef,
     { id: "synthetic", source: "cliente" }, (value) => { draft = value; },
   );
-  return { ...actions, writes, message: () => message, saving: () => saving, editing: () => editing, draft: () => draft, pendingFocusRef };
+  return { ...actions, writes, selections, reloads: () => reloads, message: () => message, saving: () => saving, editing: () => editing, draft: () => draft, pendingFocusRef };
 }
 
 const settle = () => new Promise((resolve) => setImmediate(resolve));
@@ -48,6 +58,7 @@ for (const source of ["cliente", "prospecto"]) {
     await h.completeActivity({ id: "synthetic", source });
     await settle();
     assert.equal(h.message(), "Actividad completada.");
+    assert.deepEqual(h.selections, ["id"]);
     assert.deepEqual(h.writes, [{ table: source === "cliente" ? "activities" : "prospect_activities", patch: { completed: true }, column: "id", id: "synthetic" }]);
   });
   test(`reprogramar ${source} conserva la confirmación y el contrato de actualización`, async () => {
@@ -55,6 +66,7 @@ for (const source of ["cliente", "prospecto"]) {
     await h.rescheduleActivity({ id: "synthetic", source, due_date: null }, "2026-10-04");
     await settle();
     assert.equal(h.message(), "Actividad reprogramada.");
+    assert.deepEqual(h.selections, ["id"]);
     assert.deepEqual(h.writes[0].patch, { due_date: "2026-10-04", completed: false });
     assert.equal(h.writes[0].table, source === "cliente" ? "activities" : "prospect_activities");
   });
@@ -96,7 +108,7 @@ test("reprogramar bloquea escrituras mientras ya hay un guardado en curso", asyn
 test("un error conserva el formulario de reprogramación y termina el estado de guardado", async () => {
   const h = harness({ writeError: { message: "Detalle privado sintético" } });
   await h.rescheduleActivity({ id: "synthetic", source: "cliente" }, "2026-10-04");
-  assert.equal(h.message(), "No se pudo reprogramar la actividad. Intenta de nuevo.");
+  assert.equal(h.message(), "No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
   assert.equal(h.editing(), "synthetic");
   assert.equal(h.saving(), false);
 });
@@ -126,5 +138,34 @@ test("el retorno de foco espera a que termine también el guardado", () => {
 test("un fallo al guardar no muestra confirmación de éxito", async () => {
   const h = harness({ writeError: { message: "Fallo sintético de escritura" } });
   await h.completeActivity({ id: "synthetic", source: "cliente" });
-  assert.equal(h.message(), "Fallo sintético de escritura");
+  assert.equal(h.message(), "No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
 });
+
+for (const activitySource of ["cliente", "prospecto"]) {
+  for (const action of ["completeActivity", "rescheduleActivity"]) {
+    for (const [scenario, options] of [
+      ["cero filas", { returnedRows: [] }],
+      ["respuesta nula", { returnedRows: null }],
+      ["ID distinto", { returnedRows: [{ id: "different" }] }],
+      ["varias filas", { returnedRows: [{ id: "synthetic" }, { id: "different" }] }],
+      ["error explícito", { writeError: { message: "Detalle privado" } }],
+      ["excepción de transporte", { throwWrite: true }],
+    ]) {
+      test(`${action} ${activitySource}: ${scenario} no confirma ni recarga ni reintenta`, async () => {
+        const h = harness(options);
+        await h[action]({ id: "synthetic", source: activitySource }, "2026-10-04");
+        await settle();
+        assert.equal(h.message(), "No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
+        assert.equal(h.reloads(), 0);
+        assert.equal(h.writes.length, 1);
+        assert.equal(h.saving(), false);
+        assert.deepEqual(h.selections, ["id"]);
+        if (action === "rescheduleActivity") {
+          assert.equal(h.editing(), "synthetic");
+          assert.equal(h.draft(), "2026-10-04");
+          assert.equal(h.pendingFocusRef.current, null);
+        }
+      });
+    }
+  }
+}

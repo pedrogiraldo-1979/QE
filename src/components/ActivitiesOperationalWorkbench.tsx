@@ -209,14 +209,18 @@ export default function ActivitiesOperationalWorkbench() {
   const activeQueue = [...overdue, ...dueToday, ...nextSeven, ...noDate].slice(0, 12);
 
   async function completeActivity(activity: ActivityItem) {
-    const table = activity.source === "prospecto" ? "prospect_activities" : "activities";
-    const { error } = await supabase.from(table).update({ completed: true }).eq("id", activity.id);
-    if (error) {
-      setMessage(error.message);
-      return;
+    try {
+      const table = activity.source === "prospecto" ? "prospect_activities" : "activities";
+      const { data: updated, error } = await supabase.from(table).update({ completed: true }).eq("id", activity.id).select("id");
+      if (error || updated?.length !== 1 || updated[0].id !== activity.id) {
+        setMessage("No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
+        return;
+      }
+      setMessage("Actividad completada.");
+      void loadActivities(true);
+    } catch {
+      setMessage("No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
     }
-    setMessage("Actividad completada.");
-    void loadActivities(true);
   }
 
   async function rescheduleActivity(activity: ActivityItem, nextDate: string) {
@@ -231,9 +235,9 @@ export default function ActivitiesOperationalWorkbench() {
     setMessage(null);
     try {
       const table = activity.source === "prospecto" ? "prospect_activities" : "activities";
-      const { error } = await supabase.from(table).update({ due_date: nextDate, completed: false }).eq("id", activity.id);
-      if (error) {
-        setMessage("No se pudo reprogramar la actividad. Intenta de nuevo.");
+      const { data: updated, error } = await supabase.from(table).update({ due_date: nextDate, completed: false }).eq("id", activity.id).select("id");
+      if (error || updated?.length !== 1 || updated[0].id !== activity.id) {
+        setMessage("No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
         return;
       }
       pendingFocusRef.current = `activity-reschedule-${activity.source}-${activity.id}`;
@@ -241,7 +245,7 @@ export default function ActivitiesOperationalWorkbench() {
       setMessage("Actividad reprogramada.");
       await loadActivities(true);
     } catch {
-      setMessage("No se pudo reprogramar la actividad. Intenta de nuevo.");
+      setMessage("No se pudo confirmar la actualización de la actividad. Actualiza la lista antes de intentar de nuevo.");
     } finally {
       saveInFlightRef.current = false;
       setSaving(false);
