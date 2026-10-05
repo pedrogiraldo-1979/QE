@@ -1,5 +1,15 @@
 # Auditoría inicial del repositorio
 
+## Alta de actividades: guardado protegido — 2026-10-05 (rama)
+
+Pedro autorizó corregir sólo el guardado y los mensajes de `AddActivityEntryBridge`. La rama `codex/phase-9-activity-create-safety` parte de `main` actualizado `eb2be27`; el checkout original y sus cambios pendientes permanecen intactos. El componente conserva su portal, consultas, columnas, límite, tablas y payloads; no se retira ningún bridge ni se modifica otra pantalla.
+
+Causa comprobada: una excepción escapaba de carga/guardado antes de liberar controles; Cerrar no estaba deshabilitado y dos envíos antes de un nuevo render podían iniciar dos inserts. La guarda síncrona impide envíos simultáneos y cierre durante esa petición; `try/catch/finally` libera carga/guardado. Errores devueltos y excepciones muestran mensajes genéricos, sin detalles ni logs de backend. Un fallo al crear conserva entidad, nota, tipo y fecha; el aviso pide consultar Actividades antes de repetir porque una respuesta incierta no demuestra ausencia de escritura. No hay reintentos automáticos ni garantía de idempotencia entre intentos posteriores o pestañas.
+
+Diez pruebas ejecutan los handlers reales con transporte y setters sustituidos, sin conexión remota: nueve fallaron antes del ajuste por excepciones, mensajes técnicos y cierre/doble envío, y después aprobaron las diez. Se conservó la validación preexistente de entidad y nota. `pnpm verify` aprobó typecheck, 109 pruebas y build de trece rutas; el servidor de producción local pasó smoke HTTP 13/13. Login local hidratado con controles habilitados, sin overlay ni errores/warnings capturados y sin overflow a 1280 px. No acredita la UI autenticada ni móvil del formulario.
+
+El contrato TypeScript se regeneró en modo de sólo lectura desde QE2026 y coincidió completamente con el archivo local tras normalizar saltos de línea; no se modificó el snapshot ni se consultaron filas comerciales. Se restauró únicamente el cambio automático de `next-env.d.ts` del build. No se cambiaron Supabase, esquema, RLS, Auth, RPC, migraciones, datos, configuración, dependencias ni variables persistidas. Sin publicación ni merge; quedan prueba visual/autenticada en entorno controlado, preview y release antes de considerar el ajuste publicado. ACT-01 y Fase 9 siguen abiertos.
+
 ## Reconciliación documental de preparación diaria — 2026-10-05
 
 Pedro aprobó reconciliar fuentes vivas en una rama exclusivamente documental desde `main` publicado `1d1b45c`, manteniendo Fase 9 abierta. El checkout original conserva sus cambios locales; se reutilizó el worktree limpio en `codex/phase-9-readiness-docs`. No se modificaron código, configuración, dependencias, Supabase ni datos.
