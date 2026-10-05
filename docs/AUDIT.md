@@ -1,5 +1,19 @@
 # Auditoría inicial del repositorio
 
+## Reconciliación documental de preparación diaria — 2026-10-05
+
+Pedro aprobó reconciliar fuentes vivas en una rama exclusivamente documental desde `main` publicado `1d1b45c`, manteniendo Fase 9 abierta. El checkout original conserva sus cambios locales; se reutilizó el worktree limpio en `codex/phase-9-readiness-docs`. No se modificaron código, configuración, dependencias, Supabase ni datos.
+
+Contradicciones verificadas: la matriz `ACCEPTANCE-COVERAGE.md` existía sólo en la rama local y aún describía el diálogo nativo, mensaje fugaz y editor no publicado; PR #39–41 ya integraron esos ajustes. El roadmap presentaba como estado actual la superficie/calidad del corte histórico de julio y seguía priorizando la retirada del bridge de contactos ya sustituido. D-032, aprobada el 2026-10-01, no estaba en main; el PR #30 permanece abierto con una propuesta anterior de siete métricas y cierre de Etapa 3. Se incorporan las 46 filas de cobertura reconciliadas y el catálogo aprobado de tres snapshots; no se incorporan las siete métricas ni se cierra la etapa. Se preservan las entradas históricas, incluidas las que describen gates pendientes en su fecha.
+
+Release posterior al ensayo de filas actualizadas: Pedro autorizó integrar PR #41, fusionado el 2026-10-05 como `1d1b45cfc3dd8a35cce197e86c120919c6cafe75`. [CI main 37308187034](https://github.com/pedrogiraldo-1979/QE/actions/runs/37308187034) aprobó typecheck, 99 pruebas, build y smoke. El panel Vercel confirmó `qe-crm`, deployment `dpl_HNHyEGVBVZhgYRNfUkFEootLKyne`, Production/Ready y ese commit. Smoke público 13/13; login hidratado con controles habilitados y sin errores/warnings de consola. Panel de registros: Warning/Error/Fatal 0 en la ventana de 30 minutos revisada. El conector devolvió 404/403 y no se utiliza como evidencia de estado; la comprobación fue por panel y GitHub. [Registro de release](https://github.com/pedrogiraldo-1979/QE/pull/41#issuecomment-5994272277).
+
+Límites conservados: la solicitud de viewport móvil no se aplicó (ancho medido 1280); no acredita aceptación móvil nueva. El ensayo aislado probó cambio de fecha por teclado, no usabilidad completa del calendario. No se ejecutaron escrituras productivas. Concurrencia y referencia UTC heredadas no quedaron resueltas. La evidencia permite actualizar estado de publicación, no declarar todos los criterios operativos cerrados.
+
+Pendientes priorizados: decidir identidad/rol/acceso de la operadora, completar búsqueda/filtros/detalle, alta/edición de prospectos y contactos, alta de actividad, errores, teclado/móvil y primera sesión acompañada. Si se usarán respuestas y maestros, validar su recorrido y token vencido por un gate aislado, y mantener verificación humana de las hojas. Auditoría avanzada, borrado recuperable, otros bridges e instrumentación se mantienen como entregas independientes.
+
+PR #38 conserva una lectura histórica de disponibilidad de herramientas/respaldo: no se toma como prueba contemporánea de restauración ni dry-run de un SQL nuevo. Este trabajo no verifica el archivo privado de backup, no descifra datos ni declara recuperación probada. PR #30/#38/#2 siguen abiertos y no se modifican, cierran ni fusionan desde esta entrega. D-030 conserva todos sus gates.
+
 ## Confirmación autenticada de actividades — 2026-10-05 (entorno aislado)
 
 Con autorización explícita, se probó el build de `dc5c523` exclusivamente contra el proyecto desechable `jfmauklmfhuecftvgjms`, con cuenta sintética `member`, empresa/prospecto ficticios y seis actividades. La referencia y el hostname del bundle se comprobaron antes del ensayo; no se accedió al proyecto productivo.

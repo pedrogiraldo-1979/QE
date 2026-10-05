@@ -318,6 +318,21 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 - Límites: esta confirmación no autoriza aprobar, rechazar, archivar, borrar o modificar las respuestas; desactivar el enlace; cambiar la RPC, el esquema o la baseline; ni desplegar una migración. El mecanismo futuro requiere diseño, pruebas aisladas, respaldo/reversión y autorización de release independientes conforme a D-030.
 - Evidencia/verificación: lectura agregada y comparación de definiciones registradas en `docs/AUDIT.md`; la interfaz obtiene la cola mediante `admin_get_cu_pending_reviews()`. No se ejecutaron mutaciones de Supabase.
 
+## D-032 — Aprobar el catálogo mínimo de métricas operativas sin instrumentación
+
+- Estado: Aceptada como definición de producto; implementación no autorizada.
+- Fecha: 2026-10-01.
+- Responsable: Pedro.
+- Contexto: P9-MET requiere definiciones operables y reglas de privacidad antes de medir el uso diario. El CRM actual presenta algunos contadores de estado, pero no proporciona por sí solo eventos históricos verificables para todas las áreas del PRD.
+- Decisión: adoptar como snapshots agregados diarios (1) empresas con contacto utilizable, (2) prospectos activos con contacto utilizable y (3) seguimientos vencidos abiertos, con fórmulas, fuentes, granularidad, frecuencia, zona horaria y acciones descritas en la [especificación P9-MET](./superpowers/specs/2026-10-01-phase-9-metrics-design.md).
+- Privacidad y operación: no incluir datos personales, identificadores ni notas; reutilizar sólo el acceso CRM ya autorizado; no persistir snapshots ni nuevos logs; no añadir proveedores, tracking, alertas o informes automáticos. Los indicadores no mutan datos. No se fijan metas hasta contar con una base aprobada y evidencia suficiente.
+- Pendientes: primera gestión, conversión por periodo, formularios y errores críticos quedan diferidos hasta definir eventos/fuentes, población, acceso y tratamiento de privacidad. El responsable del catálogo es Pedro; el operador diario y los objetivos/umbrales quedan por decidir.
+- Consecuencias: P9-MET-03 queda aceptado como política preventiva para cualquier instrumentación futura; P9-MET-01 es parcial y P9-MET-02 permanece abierto. `P9-COV-01/02` quedan aceptados documentalmente por la revisión de la matriz. La Etapa 3 de Fase 9 continúa activa.
+- Límites: esta decisión no implementa métricas ni autoriza cambios de interfaz, consultas nuevas a Supabase, esquema, RLS, RPC, Auth, logs, persistencia, servicios externos, alertas, objetivos numéricos o acceso de la hermana. Cualquier implementación necesita contraste de esquema y autorización específica.
+- Evidencia/verificación: catálogo revisado y aprobado por Pedro el 2026-10-01; límites del comportamiento local contrastados y anotados en `docs/AUDIT.md`. Sin lectura o mutación de QE2026.
+
+Nota de integración documental (2026-10-05): D-032 se recupera del trabajo local previamente aprobado, sin alterar sus metas ni ampliar permisos. El PR #30 conserva una propuesta anterior de siete métricas y cierre de Etapa 3; sigue abierto y requiere reconciliación antes de cualquier integración. Esta entrega no cierra ni modifica aquel PR ni autoriza su merge.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida
