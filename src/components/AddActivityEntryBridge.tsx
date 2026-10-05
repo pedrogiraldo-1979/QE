@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CalendarClock, Plus, RotateCcw } from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
@@ -50,6 +50,7 @@ export default function AddActivityEntryBridge() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const saveInFlightRef = useRef(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,24 +81,28 @@ export default function AddActivityEntryBridge() {
 
   async function loadTargets() {
     setLoading(true);
-    const [companiesResult, prospectsResult] = await Promise.all([
-      supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
-      supabase
-        .from("prospects")
-        .select("id,company_name,segment")
-        .order("company_name", { ascending: true })
-        .limit(REFERENCE_ENTITY_LIMIT),
-    ]);
+    try {
+      const [companiesResult, prospectsResult] = await Promise.all([
+        supabase.from("companies").select("id,name,segment").order("name", { ascending: true }),
+        supabase
+          .from("prospects")
+          .select("id,company_name,segment")
+          .order("company_name", { ascending: true })
+          .limit(REFERENCE_ENTITY_LIMIT),
+      ]);
 
-    if (companiesResult.error || prospectsResult.error) {
-      setMessage(companiesResult.error?.message || prospectsResult.error?.message || "No pudimos cargar clientes y prospectos.");
+      if (companiesResult.error || prospectsResult.error) {
+        setMessage("No pudimos cargar clientes y prospectos. Cierra y vuelve a abrir esta página para intentar de nuevo.");
+        return;
+      }
+
+      setCompanies((companiesResult.data || []) as CompanyOption[]);
+      setProspects((prospectsResult.data || []) as ProspectOption[]);
+    } catch {
+      setMessage("No pudimos cargar clientes y prospectos. Cierra y vuelve a abrir esta página para intentar de nuevo.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setCompanies((companiesResult.data || []) as CompanyOption[]);
-    setProspects((prospectsResult.data || []) as ProspectOption[]);
-    setLoading(false);
   }
 
   const targets = useMemo<ActivityTarget[]>(() => {
@@ -122,6 +127,7 @@ export default function AddActivityEntryBridge() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saveInFlightRef.current || loading) return;
     const selectedTarget = targets.find((target) => target.key === targetKey);
     const cleanNotes = notes.trim().replace(/\s+/g, " ");
 
@@ -135,6 +141,7 @@ export default function AddActivityEntryBridge() {
       return;
     }
 
+    saveInFlightRef.current = true;
     setSaving(true);
     setMessage(null);
 
@@ -145,30 +152,40 @@ export default function AddActivityEntryBridge() {
       completed: false,
     };
 
-    const { error } =
-      selectedTarget.source === "prospecto"
-        ? await supabase.from("prospect_activities").insert({
-            prospect_id: selectedTarget.id,
-            ...sharedActivityFields,
-          })
-        : await supabase.from("activities").insert({
-            company_id: selectedTarget.id,
-            ...sharedActivityFields,
-          });
+    try {
+      const { error } =
+        selectedTarget.source === "prospecto"
+          ? await supabase.from("prospect_activities").insert({
+              prospect_id: selectedTarget.id,
+              ...sharedActivityFields,
+            })
+          : await supabase.from("activities").insert({
+              company_id: selectedTarget.id,
+              ...sharedActivityFields,
+            });
 
-    if (error) {
-      setMessage(error.message);
+      if (error) {
+        setMessage("No se pudo confirmar la creación de la actividad. Revisa Actividades antes de intentar de nuevo para evitar duplicados.");
+        return;
+      }
+
+      setMessage(selectedTarget.source === "prospecto" ? "Actividad creada para prospecto." : "Actividad creada para cliente actual.");
+      setTargetKey("");
+      setTargetSearch("");
+      setActivityType("follow_up");
+      setDueDate("");
+      setNotes("");
+    } catch {
+      setMessage("No se pudo confirmar la creación de la actividad. Revisa Actividades antes de intentar de nuevo para evitar duplicados.");
+    } finally {
+      saveInFlightRef.current = false;
       setSaving(false);
-      return;
     }
+  }
 
-    setMessage(selectedTarget.source === "prospecto" ? "Actividad creada para prospecto." : "Actividad creada para cliente actual.");
-    setTargetKey("");
-    setTargetSearch("");
-    setActivityType("follow_up");
-    setDueDate("");
-    setNotes("");
-    setSaving(false);
+  function closeForm() {
+    if (saveInFlightRef.current) return;
+    setFormOpen(false);
   }
 
   const selectedTarget = useMemo(() => targets.find((target) => target.key === targetKey) || null, [targets, targetKey]);
@@ -237,12 +254,12 @@ export default function AddActivityEntryBridge() {
                   <p className="panel-kicker">Nueva actividad</p>
                   <h2>Seguimiento para cliente o prospecto</h2>
                 </div>
-                <button className="btn btn-secondary compact" type="button" onClick={() => setFormOpen(false)}>
+                <button className="btn btn-secondary compact" type="button" onClick={closeForm} disabled={saving}>
                   Cerrar
                 </button>
               </div>
 
-              {message ? <div className="alert alert-info">{message}</div> : null}
+              {message ? <div className="alert alert-info" role="status">{message}</div> : null}
 
               <form className="activity-form add-activity-form" onSubmit={handleSubmit}>
                 <div className="form-grid">
@@ -314,7 +331,7 @@ export default function AddActivityEntryBridge() {
                 </aside>
 
                 <div className="panel-actions">
-                  <button className="btn btn-secondary" type="button" onClick={() => setFormOpen(false)} disabled={saving}>
+                  <button className="btn btn-secondary" type="button" onClick={closeForm} disabled={saving}>
                     Cancelar
                   </button>
                   <button className="btn btn-primary" type="submit" disabled={saving || loading}>
