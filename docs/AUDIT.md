@@ -1,5 +1,29 @@
 # Auditoría inicial del repositorio
 
+## Persistencia autenticada del selector — 2026-10-04 (entorno aislado)
+
+Pedro autorizó reactivar `jfmauklmfhuecftvgjms`, crear una cuenta `member` y actividades ficticias, y limpiar y pausar al terminar. Durante la reactivación, Supabase pasó por `COMING_UP` y `RESTORING`: una lectura inicial aún no encontró la tabla de autorización. No se aplicó ninguna baseline ni reparación; al llegar a `ACTIVE_HEALTHY`, reaparecieron las tablas y los conteos confirmaron el entorno vacío.
+
+El build del commit `e93a0c7` recibió exclusivamente las variables del proyecto desechable, con guarda de referencia y comprobación del hostname en el bundle. Se creó una sola cuenta sintética `.invalid`, una empresa, un prospecto y sus dos seguimientos. Con sesión de miembro, cancelar una fecha editada no alteró la fecha almacenada y devolvió el foco. Guardar desde la UI reprogramó cliente a `2026-10-06` y prospecto a `2026-10-07`; una consulta de control confirmó fechas, entidad y notas conservadas, con `completed=false`. La confirmación sobrevivió a la recarga y el foco volvió al botón de la fila.
+
+A 390×844 se abrió el selector autenticado, el campo recibió el foco y Escape cerró sin guardar; no hubo overflow global (379 frente a 390 px) ni errores/warnings de consola capturados. Las fechas iniciales usaron el día UTC de la base (`2026-10-05`), distinto de la fecha local de esta evidencia. El ensayo no modifica esa regla temporal heredada. El error de guardado sigue respaldado por las pruebas locales con transporte sustituido, no por un fallo remoto inducido.
+
+Se cerró sesión, se retiraron exclusivamente los fixtures y la cuenta autorizados y se verificaron cero usuarios, sesiones, membresías, empresas, contactos, prospectos y actividades de ambos tipos. Se detuvo el servidor, se cerraron las pestañas, se descartaron las credenciales efímeras, se restauró el viewport y Supabase confirmó la pausa con estado `INACTIVE`. No hubo consultas o cambios en QE2026, migraciones ni cambios de permisos/esquema. Esta evidencia completa la persistencia aislada pendiente del nuevo selector; quedan deployment y verificación de filas afectadas antes de cerrar ACT-02. No implica push, PR, merge o publicación.
+
+## Selector inline de reprogramación — 2026-10-04 (rama)
+
+Tras aprobación del diseño, `codex/phase-9-activity-feedback` sustituye `window.prompt` por un formulario dentro de la actividad con fecha, Guardar y Cancelar. Valida fechas reales sin prohibir fechas pasadas; conserva tabla/origen, filtro por ID y patch de fecha/estado. Bloquea acciones durante el guardado, conserva el formulario y fecha ante error genérico y anuncia el estado. No se cambian esquema, RLS, Auth, RPC ni configuración.
+
+La prueba visual montó el componente real con React y el CSS existente en un servidor exclusivamente local con transporte y datos ficticios en memoria. Se comprobaron apertura/foco del campo, cancelación sin escritura con retorno al botón, Escape, éxito de cliente y prospecto con los patches esperados, confirmación conservada y error genérico sin detalles de backend manteniendo la fecha. Se encontró y corrigió una carrera de foco: el retorno espera tanto recarga como fin de guardado. A 390×844 el formulario fue utilizable y el documento no excedió el ancho del viewport (379 frente a 390 px). Es una prueba del componente, no de la página CRM autenticada completa.
+
+Las cinco nuevas comprobaciones fallaron antes de la implementación; el contrato adicional de foco falló antes del ajuste. La suite final aprobó 75 pruebas, typecheck, build y smoke HTTP 13/13. Los servidores, pestaña y archivos auxiliares del fixture se retiraron; el viewport se restauró. No se accedió a Supabase durante estas pruebas, no se publicó ni se hizo merge. Pendientes: persistencia autenticada aislada del nuevo selector, aceptación en deployment y verificación de filas afectadas por una actualización (limitación preexistente). ACT-02 permanece parcial.
+
+## Corrección de confirmaciones de actividades — 2026-10-04 (rama)
+
+En `codex/phase-9-activity-feedback`, basada en `main` publicado `57cd6d8`, se corrigió la causa del mensaje fugaz: la recarga posterior a completar o reprogramar limpiaba inmediatamente la confirmación. Sólo esas recargas conservan el mensaje; una carga inicial o actualización manual lo limpia y un error de lectura lo reemplaza. No se alteraron consultas, tablas, permisos ni el diálogo nativo de reprogramación.
+
+Ocho pruebas ejecutan los handlers existentes con transporte y setters sustituidos, sin acceder a Supabase: completar/reprogramar cliente y prospecto, actualización manual, error de recarga, cancelación/formato inválido y error de escritura. Las cuatro pruebas de persistencia del mensaje fallaron antes del arreglo y después aprobaron. `pnpm verify` aprobó typecheck, 69 pruebas y build; el smoke HTTP del servidor de producción local aprobó 13/13 y el servidor se detuvo al terminar. Esto prueba los handlers, no la UI montada, el diálogo nativo ni persistencia remota; la aceptación visual/auth de reprogramación sigue pendiente. No implica publicación ni cierre de ACT-02.
+
 ## Preparación de recuperación para uso diario — 2026-10-01
 
 Pedro autorizó añadir/publicar la recuperación en `qe-crm` y solicitar un único correo para la cuenta comercial existente. Se reutiliza el PR #31, que ya contenía `/recuperar-clave` y `/restablecer-clave`, integrando el `main` vigente sin alterar el checkout original ni sus cambios. Se conservan los anexos históricos al resolver el conflicto documental del merge.

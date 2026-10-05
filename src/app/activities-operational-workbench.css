@@ -218,6 +218,27 @@ body.activities-workbench-active .workspace > .alert.alert-info {
   flex-wrap: wrap;
 }
 
+.activity-reschedule-form {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  min-width: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.activity-reschedule-form .field-label,
+.activity-reschedule-form .input {
+  min-width: 0;
+  width: 100%;
+}
+
+.activity-reschedule-form .activity-row-actions {
+  grid-column: auto;
+}
+
 .activity-row-actions .btn.compact {
   min-height: 32px;
   padding: 0.38rem 0.62rem;
@@ -287,6 +308,9 @@ body.activities-workbench-active .workspace > .alert.alert-info {
 }
 
 @media (max-width: 760px) {
+  .activity-reschedule-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
   .activities-hero {
     flex-direction: column;
   }
