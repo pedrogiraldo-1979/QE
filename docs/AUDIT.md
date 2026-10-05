@@ -1,5 +1,13 @@
 # Auditoría inicial del repositorio
 
+## Confirmación de filas actualizadas — 2026-10-04 (rama)
+
+Tras aprobación del diseño escrito, `codex/phase-9-activity-write-verification`, desde `main` publicado `f7871f7`, pide únicamente `id` en la respuesta de las actualizaciones de completar y reprogramar. Conserva tabla por origen, filtro por ID y patches existentes. Sólo una respuesta sin error y con exactamente una fila cuyo ID coincide permite anunciar éxito y recargar. Respuesta vacía/nula, ID distinto, múltiples filas, error o excepción muestran un aviso genérico de actualización no confirmada; no hay reintento automático. Reprogramar conserva formulario/fecha y libera el estado de guardado. El aviso no afirma que un fallo de transporte haya impedido necesariamente la escritura.
+
+La suite base pasó 75/75 antes del ajuste. Se extendió el transporte sustituido del harness para representar el retorno de filas y ejecutar los handlers reales; las 24 nuevas comprobaciones negativas (dos orígenes, dos acciones, seis resultados no confirmados), y las nuevas exigencias de selección/mensaje de pruebas anteriores, fallaron antes de la implementación. Tras el ajuste, las 38 pruebas de actividades y la suite completa 99/99 aprobaron, junto con typecheck, build de trece rutas y smoke HTTP local 13/13 contra el artefacto de producción. El cliente instalado `postgrest-js` 2.110.0 confirma que `select` solicita `return=representation`. El servidor se detuvo y se restauró exclusivamente el cambio automático de `next-env.d.ts` a su contenido previo.
+
+Esta evidencia es local con transporte sustituido y smoke sin autenticación: no demuestra retorno real bajo RLS ni persistencia autenticada de esta versión. No se ejecutaron consultas/mutaciones remotas, migraciones, cambios de esquema/permisos/configuración ni publicaciones. ACT-02 permanece parcial hasta sus gates aislados y de release; la concurrencia entre completar/reprogramar y la referencia de día UTC preexistentes no forman parte de este ajuste. El checkout original y sus cambios pendientes se preservaron.
+
 ## Persistencia autenticada del selector — 2026-10-04 (entorno aislado)
 
 Pedro autorizó reactivar `jfmauklmfhuecftvgjms`, crear una cuenta `member` y actividades ficticias, y limpiar y pausar al terminar. Durante la reactivación, Supabase pasó por `COMING_UP` y `RESTORING`: una lectura inicial aún no encontró la tabla de autorización. No se aplicó ninguna baseline ni reparación; al llegar a `ACTIVE_HEALTHY`, reaparecieron las tablas y los conteos confirmaron el entorno vacío.
