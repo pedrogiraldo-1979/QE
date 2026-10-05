@@ -166,6 +166,12 @@ td span,
 }
 
 /* Prospecting-specific density overrides after the visual polish files. */
+@media (max-width: 860px) {
+  .crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid.prospect-create-grid:not(.crm-grid-wide) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .crm-shell:has(.nav-button.active[href="/prospectos"]) .crm-grid:not(.crm-grid-wide) {
   grid-template-columns: minmax(0, 1.55fr) minmax(340px, 420px);
 }
