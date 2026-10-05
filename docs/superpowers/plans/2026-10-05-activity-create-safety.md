@@ -27,4 +27,15 @@
 - [x] Implementar `function closeForm() { if (saveInFlightRef.current) return; setFormOpen(false); }`; conectar Cerrar/Cancelar con `disabled={saving}` y anunciar mensajes con `role="status"`.
 - [x] Proteger la carga con `try/catch/finally`; error devuelto y excepción muestran mensaje genérico, y `finally` libera loading.
 - [x] Ejecutar pruebas dirigidas, `pnpm verify`, servidor de producción y `pnpm test:smoke`. Revisar diff/secretos y registrar evidencia local sin inferir prueba autenticada.
-- [ ] Entregar rama y límites; publicación, preview y prueba mutante aislada siguen gates separados. Reversión: revertir exclusivamente este ajuste; no SQL.
+- [x] Entregar rama y límites; publicación y preview siguen gates separados. Reversión del código: revertir exclusivamente este ajuste; no SQL productivo.
+
+## Gate posterior — ensayo aislado autorizado
+
+Pedro autorizó por separado reactivar sólo el proyecto temporal `jfmauklmfhuecftvgjms`, crear una cuenta sintética `member` y fixtures, probar y limpiar/pausar. Esta autorización no modifica el alcance de implementación ni permite escrituras productivas.
+
+- [x] Confirmar `ACTIVE_HEALTHY`, restauración de tablas y siete conteos vacíos antes del ensayo; build sólo contra el temporal, sin variables persistidas.
+- [x] Crear actividades desde navegador para ambos orígenes y comprobar una fila por origen y sus campos mediante consultas independientes.
+- [x] Provocar un error de FK sólo retirando un padre ficticio; comprobar aviso genérico, campos conservados, controles liberados y ausencia de nueva fila.
+- [x] Medir escritorio 1280×720 y móvil 390×844 sin overflow; comprobar Tab/Enter en Cancelar. No presentar esto como alta móvil o calendario táctil completos.
+- [x] Cerrar sesión, eliminar sólo fixtures/cuenta propios, verificar cero usuarios/sesiones/membresías/clientes/prospectos/actividades y solicitar pausa. Registrar el estado final confirmado en auditoría.
+- [x] Repetir typecheck, 109 pruebas y smoke 13/13; registrar evidencia y límites sin credenciales, emails ni UUID de usuarios en Git.
