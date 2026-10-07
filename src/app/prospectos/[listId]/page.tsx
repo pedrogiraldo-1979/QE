@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   Activity as ActivityIcon,
@@ -159,6 +159,8 @@ export default function ProspectListDetailPage() {
   const [newProspect, setNewProspect] = useState<ProspectForm>(emptyProspectForm);
   const [editProspect, setEditProspect] = useState<ProspectForm>(emptyProspectForm);
   const [newContact, setNewContact] = useState<ContactForm>(emptyContactForm);
+  const [savingNewContact, setSavingNewContact] = useState(false);
+  const newContactInFlightRef = useRef(false);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContact, setEditContact] = useState<ContactForm>(emptyContactForm);
   const [showNewProspect, setShowNewProspect] = useState(false);
@@ -376,30 +378,42 @@ export default function ProspectListDetailPage() {
 
   async function addContact(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedProspect || !newContact.full_name.trim()) return;
+    if (newContactInFlightRef.current || !selectedProspect || !newContact.full_name.trim()) return;
 
-    const { data, error } = await supabase
-      .from("prospect_contacts")
-      .insert({
-        prospect_id: selectedProspect.id,
-        full_name: newContact.full_name.trim(),
-        role: nullIfBlank(newContact.role),
-        email: normalizeEmail(newContact.email),
-        phone: nullIfBlank(newContact.phone),
-        linkedin_url: nullIfBlank(newContact.linkedin_url),
-        notes: nullIfBlank(newContact.notes),
-      })
-      .select(PROSPECT_CONTACT_COLUMNS)
-      .single();
+    const prospectId = selectedProspect.id;
+    newContactInFlightRef.current = true;
+    setSavingNewContact(true);
+    setMessage(null);
 
-    if (error) {
-      setMessage(error.message);
-      return;
+    try {
+      const { data, error } = await supabase
+        .from("prospect_contacts")
+        .insert({
+          prospect_id: prospectId,
+          full_name: newContact.full_name.trim(),
+          role: nullIfBlank(newContact.role),
+          email: normalizeEmail(newContact.email),
+          phone: nullIfBlank(newContact.phone),
+          linkedin_url: nullIfBlank(newContact.linkedin_url),
+          notes: nullIfBlank(newContact.notes),
+        })
+        .select(PROSPECT_CONTACT_COLUMNS)
+        .single();
+
+      if (error || !data || typeof data.id !== "string" || !data.id.trim() || data.prospect_id !== prospectId) {
+        setMessage("No se pudo confirmar el alta del contacto. Revisa los contactos del prospecto antes de intentar de nuevo.");
+        return;
+      }
+
+      setContacts((current) => [data as ProspectContact, ...current]);
+      setNewContact(emptyContactForm);
+      setMessage("Contacto prospecto agregado.");
+    } catch {
+      setMessage("No se pudo confirmar el alta del contacto. Revisa los contactos del prospecto antes de intentar de nuevo.");
+    } finally {
+      newContactInFlightRef.current = false;
+      setSavingNewContact(false);
     }
-
-    setContacts((current) => [data as ProspectContact, ...current]);
-    setNewContact(emptyContactForm);
-    setMessage("Contacto prospecto agregado.");
   }
 
   function startEditingContact(contact: ProspectContact) {
@@ -788,17 +802,19 @@ export default function ProspectListDetailPage() {
                     <h3>Agregar contacto prospecto</h3>
                   </div>
                   <form className="activity-form" onSubmit={addContact}>
-                    <div className="form-grid">
-                      <Field label="Nombre" value={newContact.full_name} onChange={(value) => setNewContact((current) => ({ ...current, full_name: value }))} required />
-                      <Field label="Cargo" value={newContact.role} onChange={(value) => setNewContact((current) => ({ ...current, role: value }))} />
-                      <Field label="Email" value={newContact.email} onChange={(value) => setNewContact((current) => ({ ...current, email: value }))} />
-                      <Field label="Teléfono" value={newContact.phone} onChange={(value) => setNewContact((current) => ({ ...current, phone: value }))} />
-                      <Field label="LinkedIn" value={newContact.linkedin_url} onChange={(value) => setNewContact((current) => ({ ...current, linkedin_url: value }))} />
-                      <Field label="Notas" value={newContact.notes} onChange={(value) => setNewContact((current) => ({ ...current, notes: value }))} />
-                    </div>
-                    <div className="panel-actions">
-                      <button className="btn btn-primary" type="submit"><Plus size={17} />Agregar contacto</button>
-                    </div>
+                    <fieldset disabled={savingNewContact} aria-busy={savingNewContact} className="form-stack" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+                      <div className="form-grid">
+                        <Field label="Nombre" value={newContact.full_name} onChange={(value) => setNewContact((current) => ({ ...current, full_name: value }))} required />
+                        <Field label="Cargo" value={newContact.role} onChange={(value) => setNewContact((current) => ({ ...current, role: value }))} />
+                        <Field label="Email" value={newContact.email} onChange={(value) => setNewContact((current) => ({ ...current, email: value }))} />
+                        <Field label="Teléfono" value={newContact.phone} onChange={(value) => setNewContact((current) => ({ ...current, phone: value }))} />
+                        <Field label="LinkedIn" value={newContact.linkedin_url} onChange={(value) => setNewContact((current) => ({ ...current, linkedin_url: value }))} />
+                        <Field label="Notas" value={newContact.notes} onChange={(value) => setNewContact((current) => ({ ...current, notes: value }))} />
+                      </div>
+                      <div className="panel-actions">
+                        <button className="btn btn-primary" type="submit"><Plus size={17} />{savingNewContact ? "Guardando" : "Agregar contacto"}</button>
+                      </div>
+                    </fieldset>
                   </form>
                 </section>
 

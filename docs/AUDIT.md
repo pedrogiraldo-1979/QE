@@ -1008,3 +1008,13 @@ Estado posterior: Pedro aclaró que ya realizó el piloto y que ninguna cifra hi
 ## Anexo — Cierre documental del piloto de correo (2026-09-26)
 
 Pedro confirmó que ya realizó el piloto de correo y que su cantidad no debe interpretarse como límite vigente; no precisó aquí cuál lote se envió. La decisión D-024 y la sección 23 de esta auditoría conservan el alcance histórico de cinco destinatarios. El código versionado de la interfaz y la validación del envío exige trece para otro lote específico; esta actualización documental no verifica entregas del proveedor ni establece una política numérica nueva. README, PRD, roadmap y release checklist dejan de presentar cinco como permiso o límite actual. No se modificaron código, configuración, Supabase, destinatarios ni datos; un nuevo envío requiere aprobación y gate propios.
+
+## Anexo — Protección del alta de contactos de prospecto en rama (2026-10-06)
+
+Alcance aprobado: únicamente «Agregar contacto» en el detalle de listas, en `codex/phase-9-prospect-contact-create-safety` desde main `a4082c2`. No incorpora ni fusiona PR #44, #45 o #46. No modifica edición de contactos/empresas, estados, conversión, Supabase, tipos generados, configuración o datos.
+
+Reproducción local del handler real con transporte simulado: un doble envío iniciaba dos inserts y añadía dos filas locales; una excepción escapaba sin aviso; una respuesta nula anunciaba éxito, limpiaba el borrador e incorporaba una fila nula. Se añade guarda síncrona y estado de guardado; el formulario queda deshabilitado mientras espera. Sólo una fila con ID no vacío y `prospect_id` esperado confirma el alta. Errores y respuestas inciertas conservan el borrador, no exponen detalles privados y piden revisar los contactos antes de reintentar; no hay reintento automático.
+
+Evidencia TDD: RED 10 regresiones fallidas y 2 contratos existentes aprobados; GREEN 12/12 específicas. Suite 121/121, typecheck y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login hidratado sin errores/avisos de consola y sin overflow a ancho 390 px. No se creó ningún contacto remoto ni se inició sesión.
+
+Límites: protección por instancia montada, no deduplicación entre pestañas ni garantía de no duplicar un reintento manual tras respuesta incierta; por eso el aviso exige revisar primero. Navegación/recarga global y el reporte Android del PR #44 quedan fuera del arreglo. Validación del formulario autenticado en un entorno aislado autorizado pendiente antes de release; no se ejecutaron migraciones, merge ni publicación productiva.
