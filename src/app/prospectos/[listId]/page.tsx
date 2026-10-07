@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import {
   Activity as ActivityIcon,
@@ -158,6 +158,8 @@ export default function ProspectListDetailPage() {
   const [campaignFilter, setCampaignFilter] = useState("todos");
   const [newProspect, setNewProspect] = useState<ProspectForm>(emptyProspectForm);
   const [editProspect, setEditProspect] = useState<ProspectForm>(emptyProspectForm);
+  const [savingProspect, setSavingProspect] = useState(false);
+  const prospectEditInFlightRef = useRef(false);
   const [newContact, setNewContact] = useState<ContactForm>(emptyContactForm);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContact, setEditContact] = useState<ContactForm>(emptyContactForm);
@@ -322,6 +324,7 @@ export default function ProspectListDetailPage() {
 
   async function updateSelectedProspect(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (prospectEditInFlightRef.current) return;
     if (!selectedProspect || !editProspect.company_name.trim()) return;
 
     const payload = {
@@ -339,21 +342,31 @@ export default function ProspectListDetailPage() {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
-      .from("prospects")
-      .update(payload)
-      .eq("id", selectedProspect.id)
-      .select(PROSPECT_COLUMNS)
-      .single();
+    prospectEditInFlightRef.current = true;
+    setSavingProspect(true);
+    setMessage(null);
+    try {
+      const { data, error } = await supabase
+        .from("prospects")
+        .update(payload)
+        .eq("id", selectedProspect.id)
+        .select(PROSPECT_COLUMNS)
+        .single();
 
-    if (error) {
-      setMessage(error.message);
-      return;
+      if (error || !data || data.id !== selectedProspect.id) {
+        setMessage("No se pudo confirmar la actualización del prospecto. Revisa sus datos antes de intentar de nuevo.");
+        return;
+      }
+
+      const updated = data as Prospect;
+      setProspects((current) => current.map((prospect) => (prospect.id === updated.id ? updated : prospect)));
+      setMessage("Prospecto actualizado.");
+    } catch {
+      setMessage("No se pudo confirmar la actualización del prospecto. Revisa sus datos antes de intentar de nuevo.");
+    } finally {
+      prospectEditInFlightRef.current = false;
+      setSavingProspect(false);
     }
-
-    const updated = data as Prospect;
-    setProspects((current) => current.map((prospect) => (prospect.id === updated.id ? updated : prospect)));
-    setMessage("Prospecto actualizado.");
   }
 
   async function updateProspectStatus(prospect: Prospect, status: ProspectStatus) {
@@ -759,7 +772,9 @@ export default function ProspectListDetailPage() {
                   <div className="section-title-row">
                     <h3>Editar empresa prospecto</h3>
                   </div>
-                  <ProspectFormFields form={editProspect} setForm={setEditProspect} onSubmit={updateSelectedProspect} submitLabel="Guardar cambios" compact />
+                  <fieldset disabled={savingProspect} aria-busy={savingProspect} style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+                    <ProspectFormFields form={editProspect} setForm={setEditProspect} onSubmit={updateSelectedProspect} submitLabel={savingProspect ? "Guardando" : "Guardar cambios"} compact />
+                  </fieldset>
                 </section>
 
                 <section className="detail-section">
