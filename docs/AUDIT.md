@@ -1020,3 +1020,13 @@ Estado posterior: Pedro aclaró que ya realizó el piloto y que ninguna cifra hi
 ## Anexo — Cierre documental del piloto de correo (2026-09-26)
 
 Pedro confirmó que ya realizó el piloto de correo y que su cantidad no debe interpretarse como límite vigente; no precisó aquí cuál lote se envió. La decisión D-024 y la sección 23 de esta auditoría conservan el alcance histórico de cinco destinatarios. El código versionado de la interfaz y la validación del envío exige trece para otro lote específico; esta actualización documental no verifica entregas del proveedor ni establece una política numérica nueva. README, PRD, roadmap y release checklist dejan de presentar cinco como permiso o límite actual. No se modificaron código, configuración, Supabase, destinatarios ni datos; un nuevo envío requiere aprobación y gate propios.
+
+## Anexo — Protección de edición de contactos de prospecto en rama (2026-10-06)
+
+Alcance aprobado: únicamente «Editar contacto» en el detalle de listas, en `codex/phase-9-prospect-contact-edit-safety`, desde `main` `a4082c2`. No incorpora los PR #44/#45 ni modifica alta de contactos, edición de empresas, estados, conversión, Supabase, tipos generados, configuración o datos.
+
+Reproducción local del handler real con transporte simulado: dos envíos pendientes producían dos actualizaciones; una excepción escapaba sin aviso; una fila devuelta con ID diferente cerraba el editor y mostraba éxito. El cambio añade una guarda síncrona y un estado de guardado, protege cerrar/cambiar de editor, conserva el formulario ante error y sólo confirma una fila con el ID y `prospect_id` esperados. Conserva payload, filtro por ID y columnas; no expone errores privados ni reintenta automáticamente.
+
+Evidencia TDD: 9 regresiones fallaron primero y 2 contratos existentes pasaron; después 11/11 específicas y 120/120 totales aprobadas. Typecheck y build aprobados; servidor de producción local y smoke HTTP 13/13, más HTTP 200 del detalle dinámico. En navegador se comprobó sólo el acceso sin sesión: login hidratado sin errores/avisos de consola, ancho de contenido de 390 px en viewport de 390 px. Esto no verifica visualmente el editor autenticado ni resuelve el reporte Android del PR #44.
+
+Límites: protección por instancia montada, no idempotencia entre pestañas, navegación o recarga global. La validación autenticada del editor en un entorno aislado aprobado sigue pendiente antes de release. No se ejecutaron pruebas mutantes, migraciones, merge ni publicación productiva.

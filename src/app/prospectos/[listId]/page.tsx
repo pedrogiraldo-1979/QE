@@ -163,6 +163,8 @@ export default function ProspectListDetailPage() {
   const [newContact, setNewContact] = useState<ContactForm>(emptyContactForm);
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [editContact, setEditContact] = useState<ContactForm>(emptyContactForm);
+  const [savingContact, setSavingContact] = useState(false);
+  const contactEditInFlightRef = useRef(false);
   const [showNewProspect, setShowNewProspect] = useState(false);
 
   useEffect(() => {
@@ -416,6 +418,7 @@ export default function ProspectListDetailPage() {
   }
 
   function startEditingContact(contact: ProspectContact) {
+    if (contactEditInFlightRef.current) return;
     setEditingContactId(contact.id);
     setEditContact({
       full_name: contact.full_name || "",
@@ -427,35 +430,52 @@ export default function ProspectListDetailPage() {
     });
   }
 
-  async function updateContact(event: FormEvent<HTMLFormElement>, contact: ProspectContact) {
-    event.preventDefault();
-    if (!editContact.full_name.trim()) return;
-
-    const { data, error } = await supabase
-      .from("prospect_contacts")
-      .update({
-        full_name: editContact.full_name.trim(),
-        role: nullIfBlank(editContact.role),
-        email: normalizeEmail(editContact.email),
-        phone: nullIfBlank(editContact.phone),
-        linkedin_url: nullIfBlank(editContact.linkedin_url),
-        notes: nullIfBlank(editContact.notes),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", contact.id)
-      .select(PROSPECT_CONTACT_COLUMNS)
-      .single();
-
-    if (error) {
-      setMessage(error.message);
-      return;
-    }
-
-    const updated = data as ProspectContact;
-    setContacts((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+  function cancelEditingContact() {
+    if (contactEditInFlightRef.current) return;
     setEditingContactId(null);
     setEditContact(emptyContactForm);
-    setMessage("Contacto prospecto actualizado.");
+  }
+
+  async function updateContact(event: FormEvent<HTMLFormElement>, contact: ProspectContact) {
+    event.preventDefault();
+    if (contactEditInFlightRef.current || !editContact.full_name.trim()) return;
+
+    contactEditInFlightRef.current = true;
+    setSavingContact(true);
+    setMessage(null);
+
+    try {
+      const { data, error } = await supabase
+        .from("prospect_contacts")
+        .update({
+          full_name: editContact.full_name.trim(),
+          role: nullIfBlank(editContact.role),
+          email: normalizeEmail(editContact.email),
+          phone: nullIfBlank(editContact.phone),
+          linkedin_url: nullIfBlank(editContact.linkedin_url),
+          notes: nullIfBlank(editContact.notes),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", contact.id)
+        .select(PROSPECT_CONTACT_COLUMNS)
+        .single();
+
+      if (error || !data || data.id !== contact.id || data.prospect_id !== contact.prospect_id) {
+        setMessage("No se pudo confirmar la actualización del contacto. Revisa sus datos antes de intentar de nuevo.");
+        return;
+      }
+
+      const updated = data as ProspectContact;
+      setContacts((current) => current.map((item) => (item.id === contact.id ? updated : item)));
+      setEditingContactId(null);
+      setEditContact(emptyContactForm);
+      setMessage("Contacto prospecto actualizado.");
+    } catch {
+      setMessage("No se pudo confirmar la actualización del contacto. Revisa sus datos antes de intentar de nuevo.");
+    } finally {
+      contactEditInFlightRef.current = false;
+      setSavingContact(false);
+    }
   }
 
   const normalizedSearch = search.trim().toLowerCase();
@@ -788,10 +808,11 @@ export default function ProspectListDetailPage() {
                         key={contact.id}
                         contact={contact}
                         isEditing={editingContactId === contact.id}
+                        saving={savingContact}
                         editContact={editContact}
                         setEditContact={setEditContact}
                         onStartEdit={() => startEditingContact(contact)}
-                        onCancelEdit={() => { setEditingContactId(null); setEditContact(emptyContactForm); }}
+                        onCancelEdit={cancelEditingContact}
                         onSave={(event) => void updateContact(event, contact)}
                       />
                     )) : <EmptyState title="Sin contactos" description="Agrega compras, rectoría, administración o persona operativa." />}
@@ -889,6 +910,7 @@ function Field({ label, value, onChange, required = false }: { label: string; va
 function EditableProspectContactCard({
   contact,
   isEditing,
+  saving,
   editContact,
   setEditContact,
   onStartEdit,
@@ -897,6 +919,7 @@ function EditableProspectContactCard({
 }: {
   contact: ProspectContact;
   isEditing: boolean;
+  saving: boolean;
   editContact: ContactForm;
   setEditContact: (updater: ContactForm | ((current: ContactForm) => ContactForm)) => void;
   onStartEdit: () => void;
@@ -909,21 +932,23 @@ function EditableProspectContactCard({
     return (
       <article className="contact-card needs-data">
         <form className="form-stack" onSubmit={onSave}>
-          <div className="section-title-row">
-            <h4>Editar contacto</h4>
-            <button className="btn btn-secondary compact" type="button" onClick={onCancelEdit}><X size={14} />Cerrar</button>
-          </div>
-          <div className="form-grid">
-            <Field label="Nombre" value={editContact.full_name} onChange={(value) => setEditContact((current) => ({ ...current, full_name: value }))} required />
-            <Field label="Cargo" value={editContact.role} onChange={(value) => setEditContact((current) => ({ ...current, role: value }))} />
-            <Field label="Email" value={editContact.email} onChange={(value) => setEditContact((current) => ({ ...current, email: value }))} />
-            <Field label="Teléfono" value={editContact.phone} onChange={(value) => setEditContact((current) => ({ ...current, phone: value }))} />
-            <Field label="LinkedIn" value={editContact.linkedin_url} onChange={(value) => setEditContact((current) => ({ ...current, linkedin_url: value }))} />
-            <Field label="Notas" value={editContact.notes} onChange={(value) => setEditContact((current) => ({ ...current, notes: value }))} />
-          </div>
-          <div className="panel-actions">
-            <button className="btn btn-primary" type="submit">Guardar contacto</button>
-          </div>
+          <fieldset disabled={saving} aria-busy={saving} className="form-stack" style={{ border: 0, margin: 0, padding: 0, minWidth: 0 }}>
+            <div className="section-title-row">
+              <h4>Editar contacto</h4>
+              <button className="btn btn-secondary compact" type="button" onClick={onCancelEdit}><X size={14} />Cerrar</button>
+            </div>
+            <div className="form-grid">
+              <Field label="Nombre" value={editContact.full_name} onChange={(value) => setEditContact((current) => ({ ...current, full_name: value }))} required />
+              <Field label="Cargo" value={editContact.role} onChange={(value) => setEditContact((current) => ({ ...current, role: value }))} />
+              <Field label="Email" value={editContact.email} onChange={(value) => setEditContact((current) => ({ ...current, email: value }))} />
+              <Field label="Teléfono" value={editContact.phone} onChange={(value) => setEditContact((current) => ({ ...current, phone: value }))} />
+              <Field label="LinkedIn" value={editContact.linkedin_url} onChange={(value) => setEditContact((current) => ({ ...current, linkedin_url: value }))} />
+              <Field label="Notas" value={editContact.notes} onChange={(value) => setEditContact((current) => ({ ...current, notes: value }))} />
+            </div>
+            <div className="panel-actions">
+              <button className="btn btn-primary" type="submit">{saving ? "Guardando" : "Guardar contacto"}</button>
+            </div>
+          </fieldset>
         </form>
       </article>
     );
@@ -939,7 +964,7 @@ function EditableProspectContactCard({
             <p>{contact.role || "Cargo pendiente"}</p>
           </div>
           <div className="row-actions">
-            <button className="btn btn-secondary compact" type="button" onClick={onStartEdit}><Pencil size={14} />Editar</button>
+            <button className="btn btn-secondary compact" type="button" disabled={saving} onClick={onStartEdit}><Pencil size={14} />Editar</button>
           </div>
         </div>
         <div className="contact-links">
