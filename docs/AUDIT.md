@@ -1,5 +1,17 @@
 # Auditoría inicial del repositorio
 
+## Guardar cambios de prospecto: protección aprobada — 2026-10-06 (rama)
+
+Pedro aprobó corregir sólo la edición de empresa prospecto, en una rama y PR independientes. `codex/phase-9-prospect-edit-safety` parte de `main` remoto `a4082c2`; no incluye el PR #44 de alta/móvil. La validación Android del #44 queda pospuesta a petición de Pedro; ninguno de estos ajustes autoriza merge ni release. Se preservaron los cambios del checkout original.
+
+Una reproducción local del handler real mostró excepción sin aviso visible, mensaje literal del backend y dos actualizaciones con dos envíos pendientes. Se añadió guarda síncrona `useRef`, estado de guardado, mensaje genérico y `try/catch/finally` a `updateSelectedProspect`. El formulario conserva valores ante fallo, se deshabilita sólo durante ese guardado y cambia su etiqueta a Guardando. Se confirma éxito únicamente con respuesta no nula y el mismo ID solicitado. Payload, campos, validaciones comerciales, columnas, filtro por ID y mensaje de éxito se conservan. No se modificaron contactos, estado del prospecto, alta ni componente compartido de campos.
+
+TDD: nueve pruebas de handlers/wiring, RED siete fallos y dos checks preexistentes aprobados; GREEN nueve aprobadas. Typecheck, suite completa 118/118, build y smoke de producción local 13/13 aprobados. Un intento adicional de build coincidió con el proceso anterior y devolvió bloqueo; tras comprobar que terminó se repitió con exit 0, sin borrar artefactos. La ruta dinámica con ID ficticio mostró el acceso Prospección B2B hidratado, sin overlays ni errores/warnings capturados. No hubo sesión CRM ni consultas o mutaciones de datos reales.
+
+Límites: transporte y setters se sustituyen sólo en las pruebas del handler; wiring no equivale a montar el formulario en navegador autenticado. No hay garantía de idempotencia entre pestañas/intentos posteriores, orden de escrituras concurrentes de otras acciones ni protección al cambiar de selección, refrescar o navegar fuera del formulario. Guardas de contactos, cambios de estado y alta interna de la lista siguen fuera de esta unidad. Validación autenticada/visual del editor, preview y release pendientes; PRO-02 y Fase 9 no se cierran.
+
+Se restauró únicamente el cambio automático de next-env.d.ts. Sin cambios de Supabase, Auth, esquema, RLS, RPC, migraciones, datos, tipos generados, configuración persistida, dependencias ni secretos. Reversión mediante revert del ajuste, sin SQL.
+
 ## Alta de actividades: guardado protegido — 2026-10-05 (rama)
 
 Pedro autorizó corregir sólo el guardado y los mensajes de `AddActivityEntryBridge`. La rama `codex/phase-9-activity-create-safety` parte de `main` actualizado `eb2be27`; el checkout original y sus cambios pendientes permanecen intactos. El componente conserva su portal, consultas, columnas, límite, tablas y payloads; no se retira ningún bridge ni se modifica otra pantalla.
