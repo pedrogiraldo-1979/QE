@@ -1030,3 +1030,13 @@ Reproducción local del handler real con transporte simulado: dos envíos pendie
 Evidencia TDD: 9 regresiones fallaron primero y 2 contratos existentes pasaron; después 11/11 específicas y 120/120 totales aprobadas. Typecheck y build aprobados; servidor de producción local y smoke HTTP 13/13, más HTTP 200 del detalle dinámico. En navegador se comprobó sólo el acceso sin sesión: login hidratado sin errores/avisos de consola, ancho de contenido de 390 px en viewport de 390 px. Esto no verifica visualmente el editor autenticado ni resuelve el reporte Android del PR #44.
 
 Límites: protección por instancia montada, no idempotencia entre pestañas, navegación o recarga global. La validación autenticada del editor en un entorno aislado aprobado sigue pendiente antes de release. No se ejecutaron pruebas mutantes, migraciones, merge ni publicación productiva.
+
+## Anexo — Protección del alta de contactos de prospecto en rama (2026-10-06)
+
+Alcance aprobado: únicamente «Agregar contacto» en el detalle de listas, en `codex/phase-9-prospect-contact-create-safety` desde main `a4082c2`. No incorpora ni fusiona PR #44, #45 o #46. No modifica edición de contactos/empresas, estados, conversión, Supabase, tipos generados, configuración o datos.
+
+Reproducción local del handler real con transporte simulado: un doble envío iniciaba dos inserts y añadía dos filas locales; una excepción escapaba sin aviso; una respuesta nula anunciaba éxito, limpiaba el borrador e incorporaba una fila nula. Se añade guarda síncrona y estado de guardado; el formulario queda deshabilitado mientras espera. Sólo una fila con ID no vacío y `prospect_id` esperado confirma el alta. Errores y respuestas inciertas conservan el borrador, no exponen detalles privados y piden revisar los contactos antes de reintentar; no hay reintento automático.
+
+Evidencia TDD: RED 10 regresiones fallidas y 2 contratos existentes aprobados; GREEN 12/12 específicas. Suite 121/121, typecheck y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login hidratado sin errores/avisos de consola y sin overflow a ancho 390 px. No se creó ningún contacto remoto ni se inició sesión.
+
+Límites: protección por instancia montada, no deduplicación entre pestañas ni garantía de no duplicar un reintento manual tras respuesta incierta; por eso el aviso exige revisar primero. Navegación/recarga global y el reporte Android del PR #44 quedan fuera del arreglo. Validación del formulario autenticado en un entorno aislado autorizado pendiente antes de release; no se ejecutaron migraciones, merge ni publicación productiva.
