@@ -1040,3 +1040,11 @@ Reproducción local del handler real con transporte simulado: un doble envío in
 Evidencia TDD: RED 10 regresiones fallidas y 2 contratos existentes aprobados; GREEN 12/12 específicas. Suite 121/121, typecheck y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login hidratado sin errores/avisos de consola y sin overflow a ancho 390 px. No se creó ningún contacto remoto ni se inició sesión.
 
 Límites: protección por instancia montada, no deduplicación entre pestañas ni garantía de no duplicar un reintento manual tras respuesta incierta; por eso el aviso exige revisar primero. Navegación/recarga global y el reporte Android del PR #44 quedan fuera del arreglo. Validación del formulario autenticado en un entorno aislado autorizado pendiente antes de release; no se ejecutaron migraciones, merge ni publicación productiva.
+
+## Anexo — Validación conjunta local de PR #45, #46 y #47 (2026-10-06)
+
+Con autorización de Pedro, se creó la rama exclusivamente local `codex/phase-9-prospect-safety-validation` desde main `a4082c2` en el entorno de trabajo aislado existente. Los tres commits se copiaron como `0453991`, `8cc4b8b` y `371dc2f`; sus ramas originales no cambiaron. El único conflicto fue documental y se conservaron completos ambos anexos. Los segmentos de los handlers de edición de empresa, edición de contacto y alta de contacto coinciden exactamente con sus commits originales; las tres guardas conservan una declaración cada una.
+
+Evidencia conjunta: baseline 109/109; tras integración, typecheck, 141/141 pruebas y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login visible e hidratado, consola sin errores/avisos y ancho de contenido de 390 px en viewport de 390 px. Se cerró la pestaña temporal y se detuvo exclusivamente el servidor identificado. El cambio automático de `next-env.d.ts` se revirtió para no versionar artefactos generados.
+
+No hubo push, nuevo PR, merge de main, publicación productiva, sesión autenticada ni operaciones de Supabase. PR #44 permanece excluido y su reporte Android sigue pendiente. Esta evidencia acredita compatibilidad local de las tres protecciones, no aceptación autenticada ni persistencia real: ambas siguen siendo gates anteriores al release. La Fase 9 no se declara cerrada.
