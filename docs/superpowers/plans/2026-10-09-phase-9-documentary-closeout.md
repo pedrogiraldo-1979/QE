@@ -23,7 +23,7 @@
 - [x] Confirmar #48 integrado, sus tres cambios originales y D-032 como decisión posterior a #30.
 - [x] Cerrar #45–47 como incorporados y #30 como sustituido, dejando comentarios y conservando ramas.
 - [x] Contrastar diff de #38; recuperar la lectura histórica con fecha, sin afirmar vigencia de herramientas/plan/backups en octubre.
-- [ ] Publicar el PR documental y enlazarlo como propuesta de reconciliación de #38, sin fusionar ni cerrar automáticamente ese PR antes de integrar su sustituto.
+- [x] Publicar el PR documental y enlazarlo como propuesta de reconciliación de #38, sin fusionar ni cerrar automáticamente ese PR antes de integrar su sustituto. Resultado: PR #49; comentario de referencia publicado en #38, que permanece abierto.
 
 ## Task 2 — Fuentes vivas y operación
 
@@ -40,8 +40,8 @@
 
 - [x] Ejecutar pnpm typecheck y pnpm test; exigir cero fallos. Resultado: 141/141 pruebas y typecheck aprobados.
 - [x] Revisar git diff --check, enlaces locales y lista de archivos; no código ni artefactos generados. Resultado: nueve documentos y 143 enlaces locales, sin referencias rotas.
-- [ ] Crear commit, push de esta rama y un solo PR documental contra main, sin merge; adjuntar PR y esperar CI.
-- [ ] Informar lo realmente terminado y los gates técnicos que no pueden declararse cerrados.
+- [x] Crear commit, push de esta rama y un solo PR documental contra main, sin merge; adjuntar PR. Resultado: #49, sobre main, sin cambios productivos. CI/preview se comprueban en GitHub antes de entregar el resultado.
+- [x] Preparar informe de lo realmente terminado y los gates técnicos que no pueden declararse cerrados; registro de cierre y cuerpo de #49 explicitan esos límites.
 
 ## Criterio de salida
 
