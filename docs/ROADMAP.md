@@ -16,8 +16,10 @@
 - Baseline publicado: `main` en `361f63b`, [PR #48](https://github.com/pedrogiraldo-1979/QE/pull/48). Integra las protecciones de edición de prospectos y edición/alta de sus contactos de PR #45–47.
 - Release #48: typecheck, 141 pruebas, build y smoke aprobados en [CI de main](https://github.com/pedrogiraldo-1979/QE/actions/runs/37990618355); Vercel `qe-crm` Production/Ready con el mismo commit, smoke público 13/13 y login sin errores/avisos de consola.
 - Aceptación acotada: los tres guardados y su persistencia se verificaron con fixtures sintéticos aislados; limpieza completa y temporal pausado. En preview se comprobaron sesión, dashboard y navegación a Prospección, sin escrituras productivas.
-- Pendientes separados: PR #44 y su reporte Android Chrome; aceptación cotidiana de la operadora; métricas y demás gates de Fase 9. PR #45–47 siguen abiertos, pero sus cambios ya están integrados por #48 y no deben fusionarse de nuevo.
+- Pendientes separados: PR #44 y su reporte Android Chrome; aceptación cotidiana de la operadora; métricas y demás gates de Fase 9. PR #45–47 fueron cerrados como incorporados por #48, con ramas e historial conservados.
 - Esta publicación no cierra Fase 9, no habilita ERP y no cambia Supabase, permisos ni datos productivos. No acredita deduplicación entre pestañas o reintentos manuales.
+
+El [registro único de cierre](./PHASE-9-CLOSURE.md) separa los dos pendientes reservados a Pedro (hermana y Android) de los gates técnicos aún abiertos. La [guía diaria](./CRM-DAILY-USE.md) prepara el onboarding; no lo sustituye. PR #30 fue cerrado como propuesta sustituida por D-032, sin integrar sus siete métricas ni declarar cerrada la Etapa 3.
 
 ### Corte anterior conservado — 2026-10-05
 

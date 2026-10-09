@@ -7,12 +7,14 @@
 - Estado: vigente.
 - Responsable de producto: Pedro.
 - Última revisión general: 2026-07-21.
-- Actualización puntual: 2026-10-05 (D-032, cobertura y releases #31, #39–41; Fase 9 abierta).
+- Actualización puntual: 2026-10-09 (D-032, cobertura, release #48 y preparación de uso diario; Fase 9 abierta).
 - Baseline de la revisión general: `main` en `f55ae78d90ff05eb4ea7c57b6c0ea7e9c70a7490`; las actualizaciones posteriores se fechan por separado.
 - Fase activa: Fase 9 — Cierre funcional y operativo.
 - Antecedente histórico: [`PRD-CRM-FASE-1.md`](./PRD-CRM-FASE-1.md).
 
 Este documento describe el CRM vigente y sus límites de producto. El comportamiento sólo se considera publicado cuando el cambio correspondiente está fusionado en `main` y ha superado los gates de release. El trabajo aún abierto en un PR se registra en el roadmap, pero no amplía por sí solo el alcance publicado.
+
+El PR #48 publicó protecciones de guardado para edición de prospectos y edición/alta de sus contactos: bloqueo de doble envío pendiente por instancia, manejo visible de errores y confirmación sólo con la fila esperada. No garantiza deduplicación entre pestañas ni tras un reintento manual. El [registro de cierre](./PHASE-9-CLOSURE.md) distingue los pendientes humanos de aceptación de los frentes técnicos condicionados; la [guía diaria](./CRM-DAILY-USE.md) no autoriza pruebas sobre datos reales ni declara Fase 9 cerrada.
 
 ## 2. Propósito del producto
 

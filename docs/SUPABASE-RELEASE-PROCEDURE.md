@@ -38,7 +38,7 @@ Presentar juntos a Pedro: ref confirmado, diff/huella del SQL, inventario remoto
 
 Después de una ejecución autorizada, comprobar que las 29 entradas anteriores conservan versión y huella, que apareció sólo la nueva versión esperada, y que el catálogo, permisos, tipos generados y pruebas del CRM corresponden al cambio aprobado. Registrar el resultado en `docs/AUDIT.md` y en el checklist de release. Ante un resultado incierto, no reintentar automáticamente ni reparar historia: preservar evidencia, evaluar recuperación y solicitar una decisión nueva.
 
-## Situación al redactar este procedimiento
+## Situación al redactar este procedimiento (corte 2026-09-28)
 
 - Matriz de historia: preparada con huellas de 29 entradas remotas y diez archivos locales.
 - SQL nuevo aprobado: ninguno.
@@ -46,3 +46,11 @@ Después de una ejecución autorizada, comprobar que las 29 entradas anteriores 
 - Dry-run productivo que seleccione sólo una nueva versión: **no realizado y no verificable todavía**.
 - Backup/recuperación y método productivo de ejecución: por definir para cada release.
 - Cambios en QE2026, en el historial o en datos por esta tarea: ninguno.
+
+## Reconciliación histórica del PR #38 — 2026-10-09
+
+El PR #38 conserva una lectura del 2026-09-30: detalle/listado identificaron QE2026 activo, historial con 29 pares de versión/nombre sin huellas SQL en esa consulta y panel Free sin backups programados visibles. PITR no quedó comprobado. En aquel entorno no estaban disponibles las herramientas de exportación y no se produjo dump ni dry-run. Estos hechos se atribuyen al corte de septiembre; no son un inventario actual de herramientas o respaldos.
+
+La migración candidata `20260929011508_add_cu_link_test_flag.sql` quedó en Git mediante PR #37 (`a38d85d`). Esto no acredita ni autoriza su aplicación productiva. Posteriormente Pedro informó en este chat que el archivo cifrado superó la validación del archivo PostgreSQL, con tamaño de 520434 bytes; este reporte no equivale a una comprobación nueva del archivo, de su actualidad/completitud ni a una restauración ensayada. No se publica la ubicación de claves ni contenido del respaldo.
+
+Siguen pendientes, antes de un release SQL concreto: recuperación adecuada al riesgo, inventario remoto actualizado con huellas, selección exclusiva del SQL nuevo, ensayo aislado y autorización del mecanismo y release. La revisión documental de octubre no se conectó a QE2026, no ejecutó dry-run ni restauración y no aplicó SQL. No se cierra D-030 por haber publicado un cambio de frontend.

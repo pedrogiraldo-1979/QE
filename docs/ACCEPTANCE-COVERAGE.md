@@ -87,7 +87,7 @@ El responsable de cerrar los vacíos y autorizar gates es Pedro. La validación 
 
 ## Reconciliación de esta revisión
 
-El estado de AUTH-01, CRM-02, ACT-01 y UX-02 distingue evidencia aislada de aceptación por la operadora: los releases no sustituyen ese recorrido. La recuperación de contraseña se publicó en PR #31; aceptación del correo/clave real corresponde a la titular, nunca al agente. PR #30 permanece abierto con siete métricas y cierre de Etapa 3 propuestos antes de D-032; no se incorpora como decisión vigente ni se fusiona desde esta entrega. PR #38 requiere reconciliación propia de su evidencia histórica de herramientas/respaldo y no autoriza un SQL nuevo.
+El estado de AUTH-01, CRM-02, ACT-01 y UX-02 distingue evidencia aislada de aceptación por la operadora: los releases no sustituyen ese recorrido. La recuperación de contraseña se publicó en PR #31; aceptación del correo/clave real corresponde a la titular, nunca al agente. PR #30 fue cerrado el 2026-10-09 como propuesta sustituida por D-032, sin integrar sus siete métricas ni declarar cerrada la Etapa 3. PR #38 tiene una reconciliación histórica preparada en esta rama, no un gate SQL cumplido. El [registro de cierre](./PHASE-9-CLOSURE.md) y la [guía diaria](./CRM-DAILY-USE.md) identifican responsables, pasos y límites sin ampliar permisos.
 
 ## Prioridades para la preparación de uso diario
 
