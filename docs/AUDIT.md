@@ -1,5 +1,17 @@
 # Auditoría inicial del repositorio
 
+## Guardar cambios de prospecto: protección aprobada — 2026-10-06 (rama)
+
+Pedro aprobó corregir sólo la edición de empresa prospecto, en una rama y PR independientes. `codex/phase-9-prospect-edit-safety` parte de `main` remoto `a4082c2`; no incluye el PR #44 de alta/móvil. La validación Android del #44 queda pospuesta a petición de Pedro; ninguno de estos ajustes autoriza merge ni release. Se preservaron los cambios del checkout original.
+
+Una reproducción local del handler real mostró excepción sin aviso visible, mensaje literal del backend y dos actualizaciones con dos envíos pendientes. Se añadió guarda síncrona `useRef`, estado de guardado, mensaje genérico y `try/catch/finally` a `updateSelectedProspect`. El formulario conserva valores ante fallo, se deshabilita sólo durante ese guardado y cambia su etiqueta a Guardando. Se confirma éxito únicamente con respuesta no nula y el mismo ID solicitado. Payload, campos, validaciones comerciales, columnas, filtro por ID y mensaje de éxito se conservan. No se modificaron contactos, estado del prospecto, alta ni componente compartido de campos.
+
+TDD: nueve pruebas de handlers/wiring, RED siete fallos y dos checks preexistentes aprobados; GREEN nueve aprobadas. Typecheck, suite completa 118/118, build y smoke de producción local 13/13 aprobados. Un intento adicional de build coincidió con el proceso anterior y devolvió bloqueo; tras comprobar que terminó se repitió con exit 0, sin borrar artefactos. La ruta dinámica con ID ficticio mostró el acceso Prospección B2B hidratado, sin overlays ni errores/warnings capturados. No hubo sesión CRM ni consultas o mutaciones de datos reales.
+
+Límites: transporte y setters se sustituyen sólo en las pruebas del handler; wiring no equivale a montar el formulario en navegador autenticado. No hay garantía de idempotencia entre pestañas/intentos posteriores, orden de escrituras concurrentes de otras acciones ni protección al cambiar de selección, refrescar o navegar fuera del formulario. Guardas de contactos, cambios de estado y alta interna de la lista siguen fuera de esta unidad. Validación autenticada/visual del editor, preview y release pendientes; PRO-02 y Fase 9 no se cierran.
+
+Se restauró únicamente el cambio automático de next-env.d.ts. Sin cambios de Supabase, Auth, esquema, RLS, RPC, migraciones, datos, tipos generados, configuración persistida, dependencias ni secretos. Reversión mediante revert del ajuste, sin SQL.
+
 ## Alta de actividades: guardado protegido — 2026-10-05 (rama)
 
 Pedro autorizó corregir sólo el guardado y los mensajes de `AddActivityEntryBridge`. La rama `codex/phase-9-activity-create-safety` parte de `main` actualizado `eb2be27`; el checkout original y sus cambios pendientes permanecen intactos. El componente conserva su portal, consultas, columnas, límite, tablas y payloads; no se retira ningún bridge ni se modifica otra pantalla.
@@ -1008,3 +1020,47 @@ Estado posterior: Pedro aclaró que ya realizó el piloto y que ninguna cifra hi
 ## Anexo — Cierre documental del piloto de correo (2026-09-26)
 
 Pedro confirmó que ya realizó el piloto de correo y que su cantidad no debe interpretarse como límite vigente; no precisó aquí cuál lote se envió. La decisión D-024 y la sección 23 de esta auditoría conservan el alcance histórico de cinco destinatarios. El código versionado de la interfaz y la validación del envío exige trece para otro lote específico; esta actualización documental no verifica entregas del proveedor ni establece una política numérica nueva. README, PRD, roadmap y release checklist dejan de presentar cinco como permiso o límite actual. No se modificaron código, configuración, Supabase, destinatarios ni datos; un nuevo envío requiere aprobación y gate propios.
+
+## Anexo — Protección de edición de contactos de prospecto en rama (2026-10-06)
+
+Alcance aprobado: únicamente «Editar contacto» en el detalle de listas, en `codex/phase-9-prospect-contact-edit-safety`, desde `main` `a4082c2`. No incorpora los PR #44/#45 ni modifica alta de contactos, edición de empresas, estados, conversión, Supabase, tipos generados, configuración o datos.
+
+Reproducción local del handler real con transporte simulado: dos envíos pendientes producían dos actualizaciones; una excepción escapaba sin aviso; una fila devuelta con ID diferente cerraba el editor y mostraba éxito. El cambio añade una guarda síncrona y un estado de guardado, protege cerrar/cambiar de editor, conserva el formulario ante error y sólo confirma una fila con el ID y `prospect_id` esperados. Conserva payload, filtro por ID y columnas; no expone errores privados ni reintenta automáticamente.
+
+Evidencia TDD: 9 regresiones fallaron primero y 2 contratos existentes pasaron; después 11/11 específicas y 120/120 totales aprobadas. Typecheck y build aprobados; servidor de producción local y smoke HTTP 13/13, más HTTP 200 del detalle dinámico. En navegador se comprobó sólo el acceso sin sesión: login hidratado sin errores/avisos de consola, ancho de contenido de 390 px en viewport de 390 px. Esto no verifica visualmente el editor autenticado ni resuelve el reporte Android del PR #44.
+
+Límites: protección por instancia montada, no idempotencia entre pestañas, navegación o recarga global. La validación autenticada del editor en un entorno aislado aprobado sigue pendiente antes de release. No se ejecutaron pruebas mutantes, migraciones, merge ni publicación productiva.
+
+## Anexo — Protección del alta de contactos de prospecto en rama (2026-10-06)
+
+Alcance aprobado: únicamente «Agregar contacto» en el detalle de listas, en `codex/phase-9-prospect-contact-create-safety` desde main `a4082c2`. No incorpora ni fusiona PR #44, #45 o #46. No modifica edición de contactos/empresas, estados, conversión, Supabase, tipos generados, configuración o datos.
+
+Reproducción local del handler real con transporte simulado: un doble envío iniciaba dos inserts y añadía dos filas locales; una excepción escapaba sin aviso; una respuesta nula anunciaba éxito, limpiaba el borrador e incorporaba una fila nula. Se añade guarda síncrona y estado de guardado; el formulario queda deshabilitado mientras espera. Sólo una fila con ID no vacío y `prospect_id` esperado confirma el alta. Errores y respuestas inciertas conservan el borrador, no exponen detalles privados y piden revisar los contactos antes de reintentar; no hay reintento automático.
+
+Evidencia TDD: RED 10 regresiones fallidas y 2 contratos existentes aprobados; GREEN 12/12 específicas. Suite 121/121, typecheck y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login hidratado sin errores/avisos de consola y sin overflow a ancho 390 px. No se creó ningún contacto remoto ni se inició sesión.
+
+Límites: protección por instancia montada, no deduplicación entre pestañas ni garantía de no duplicar un reintento manual tras respuesta incierta; por eso el aviso exige revisar primero. Navegación/recarga global y el reporte Android del PR #44 quedan fuera del arreglo. Validación del formulario autenticado en un entorno aislado autorizado pendiente antes de release; no se ejecutaron migraciones, merge ni publicación productiva.
+
+## Anexo — Validación conjunta local de PR #45, #46 y #47 (2026-10-06)
+
+Con autorización de Pedro, se creó la rama exclusivamente local `codex/phase-9-prospect-safety-validation` desde main `a4082c2` en el entorno de trabajo aislado existente. Los tres commits se copiaron como `0453991`, `8cc4b8b` y `371dc2f`; sus ramas originales no cambiaron. El único conflicto fue documental y se conservaron completos ambos anexos. Los segmentos de los handlers de edición de empresa, edición de contacto y alta de contacto coinciden exactamente con sus commits originales; las tres guardas conservan una declaración cada una.
+
+Evidencia conjunta: baseline 109/109; tras integración, typecheck, 141/141 pruebas y build aprobados. Servidor local de producción: smoke 13/13 y detalle dinámico HTTP 200. Navegador sin sesión: login visible e hidratado, consola sin errores/avisos y ancho de contenido de 390 px en viewport de 390 px. Se cerró la pestaña temporal y se detuvo exclusivamente el servidor identificado. El cambio automático de `next-env.d.ts` se revirtió para no versionar artefactos generados.
+
+No hubo push, nuevo PR, merge de main, publicación productiva, sesión autenticada ni operaciones de Supabase. PR #44 permanece excluido y su reporte Android sigue pendiente. Esta evidencia acredita compatibilidad local de las tres protecciones, no aceptación autenticada ni persistencia real: ambas siguen siendo gates anteriores al release. La Fase 9 no se declara cerrada.
+
+## Anexo — Aceptación autenticada conjunta aislada (2026-10-06)
+
+Pedro autorizó reactivar exclusivamente `jfmauklmfhuecftvgjms`, crear una cuenta y registros sintéticos, probar los tres formularios, limpiar el ensayo y volver a pausarlo. Proyecto/organización comprobados por detalle y listado; organización Free, distinta del proyecto productivo. Tras finalizar la restauración y alcanzar `ACTIVE_HEALTHY`, los conteos iniciales de listas, prospectos, contactos, usuarios y membresías eran cero. Los tipos se regeneraron en memoria: los tres contratos de tablas coinciden con el snapshot local, sin sobrescribirlo ni aplicar SQL de esquema.
+
+Commit funcional probado: `371dc2f`, sobre la rama local que incluye documentación hasta `775c710`. Con una cuenta sintética `member` autorizada, una lista, dos prospectos y dos contactos previos, se verificaron desde navegador: edición de Ciudad, edición de Cargo y alta de un contacto. Cada recorrido mostró éxito y persistió después de recargar. Una lectura agregada aislada confirmó exactamente una alta y que el segundo prospecto/contacto conservaron sus valores. Las ediciones se repitieron en viewport 390 × 844 y persistieron; contenido 375 px, sin overflow horizontal global, consola sin errores/avisos y foco visible al avanzar con Tab de Ciudad a Teléfono. No hubo cambios de estado, conversiones, campañas ni formularios públicos.
+
+Typecheck, 141/141 pruebas, build con las variables públicas del temporal y smoke 13/13 aprobados. La latencia no permitió capturar el estado pendiente de guardado; doble envío, excepciones y respuestas inválidas siguen respaldados por pruebas de transporte simulado, no por fallos remotos inducidos. Esta aceptación es acotada a los tres recorridos sintéticos y no sustituye la aceptación Android del PR #44 ni el uso diario de la operadora.
+
+Limpieza parcial verificada: se cerró sesión, los tres contactos, dos prospectos y lista se retiraron por sus IDs exactos; listas, prospectos, contactos, membresías y sesiones de prueba quedaron en cero. Pestaña local cerrada, viewport restaurado y servidor identificado/detenido. La única cuenta sintética Auth permanece sin rol ni sesiones mientras se espera confirmación del borrado irreversible en la interfaz; la pausa del temporal queda pendiente tras ese paso. No declarar todavía limpieza completa. Sin cambios de producción, migraciones, esquema, RLS, RPC, Edge Functions, push o merge.
+
+## Anexo — Cierre de limpieza del ensayo conjunto (2026-10-09)
+
+Tras la confirmación de Pedro, se volvió a comprobar que `jfmauklmfhuecftvgjms` era el temporal previsto y que sólo permanecía la cuenta sintética creada para este ensayo, sin rol ni sesiones. Se eliminó exclusivamente esa cuenta mediante el diálogo irreversible de Supabase. La lectura agregada posterior confirmó cero listas, prospectos, contactos de prospectos, membresías, sesiones y usuarios Auth, restaurando los conteos iniciales. No se eliminaron identidades ni datos productivos; el borrado definitivo afectó sólo la cuenta desechable autorizada y no es recuperable mediante el flujo normal.
+
+La pausa se solicitó después de comprobar los conteos y el detalle del proyecto confirmó `INACTIVE`. Typecheck y 141/141 pruebas locales volvieron a aprobar. El ensayo autenticado de los tres formularios y su limpieza quedan completos dentro de su alcance sintético; se conserva la evidencia y las limitaciones del anexo anterior. Sin cambios de código, esquema, RLS, RPC, Edge Functions, configuración, secretos, push ni merge en este cierre. La rama conjunta permanece local; publicación, integración y el reporte Android del PR #44 conservan gates independientes. Fase 9 sigue abierta.
