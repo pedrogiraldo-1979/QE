@@ -333,6 +333,8 @@ Este archivo combina decisiones vigentes y propuestas pendientes. Una propuesta 
 
 Nota de integración documental (2026-10-05): D-032 se recupera del trabajo local previamente aprobado, sin alterar sus metas ni ampliar permisos. El PR #30 conserva una propuesta anterior de siete métricas y cierre de Etapa 3; sigue abierto y requiere reconciliación antes de cualquier integración. Esta entrega no cierra ni modifica aquel PR ni autoriza su merge.
 
+Nota posterior (2026-10-09): al solicitar Pedro completar los pendientes del agente y reservar hermana/Android, se cerró PR #30 como propuesta sustituida, sin borrar su rama ni integrar sus siete métricas. D-032 conserva íntegros sus límites: no se inventan metas, no se instrumentan indicadores y P9-MET-01/02 no se declaran resueltos. El registro PHASE-9-CLOSURE distingue preparación del primer uso de cierre total de Fase 9; los aplazamientos adicionales de unidades técnicas no se presumen aprobados por esta reconciliación.
+
 ### D-XXX — Título
 
 - Estado: Propuesta | Aceptada | Rechazada | Sustituida

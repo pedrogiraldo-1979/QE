@@ -1,10 +1,17 @@
 # Matriz de cobertura de aceptación del CRM
 
-**Corte de revisión:** 2026-10-05; baseline publicado `1d1b45c` (PR #41).
+**Corte de revisión:** 2026-10-09; baseline publicado `361f63b` (PR #48). Las referencias anteriores conservan sus fechas y límites.
 
 **Fuente de criterios:** [`PRD-CRM.md`](./PRD-CRM.md).
 
-**Estado:** P9-COV-01/02 aceptados documentalmente el 2026-10-01; evidencia reconciliada con PR #39–41 y release #41. La Fase 9 permanece abierta. No certifica todos los recorridos autenticados ni el onboarding de la hermana.
+**Estado:** P9-COV-01/02 aceptados documentalmente el 2026-10-01; evidencia reconciliada con PR #39–41 y release #48. La Fase 9 permanece abierta. No certifica todos los recorridos autenticados ni el onboarding de la hermana.
+
+## Actualización acotada — Release #48
+
+- **PRO-02, cobertura parcial ampliada:** edición de prospecto, edición de contacto y alta de contacto verificadas desde UI con persistencia después de recargar en un entorno sintético aislado. Las [32 pruebas específicas](../tests/prospectContactCreateSafety.test.mjs) de los tres handlers cubren doble envío pendiente, errores y respuestas inciertas; también se incluyen [edición de prospecto](../tests/prospectEditSafety.test.mjs) y [edición de contacto](../tests/prospectContactEditSafety.test.mjs). El alta de prospectos de PR #44 no forma parte de esta entrega. No se declara E2E automatizado de navegador ni idempotencia entre pestañas.
+- **UX-02, parcial:** edición de Ciudad/Cargo, foco y ausencia de overflow verificados localmente a 390 × 844 con datos sintéticos. No equivale a validar Android Chrome real; el reporte de PR #44 sigue pendiente.
+- **OPS-01, release #48 verificado:** [CI de main](https://github.com/pedrogiraldo-1979/QE/actions/runs/37990618355) aprobó typecheck, 141 pruebas, build y smoke; [Vercel](https://vercel.com/quindio-exquisito/qe-crm/HAwebvdDrpuBJY4yUxyjXqELtQMN) confirmó Production/Ready del commit `361f63b`. Smoke público 13/13 y pantalla de acceso hidratada sin errores/avisos de consola. Esto no prueba todos los recorridos autenticados en producción.
+- **Límites operativos:** ensayo y limpieza cerrados en [AUDIT.md](./AUDIT.md); proyecto desechable pausado. Fase 9, métricas y aceptación de la operadora siguen abiertas; no se ejecutaron escrituras de prueba en producción. Las filas históricas siguientes conservan la evidencia de sus cortes anteriores y se complementan con esta actualización.
 
 ## Cómo leer la matriz
 
@@ -80,7 +87,7 @@ El responsable de cerrar los vacíos y autorizar gates es Pedro. La validación 
 
 ## Reconciliación de esta revisión
 
-El estado de AUTH-01, CRM-02, ACT-01 y UX-02 distingue evidencia aislada de aceptación por la operadora: los releases no sustituyen ese recorrido. La recuperación de contraseña se publicó en PR #31; aceptación del correo/clave real corresponde a la titular, nunca al agente. PR #30 permanece abierto con siete métricas y cierre de Etapa 3 propuestos antes de D-032; no se incorpora como decisión vigente ni se fusiona desde esta entrega. PR #38 requiere reconciliación propia de su evidencia histórica de herramientas/respaldo y no autoriza un SQL nuevo.
+El estado de AUTH-01, CRM-02, ACT-01 y UX-02 distingue evidencia aislada de aceptación por la operadora: los releases no sustituyen ese recorrido. La recuperación de contraseña se publicó en PR #31; aceptación del correo/clave real corresponde a la titular, nunca al agente. PR #30 fue cerrado el 2026-10-09 como propuesta sustituida por D-032, sin integrar sus siete métricas ni declarar cerrada la Etapa 3. PR #38 tiene una reconciliación histórica preparada en esta rama, no un gate SQL cumplido. El [registro de cierre](./PHASE-9-CLOSURE.md) y la [guía diaria](./CRM-DAILY-USE.md) identifican responsables, pasos y límites sin ampliar permisos.
 
 ## Prioridades para la preparación de uso diario
 
