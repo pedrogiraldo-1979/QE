@@ -11,7 +11,15 @@
 
 ## Estado actual
 
-### Corte vigente — 2026-10-05
+### Corte vigente — 2026-10-09
+
+- Baseline publicado: `main` en `361f63b`, [PR #48](https://github.com/pedrogiraldo-1979/QE/pull/48). Integra las protecciones de edición de prospectos y edición/alta de sus contactos de PR #45–47.
+- Release #48: typecheck, 141 pruebas, build y smoke aprobados en [CI de main](https://github.com/pedrogiraldo-1979/QE/actions/runs/37990618355); Vercel `qe-crm` Production/Ready con el mismo commit, smoke público 13/13 y login sin errores/avisos de consola.
+- Aceptación acotada: los tres guardados y su persistencia se verificaron con fixtures sintéticos aislados; limpieza completa y temporal pausado. En preview se comprobaron sesión, dashboard y navegación a Prospección, sin escrituras productivas.
+- Pendientes separados: PR #44 y su reporte Android Chrome; aceptación cotidiana de la operadora; métricas y demás gates de Fase 9. PR #45–47 siguen abiertos, pero sus cambios ya están integrados por #48 y no deben fusionarse de nuevo.
+- Esta publicación no cierra Fase 9, no habilita ERP y no cambia Supabase, permisos ni datos productivos. No acredita deduplicación entre pestañas o reintentos manuales.
+
+### Corte anterior conservado — 2026-10-05
 
 - Baseline publicado: `main` en `1d1b45c`, PR #41.
 - Recuperación de clave: PR #31 publicado; aceptación del correo y clave reales por la titular sigue independiente.
