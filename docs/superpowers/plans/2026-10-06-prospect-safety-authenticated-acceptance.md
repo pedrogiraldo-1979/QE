@@ -51,11 +51,11 @@
 
 - [x] Cerrar sesión y revocar las sesiones de la cuenta sintética antes de retirarla. Cerrar la pestaña de ensayo y restaurar viewport.
 - [x] Con orquestador autorizado, borrar sólo los tres contactos del ensayo, sus dos prospectos y la lista, en ese orden; comprobar que sus IDs ya no existen y los conteos previos quedaron restaurados.
-- [ ] Retirar sólo el rol/membresía de la cuenta creada. Antes de eliminar irreversiblemente esa cuenta por interfaz, solicitar la confirmación requerida por la herramienta con el destino exacto; no borrar ninguna otra identidad.
-- [ ] Confirmar limpieza agregada, pausar el proyecto temporal y verificar estado inactivo. Si cualquier limpieza falla, reportar los residuos sin publicar datos ni declarar el ensayo limpio.
+- [x] Retirar sólo el rol/membresía de la cuenta creada. Antes de eliminar irreversiblemente esa cuenta por interfaz, solicitar la confirmación requerida por la herramienta con el destino exacto; no borrar ninguna otra identidad.
+- [x] Confirmar limpieza agregada, pausar el proyecto temporal y verificar estado inactivo. Si cualquier limpieza falla, reportar los residuos sin publicar datos ni declarar el ensayo limpio.
 - [x] Identificar por puerto y ruta el proceso local antes de detenerlo; restaurar únicamente cambios automáticos de `next-env.d.ts` y excluir archivos generados.
 - [x] Registrar commit probado, resultados de cada recorrido, alcance de las lecturas de persistencia, vista móvil y limitaciones. No declarar cierre de Fase 9 ni resolver el reporte Android por esta prueba.
-- [ ] Revisar diff y secretos; guardar evidencia sólo en commit local. Una futura publicación/integración requiere decisión aparte.
+- [x] Revisar diff y secretos; guardar evidencia sólo en commit local. Una futura publicación/integración requiere decisión aparte.
 
 ## Estado
 
@@ -64,3 +64,7 @@ Plan preparado el 2026-10-06. No se reanudó el temporal, no se crearon cuentas/
 Avance posterior autorizado el 2026-10-06: destino comprobado por detalle/listado y organización Free. Reactivación completada hasta `ACTIVE_HEALTHY`; no se interpretó el catálogo vacío durante `COMING_UP`/`RESTORING` como pérdida de esquema. Una vez activo, conteos iniciales de listas, prospectos, contactos, usuarios y membresías: cero. Tipos regenerados en memoria; los tres bloques de contratos coinciden con el snapshot local. Se crearon únicamente una lista, dos prospectos y dos contactos sintéticos. Typecheck, 141/141 pruebas y build con la URL/clave públicas del temporal aprobados. Creación de la cuenta detenida antes de pulsar `Create user`, pendiente de confirmación de acceso en el momento; no hay sesión ni resultados autenticados. Los fixtures y el temporal activo quedan reservados para continuar este ensayo y requieren limpieza/pausa al finalizar, también si se cancela.
 
 Avance siguiente: cuenta sintética `member` creada tras confirmación; contexto autorizado verificado. Los tres recorridos confirmaron éxito y persistencia después de recargar, con una sola alta y conservación del segundo prospecto/contacto. Ediciones móviles también persistieron; viewport 390 px, contenido 375 px, sin errores/avisos de consola. Tab desde Ciudad movió el foco a Teléfono, con contorno visible en captura sintética. Se cerró sesión, se restauró viewport y se cerró pestaña local. Limpieza exacta por IDs: listas, prospectos, contactos, membresías y sesiones de prueba quedaron en cero. Servidor local identificado y detenido; typecheck y 141/141 pruebas repetidos con éxito. Cuenta Auth aún existente sin rol ni sesiones: borrado irreversible detenido en el diálogo de Supabase, pendiente de confirmación en el momento. Pausa pendiente después de ese borrado; no declarar limpieza completa todavía.
+
+### Cierre — 2026-10-09
+
+Pedro confirmó continuar con el borrado pendiente. Antes de ejecutarlo se comprobó nuevamente el proyecto exacto y que la única cuenta Auth era la sintética esperada; listas, prospectos, contactos, membresías y sesiones seguían en cero. Se eliminó únicamente esa cuenta desde el diálogo de Supabase. La lectura agregada posterior confirmó también cero usuarios Auth. Se solicitó la pausa y el detalle del proyecto confirmó `INACTIVE`. Typecheck y 141/141 pruebas repetidos con éxito; sin cambios funcionales, secretos ni artefactos generados en el diff de cierre. Ensayo y limpieza completados; rama local conservada, sin publicación ni merge. Esta conclusión no cierra Fase 9 ni la aceptación Android de PR #44.
