@@ -33,6 +33,8 @@ import {
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
 import { useCrmDashboardData } from "@/hooks/useCrmDashboardData";
+import { useOperationalMetrics } from "@/hooks/useOperationalMetrics";
+import { OperationalMetricCards } from "@/components/crm/OperationalMetricCards";
 import { coerceDataTabForRole, getAllowedDataTabs } from "@/features/crm/authorizationModel";
 import { HomePanel } from "@/components/crm/HomePanel";
 import { ContactQuickEditPanel } from "@/components/crm/ContactQuickEditPanel";
@@ -129,6 +131,7 @@ export default function HomePage() {
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const contactEditTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("home");
+  const operationalMetrics = useOperationalMetrics(supabase, sessionReady && isAuthenticated && viewMode === "home");
   const [search, setSearch] = useState("");
   const [segmentFilter, setSegmentFilter] = useState("todos");
   const [statusFilter, setStatusFilter] = useState("todos");
@@ -516,7 +519,6 @@ export default function HomePage() {
   ).length;
   const unclassifiedCount = data.companies.filter((company) => normalizeStatus(company.status) === "nuevo").length;
   const overdueActivities = data.activities.filter((activity) => isOverdue(activity)).length;
-  const overdueProspectActivities = data.prospectActivities.filter((activity) => isOverdue(activity)).length;
   const contactsWithoutEmail = data.contacts.filter((contact) => !contact.email?.trim()).length;
   const rolesPending = data.contacts.filter((contact) => !contact.role?.trim()).length;
   const dataToValidateCount = dataIssueGroups.length;
@@ -715,7 +717,10 @@ export default function HomePage() {
                 Nueva actividad
               </button>
             ) : null}
-            <button className="btn btn-secondary" type="button" onClick={() => void loadData()} disabled={loading}>
+            <button className="btn btn-secondary" type="button" onClick={() => {
+              void loadData();
+              void operationalMetrics.refresh();
+            }} disabled={loading}>
               <RefreshCw size={17} className={loading ? "spin" : ""} />
               {loading ? "Actualizando" : "Refrescar"}
             </button>
@@ -734,7 +739,7 @@ export default function HomePage() {
             <MetricCard icon={Mail} label="Contactos sin email" value={contactsWithoutEmail} helper="faltan correos de seguimiento" />
             <MetricCard icon={UserRound} label="Roles pendientes" value={rolesPending} helper="compras, chef/cocina o pagos por identificar" />
             <MetricCard icon={FileQuestion} label="Datos por validar" value={dataToValidateCount} helper="clientes o contactos con campos incompletos" />
-            <MetricCard icon={CalendarClock} label="Seguimientos vencidos" value={overdueActivities + overdueProspectActivities} helper="actividades abiertas con fecha vencida" />
+            <OperationalMetricCards state={operationalMetrics.state} />
           </section>
         ) : null}
 
