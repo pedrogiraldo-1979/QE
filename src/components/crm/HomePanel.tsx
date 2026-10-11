@@ -47,7 +47,7 @@ export function HomePanel({
         <ActionCard icon={Tag} label="En seguimiento" value={inFollowUp} helper="Clientes con gestión comercial abierta" onClick={onOpenFollowUp} />
         <ActionCard icon={Mail} label="Contactos sin email" value={contactsWithoutEmail} helper="Falta canal para cotizaciones o seguimiento" onClick={onOpenContacts} />
         <ActionCard icon={UserRound} label="Roles pendientes" value={rolesPending} helper="Identificar compras, cocina/chef o pagos" onClick={onOpenContacts} />
-        <ActionCard icon={CalendarClock} label="Actividades vencidas" value={overdueActivities} helper="Seguimientos que necesitan acción" onClick={onOpenActivities} />
+        <ActionCard icon={CalendarClock} label="Vencidas en clientes cargados" value={overdueActivities} helper="Vista parcial de agenda; no incluye prospectos" onClick={onOpenActivities} />
         <ActionCard icon={ClipboardCheck} label="Datos por validar" value={dataToValidate} helper="Clientes o contactos con campos incompletos" onClick={onOpenData} />
       </div>
     </section>
