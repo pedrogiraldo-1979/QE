@@ -110,7 +110,8 @@ Gate pendiente: resolver alcance restante de P9-MET y sus responsabilidades sin 
 #### Etapa 4 — Mantenibilidad incremental
 
 - `ContactCompletionBridge`: entrega publicada en PR #39, no pendiente de sustitución;
-- `AddActivityEntryBridge` y demás unidades: pendientes de inventario/orden aceptado y aprobación independiente; no retirarlas como efecto de esta documentación;
+- `AddActivityEntryBridge`: sustitución React propuesta en PR para `/agregar`; bridge y estilos anteriores se conservan como rollback. Typecheck, 59 pruebas locales, build y smoke de snapshot aprobados; aceptación autenticada/visual del Preview pendiente. No cierra P9-TECH-02 ni autoriza Production;
+- las demás unidades: pendientes de inventario/orden aceptado y aprobación independiente;
 - sustituir un bridge por entrega con composición React propietaria;
 - centralizar repositorios sólo al intervenir su ruta;
 - repetir typecheck, pruebas, build, smoke y gate visual tras cada sustitución.

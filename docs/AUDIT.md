@@ -1,3 +1,7 @@
+## Reemplazo de AddActivityEntryBridge por React — 2026-11-08 (PR)
+
+En la rama `codex/phase-9-add-activity-react`, `/agregar` monta `AddActivityEntryForm` como interfaz propietaria. El modelo independiente normaliza/busca clientes y prospectos, valida destino/nota y construye el payload hacia las tablas existentes. Se conserva el bridge anterior y sus estilos como referencia de rollback. No se modifican esquema, RLS, Auth, RPC, Edge Functions ni datos persistentes. Typecheck local aprobado; suite local 59/59; build y smoke locales se verificaron en snapshot aislado. La equivalencia autenticada y la revisión visual en Preview siguen pendientes; no se considera cerrada la aceptación de P9-TECH-02 ni autorizado un release a Production.
+
 # Auditoría inicial del repositorio
 
 ## Guardar cambios de prospecto: protección aprobada — 2026-10-06 (rama)

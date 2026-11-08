@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   Building2,
+  CalendarClock,
   Home,
   Mail,
   Phone,
@@ -15,10 +16,11 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCrmSession } from "@/hooks/useCrmSession";
+import AddActivityEntryForm from "@/components/crm/AddActivityEntryForm";
 import { COMPANY_COLUMNS, CONTACT_COLUMNS } from "@/lib/data/queryColumns";
 import type { Company, Contact } from "@/lib/types";
 
-type CreateMode = "selector" | "company" | "contact";
+type CreateMode = "selector" | "company" | "contact" | "activity";
 
 type CompanyForm = {
   name: string;
@@ -62,6 +64,7 @@ const emptyContactForm: ContactForm = {
 
 export default function AddEntryPage() {
   const { supabase, sessionReady, isAuthenticated, signIn } = useCrmSession();
+  const activityTriggerRef = useRef<HTMLButtonElement>(null);
   const [loginEmail, setLoginEmail] = useState("");
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -222,6 +225,11 @@ export default function AddEntryPage() {
 
   const companyWarnings = useMemo(() => buildCompanyWarnings(companies, companyForm), [companies, companyForm]);
 
+  function closeActivityForm() {
+    setMode("selector");
+    window.requestAnimationFrame(() => activityTriggerRef.current?.focus());
+  }
+
   if (!sessionReady) return <CenteredMessage title="Cargando CRM" description="Validando sesión..." />;
 
   if (!isAuthenticated) {
@@ -339,7 +347,17 @@ export default function AddEntryPage() {
               <span className="action-helper">Crear empresa prospecto dentro de una lista, sin campaña ni Zoho.</span>
             </span>
           </a>
+          <button ref={activityTriggerRef} className="action-card add-activity-card" type="button" onClick={() => setMode("activity")}>
+            <span className="metric-icon"><CalendarClock size={19} /></span>
+            <span>
+              <strong>+</strong>
+              <span className="action-label">Actividad / seguimiento</span>
+              <span className="action-helper">Crear llamada, WhatsApp, email o tarea para cliente o prospecto.</span>
+            </span>
+          </button>
         </section>
+
+        <AddActivityEntryForm isOpen={mode === "activity"} onClose={closeActivityForm} supabase={supabase} />
 
         {mode === "selector" ? (
           <section className="home-panel">
@@ -567,3 +585,4 @@ function normalizeName(value?: string | null) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/\s+/g, " ");
 }
+
